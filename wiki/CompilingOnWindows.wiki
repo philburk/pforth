@@ -1,0 +1,19 @@
+#summary How to Compile pForth on Windows
+
+= Introduction =
+
+We provide a project for Visual Studio 2005
+
+= Details =
+
+ # Double click the VS2005 solution "build/win32/vs2005/pforth.sln".
+ # Build the "pforth_main" project.
+
+Note that there were a few modifications made to the default projects.
+
+The warnings for 64-bit code compatibility were turned to prevent annoying warnings. The property "C/C++"/General/"Detect 64-bit Portability Issues" was set to "No".
+
+The following were added to "C/C++"/PreProcessor/"Preprocessor Definitions":
+
+ * PF_SUPPORT_FP - to turn on floating point support
+ * _CRT_SECURE_NO_DEPRECATE - to turn off suggestions about fopen_s
