@@ -66,4 +66,4 @@ pforth t_alloc.fth
 
 For more information see: http://www.softsynth.com/pforth/pf_ref.html
 
-Here is a Forth tutorial: http://www.softsynth.com/pforth/pf_tut.htm
+Here is a Forth tutorial: http://www.softsynth.com/pforth/pf_tut.html
