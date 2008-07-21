@@ -1,0 +1,12 @@
+#summary PForth Wiki Home Page.
+#labels Featured
+
+= Introduction =
+
+PForth is a portable Forth written in standard 'C'.
+
+= Details =
+
+Notes on compiling pForth for various platforms at PForthCompiling
+
+Other documentation at http://www.softsynth.com/pforth/
