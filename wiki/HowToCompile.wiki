@@ -41,7 +41,7 @@ The dictionary will be compiled and saved in a file called "pforth.dic" . That f
 pforth
 }}}
 
-= Testing pForth =
+= Step 3 - Testing pForth =
 
 You can now execute pForth using the compiled dictionary. Enter:
 
