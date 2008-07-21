@@ -924,7 +924,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 				const char *famText = pfSelectFileModeCreate( TOS );
 				pfCopyMemory( gScratch, (char *) Temp, (uint32) Scratch );
 				gScratch[Scratch] = '\0';
-				PRT(("Create file = %s with famTxt %s\n", gScratch, famText ));
+				DBUG(("Create file = %s with famTxt %s\n", gScratch, famText ));
 				FileID = sdOpenFile( gScratch, famText );
 				TOS = ( FileID == NULL ) ? -1 : 0 ;
 				M_PUSH( (cell) FileID );
