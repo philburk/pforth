@@ -27,7 +27,10 @@
 ***************************************************************/
 
 #include "pf_all.h"
+
+#ifdef WIN32
 #include <crtdbg.h>
+#endif
 
 #define SYSTEM_LOAD_FILE "system.fth"
 
@@ -190,10 +193,38 @@ static void TraceNames( ExecToken Token, int32 Level )
 /* Use local copy of CODE_BASE for speed. */
 #define LOCAL_CODEREL_TO_ABS( a ) ((cell *) (((int32) a) + CodeBase))
 
+static const char *pfSelectFileModeCreate( int fam );
+static const char *pfSelectFileModeOpen( int fam );
+
 /**************************************************************/
-const char *pfSelectFileMode( int fam )
+static const char *pfSelectFileModeCreate( int fam )
 {
-	char *famText = NULL;
+	const char *famText = NULL;
+	switch( fam )
+	{
+	case (PF_FAM_WRITE_ONLY + PF_FAM_BINARY_FLAG):
+		famText = PF_FAM_BIN_CREATE_WO;
+		break;
+	case (PF_FAM_READ_WRITE + PF_FAM_BINARY_FLAG):
+		famText = PF_FAM_BIN_CREATE_RW;
+		break;
+	case PF_FAM_WRITE_ONLY:
+		famText = PF_FAM_CREATE_WO;
+		break;
+	case PF_FAM_READ_WRITE:
+		famText = PF_FAM_CREATE_RW;
+		break;
+	default:
+		famText = "illegal";
+		break;
+	}
+	return famText;
+}
+
+/**************************************************************/
+static const char *pfSelectFileModeOpen( int fam )
+{
+	const char *famText = NULL;
 	switch( fam )
 	{
 	case (PF_FAM_READ_ONLY + PF_FAM_BINARY_FLAG):
@@ -890,10 +921,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			Temp = M_POP;    /* caddr */
 			if( Scratch < TIB_SIZE-2 )
 			{
-				const char *famText = pfSelectFileMode( TOS );
+				const char *famText = pfSelectFileModeCreate( TOS );
 				pfCopyMemory( gScratch, (char *) Temp, (uint32) Scratch );
 				gScratch[Scratch] = '\0';
-				DBUG(("Create file = %s\n", gScratch ));
+				PRT(("Create file = %s with famTxt %s\n", gScratch, famText ));
 				FileID = sdOpenFile( gScratch, famText );
 				TOS = ( FileID == NULL ) ? -1 : 0 ;
 				M_PUSH( (cell) FileID );
@@ -912,7 +943,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			Temp = M_POP;    /* caddr */
 			if( Scratch < TIB_SIZE-2 )
 			{
-				const char *famText = pfSelectFileMode( TOS );
+				const char *famText = pfSelectFileModeOpen( TOS );
 				pfCopyMemory( gScratch, (char *) Temp, (uint32) Scratch );
 				gScratch[Scratch] = '\0';
 				DBUG(("Open file = %s\n", gScratch ));
