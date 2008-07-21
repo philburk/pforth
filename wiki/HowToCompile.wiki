@@ -1,5 +1,5 @@
-#summary How To compile pForth.
-#labels Phase-Deploy
+#summary How To Compile pForth.
+#labels Phase-Deploy,Featured
 
 = Introduction =
 
@@ -63,7 +63,6 @@ pforth t_strings.fth
 pforth t_locals.fth
 pforth t_alloc.fth
 }}}
-
 
 For more information see: http://www.softsynth.com/pforth/pf_ref.htm
 
