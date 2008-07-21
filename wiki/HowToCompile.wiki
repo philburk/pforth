@@ -16,7 +16,7 @@ For more information see: http://www.softsynth.com/pforth/pf_ref.html
 We have provided projects and Makefiles for some platforms. But if you want to compile pForth for a new platforms it is quite easy.
 
  * CompilingOnWindows
- * CompilingOnLinux
+ * CompilingOnUnix
  * CompilingOnMac
 
 == Custom Compile of Kernel ==
@@ -26,7 +26,7 @@ We have provided projects and Makefiles for some platforms. But if you want to c
  # If you want floating support then define preprocessor variable PF_SUPPORT_FP
  # Compile, link and place the executable called "pforth" in the "fth/" folder.
 
-== Step 2 - Building The Dictionary ==
+= Step 2 - Building The Dictionary =
 
 The _words_ (functions) in pForth are stored in a dictionary. They are mostly written in Forth and can be compiled by the pForth kernel. Enter:
 
@@ -41,7 +41,7 @@ The dictionary will be compiled and saved in a file called "pforth.dic" . That f
 pforth
 }}}
 
-= Testing pForth ==
+= Testing pForth =
 
 You can now execute pForth using the compiled dictionary. Enter:
 
