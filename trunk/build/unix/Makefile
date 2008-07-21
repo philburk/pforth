@@ -11,14 +11,14 @@
 # Note for Mac OS X, use cc instead of gcc
 COMPILER = gcc
 
-PFORTHDIR   := $(shell cd ../; pwd)
+PFORTHDIR   := $(shell cd ../../; pwd)
 CSRCDIR      = $(PFORTHDIR)/csrc
 FTHDIR       = $(PFORTHDIR)/fth
 
 PFDICAPP     = $(FTHDIR)/pforth
 PFORTHDIC    = $(FTHDIR)/pforth.dic
 PFDICDAT     = ${CSRCDIR}/pfdicdat.h
-PFORTHAPP    = $(PFORTHDIR)/pforth
+PFORTHAPP    = $(PFORTHDIR)/pforth_standalone
 OBJECTDIR    = $(PFORTHDIR)/objects
 TEMPOBJECTDIR = $(PFORTHDIR)/tempobjects
 
@@ -43,17 +43,17 @@ EMBCCOPTS = -DPF_STATIC_DIC
 # Build file lists from wildcards.
 PFITEMP    = ${wildcard ${CSRCDIR}/*.h}
 PFINCLUDES = ${PFITEMP:${CSRCDIR}/pfdicdat.h=}
-PFSOURCE   = ${wildcard ${CSRCDIR}/*.c}
+PFSOURCE   = ${wildcard ${CSRCDIR}/*.c} ${CSRCDIR}/posix/pf_io_posix.c
 PFTEMP     = ${PFSOURCE:%.c=%.o}
 PFOBJS     = ${PFTEMP:${CSRCDIR}/%=${TEMPOBJECTDIR}/%}
 PFEMBOBJS  = ${PFTEMP:${CSRCDIR}/%=${OBJECTDIR}/%}
 
 COMPILE = $(COMPILER) $(CCOPTS) $(CDEFS)
-
-${TEMPOBJECTDIR}/%.o:  $(PFINCLUDES)  ${CSRCDIR}/%.c
+	
+${TEMPOBJECTDIR}/%.o:  ${TEMPOBJECTDIR}/posix $(PFINCLUDES)  ${CSRCDIR}/%.c
 	$(COMPILE) -O -o ${TEMPOBJECTDIR}/$*.o -c ${CSRCDIR}/$*.c
 	
-${OBJECTDIR}/%.o:  $(PFINCLUDES) ${CSRCDIR}/%.c ${CSRCDIR}/pfdicdat.h 
+${OBJECTDIR}/%.o:  ${OBJECTDIR}/posix $(PFINCLUDES) ${CSRCDIR}/%.c ${CSRCDIR}/pfdicdat.h 
 	$(COMPILE) -O -o ${OBJECTDIR}/$*.o -c ${CSRCDIR}/$*.c $(EMBCCOPTS)
 
 all: $(PFORTHAPP)
@@ -70,6 +70,12 @@ pffiles:
 	@echo "EMBEDDED OBJECT FILES ------------------"
 	@echo ${PFEMBOBJS}
 	
+${TEMPOBJECTDIR}/posix: 
+	mkdir -pv ${TEMPOBJECTDIR}/posix
+
+${OBJECTDIR}/posix: 
+	mkdir -pv ${OBJECTDIR}/posix
+
 # build pforth by compiling 'C' source
 $(PFDICAPP): $(PFINCLUDES) $(PFOBJS)
 	$(COMPILER) $(PFOBJS) -lm -o $(PFDICAPP)
@@ -80,8 +86,10 @@ pfdicapp: $(PFDICAPP)
 $(PFDICDAT): $(PFDICAPP)
 	cd $(FTHDIR); $(PFDICAPP) -i system.fth ; mv pfdicdat.h $(PFDICDAT)
 
-$(PFORTHAPP): $(PFDICDAT) $(PFINCLUDES) $(PFEMBOBJS)
+$(PFORTHAPP): ${TEMPOBJECTDIR}/posix $(PFDICDAT) $(PFINCLUDES) $(PFEMBOBJS)
 	$(COMPILER) $(PFEMBOBJS) -lm -o $(PFORTHAPP)
+	@echo ""
+	@echo "Standalone pForth executable written to $(PFORTHAPP)"
 	
 clean:
 	-rm -f $(PFOBJS) $(PFEMBOBJS)
