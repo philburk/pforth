@@ -9,7 +9,7 @@ PForth is very easy to build on most platforms. The main steps are:
  # Run pForth and build Forth dictionary. It will save automatically.
  # Run pForth with dictionary and test it.
 
-For more information see: http://www.softsynth.com/pforth/pf_ref.htm
+For more information see: http://www.softsynth.com/pforth/pf_ref.html
 
 = Step 1 - Building the pForth Kernel =
 
@@ -64,6 +64,6 @@ pforth t_locals.fth
 pforth t_alloc.fth
 }}}
 
-For more information see: http://www.softsynth.com/pforth/pf_ref.htm
+For more information see: http://www.softsynth.com/pforth/pf_ref.html
 
 Here is a Forth tutorial: http://www.softsynth.com/pforth/pf_tut.htm
