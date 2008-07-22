@@ -8,6 +8,8 @@ We provide a simple Makefile for compiling.
  # CD to "build/unix"
  # Enter: make all
 
-This will create an executable image and associated "pforth.dic" file in the "fth/" folder.
+This is a complete build. It will create an executable image and associated "pforth.dic" file in the "fth/" folder.
 
 It will also create a standalone executable image that includes the dictionary compiled inside.
+
+Return to [PForthHome]
