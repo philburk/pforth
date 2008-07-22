@@ -8,6 +8,7 @@ We provide a project for Visual Studio 2005
 
  # Double click the VS2005 solution "build/win32/vs2005/pforth.sln".
  # Build the "pforth_main" project.
+ # Continue with the instructions for "Building the Dictionary" on the page HowToCompile.
 
 Note that there were a few modifications made to the default projects.
 
@@ -17,5 +18,3 @@ The following were added to "C/C++"/PreProcessor/"Preprocessor Definitions":
 
  * PF_SUPPORT_FP - to turn on floating point support
  * _CRT_SECURE_NO_DEPRECATE - to turn off suggestions about fopen_s
-
-Continue with HowToCompile
