@@ -1,6 +1,8 @@
 #summary How To Compile pForth.
 #labels Phase-Deploy,Featured
 
+[PForthHome]
+
 = Introduction =
 
 PForth is very easy to build on most platforms. The main steps are:
