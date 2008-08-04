@@ -2,6 +2,10 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
+V23 8/4/2008
+	- Removed -v option from mkdir in build/unix/Makefile. It was not supported on FreeBSD.
+	  Thank you Alexsej Sauchdev for reporting this.
+	
 V23  7/20/2008
     - Reorganized for Google Code project.
     
