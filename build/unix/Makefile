@@ -71,7 +71,7 @@ pffiles:
 	@echo ${PFEMBOBJS}
 	
 ${TEMPOBJECTDIR}/posix: 
-	mkdir -pv ${TEMPOBJECTDIR}/posix
+	mkdir -p ${TEMPOBJECTDIR}/posix
 
 ${OBJECTDIR}/posix: 
 	mkdir -pv ${OBJECTDIR}/posix
