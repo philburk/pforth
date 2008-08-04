@@ -74,7 +74,7 @@ ${TEMPOBJECTDIR}/posix:
 	mkdir -p ${TEMPOBJECTDIR}/posix
 
 ${OBJECTDIR}/posix: 
-	mkdir -pv ${OBJECTDIR}/posix
+	mkdir -p ${OBJECTDIR}/posix
 
 # build pforth by compiling 'C' source
 $(PFDICAPP): $(PFINCLUDES) $(PFOBJS)
