@@ -1397,12 +1397,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 /* Resize memory allocated by ALLOCATE. */
 		case ID_RESIZE:  /* ( addr1 u -- addr2 result ) */
 			{
-				cell *FreePtr;
-				
-				FreePtr = (cell *) ( M_POP - sizeof(cell) );
+				cell *Addr1 = (cell *) M_POP;
+				// Point to validator below users address.
+				cell *FreePtr = Addr1 - 1;
 				if( ((uint32)*FreePtr) != ((uint32)FreePtr ^ PF_MEMORY_VALIDATOR))
 				{
-					M_PUSH( 0 );
+					// 090218 - Fixed bug, was returning zero.
+					M_PUSH( Addr1 );
 					TOS = -3;
 				}
 				else
@@ -1414,15 +1415,18 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 						/* Copy memory including validation. */
 						pfCopyMemory( (char *) CellPtr, (char *) FreePtr, TOS + sizeof(cell) );
 						*CellPtr = (cell)(((uint32)CellPtr) ^ (uint32)PF_MEMORY_VALIDATOR);
-						CellPtr++;
-			            M_PUSH( (cell) ++CellPtr );
-						TOS = 0;
+						// 090218 - Fixed bug that was incrementing the address twice. Thanks Reinhold Straub.
+						// Increment past validator to user address.
+			            M_PUSH( (cell) (CellPtr + 1) );
+						TOS = 0; // Result code.
+						// Mark old cell as dead so we can't free it twice.
 						FreePtr[0] = 0xDeadBeef;
 						pfFreeMem((char *) FreePtr);
 					}
 					else
 					{
-						M_PUSH( 0 );
+						// 090218 - Fixed bug, was returning zero.
+						M_PUSH( Addr1 );
 						TOS = -4;  /* FIXME Fix error code. */
 					}
 				}

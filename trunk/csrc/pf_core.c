@@ -444,7 +444,6 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 
 	pfInit();
 	
-	
 /* Allocate Task structure. */
 	pfDebugMessage("pfDoForth: call pfCreateTask()\n");
 	cftd = pfCreateTask( DEFAULT_USER_DEPTH, DEFAULT_RETURN_DEPTH );
