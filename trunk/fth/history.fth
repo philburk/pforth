@@ -421,9 +421,9 @@ variable KH-INSIDE        ( true if we are scrolling inside the history buffer )
 		kh.inschar
 	REPEAT drop
 	kh-span @ kh-cursor @ - ?dup
-	IF 1+ tio.forwards  ( move to end of line )
-	ELSE space
+	IF tio.forwards  ( move to end of line )
 	THEN
+	space
 	flushemit
 ;
 

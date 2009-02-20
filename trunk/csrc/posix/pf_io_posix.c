@@ -16,14 +16,13 @@
 **
 ****************************************************************
 ** 941004 PLB Extracted IO calls from pforth_main.c
+** 090220 PLB Fixed broken sdQueryTerminal on Mac. It always returned true.
 ***************************************************************/
 
 #include "../pf_all.h"
 
-#if PF_POSIX_IO
 /* Configure console so that characters are not buffered.
- * This allows KEY to work and also HISTORY.ON
- * Thanks to Ralf Baechle and David Feuer for contributing this.
+ * This allows KEY and ?TERMINAL to work and also HISTORY.ON
  */
 
 #include <unistd.h>
@@ -33,22 +32,24 @@
 #include <termios.h>
 #include <sys/poll.h>
 
-#define stdin_fd 1
-
 static struct termios save_termios;
 static int stdin_is_tty;
+
+/* poll() is broken in Mac OS X Tiger OS so use select() instead. */
+#define PF_USE_SELECT  (1)
 
 /* Default portable terminal I/O. */
 int  sdTerminalOut( char c )
 {
 	return putchar(c);
 }
-/* We don't need to echo because getchar() echos. */
+
 int  sdTerminalEcho( char c )
 {
-	TOUCH(c);
+	putchar(c);
 	return 0;
 }
+
 int  sdTerminalIn( void )
 {
 	return getchar();
@@ -66,44 +67,70 @@ int  sdTerminalFlush( void )
 /****************************************************/
 int sdQueryTerminal( void )
 {
-	struct pollfd  pfd;
+#if PF_USE_SELECT
+	fd_set readfds;
+	struct timeval tv;
+	FD_ZERO(&readfds);
+	FD_SET(STDIN_FILENO, &readfds);
+	/* Set timeout to zero so that we just poll and return. */
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+	int select_retval = select(STDIN_FILENO+1, &readfds, NULL, NULL, &tv);
+	if (select_retval < 0)
+	{
+		perror("sdTerminalInit: select");
+	}
+	return FD_ISSET(STDIN_FILENO,&readfds) ? FTRUE : FFALSE;
+
+#else
+	struct pollfd  pfd = { 0 };
 	sdTerminalFlush();
-	pfd.fd = stdin_fd;
-	pfd.events = stdin_fd;
-	return poll( &pfd, 1, 0 );	
+	pfd.fd = STDIN_FILENO;
+	pfd.events = POLLIN;
+	int result = poll( &pfd, 1, 0 );
+    /* On a Mac it may set revents to POLLNVAL because poll() is broken on Tiger. */
+	if( pfd.revents & POLLNVAL )
+	{
+		PRT(("sdQueryTerminal: poll got POLLNVAL, stdin not open\n"));
+		return FFALSE;
+	}
+	else
+	{
+		return (pfd.revents & POLLIN) ? FTRUE : FFALSE;
+	}
+#endif
 }
 
 /****************************************************/
 void sdTerminalInit(void)
 {
-        struct termios term;
-	
-        stdin_is_tty = isatty(stdin_fd);
-        if (!stdin_is_tty)
-                return;
-		
+	struct termios term;
+
+	stdin_is_tty = isatty(STDIN_FILENO);
+	if (stdin_is_tty)
+	{		
 /* Get current terminal attributes and save them so we can restore them. */
-        tcgetattr(stdin_fd, &term);
-        save_termios = term;
+		tcgetattr(STDIN_FILENO, &term);
+		save_termios = term;
 	
 /* ICANON says to wait upon read until a character is received,
  * and then to return it immediately (or soon enough....)
  * ECHOCTL says not to echo backspaces and other control chars as ^H */
-        term.c_lflag &= ~( ECHO | ECHONL | ECHOCTL | ICANON );
-        term.c_cc[VTIME] = 0;
-        term.c_cc[VMIN] = 1;
-        tcsetattr(stdin_fd, TCSANOW, &term);
+		term.c_lflag &= ~( ECHO | ECHONL | ECHOCTL | ICANON );
+		term.c_cc[VTIME] = 0;
+		term.c_cc[VMIN] = 1;
+		if( tcsetattr(STDIN_FILENO, TCSANOW, &term) < 0 )
+		{
+			perror("sdTerminalInit: tcsetattr");
+		}
+	}
 }
 
 /****************************************************/
 void sdTerminalTerm(void)
 {
-        if (!stdin_is_tty)
-                return;
-
-        tcsetattr(stdin_fd, TCSANOW, &save_termios);
+	if (stdin_is_tty)
+	{
+		tcsetattr(STDIN_FILENO, TCSANOW, &save_termios);
+	}
 }
-
-#undef stdin_fd
-
-#endif

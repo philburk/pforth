@@ -87,7 +87,8 @@ cell ioKey( void )
 ** Receive line from keyboard.
 ** Return number of characters enterred.
 */
-#define BACKSPACE  (8)
+#define SPACE      (0x20)
+#define BACKSPACE  (0x08)
 #define DELETE     (0x7F)
 cell ioAccept( char *buffer, cell maxChars )
 {
@@ -135,6 +136,7 @@ DBUGX(("ioAccept(0x%x, 0x%x)\n", buffer, len ));
 
 gotline:
 	sdDisableInput();
+	sdTerminalEcho( SPACE );
 
 /* NUL terminate line to simplify printing when debugging. */
 	if( len < maxChars ) p[len] = '\0';

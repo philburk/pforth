@@ -23,7 +23,7 @@
 ** PFORTH_VERSION changes when PForth is modified and released.
 ** See README file for version info.
 */
-#define PFORTH_VERSION "23"
+#define PFORTH_VERSION "24"
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
