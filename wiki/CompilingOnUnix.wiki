@@ -1,4 +1,5 @@
 #summary Compiling pForth on Unix or Mac
+#labels Phase-Deploy
 = Introduction =
 
 We provide a simple Makefile for compiling.
@@ -10,6 +11,8 @@ We provide a simple Makefile for compiling.
 
 This is a complete build. It will create an executable image and associated "pforth.dic" file in the "fth/" folder.
 
-It will also create a standalone executable image that includes the dictionary compiled inside.
+It will also create a standalone executable image that includes the dictionary compiled inside. To run it enter: 
+
+  ../../pforth_standalone
 
 Return to [PForthHome]
