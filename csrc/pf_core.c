@@ -455,8 +455,8 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 		if( !pfQueryQuiet() )
 		{
 			MSG( "PForth V"PFORTH_VERSION );
-			if( IsHostLittleEndian() ) MSG("LE");
-			else MSG("BE");
+			if( IsHostLittleEndian() ) MSG("-LE");
+			else MSG("-BE");
 #if PF_BIG_ENDIAN_DIC
             MSG("/BE");
 #elif PF_LITTLE_ENDIAN_DIC

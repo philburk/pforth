@@ -2,6 +2,11 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
+V24 2/20/09
+	- Fixed Posix IO on Mac. ?TERMINAL was always returning true.
+	- ACCCEPT now emits a space at end of line before output.
+	- Fixed RESIZE because it was returning the wrong address.
+
 V23 8/4/2008
 	- Removed -v option from mkdir in build/unix/Makefile. It was not supported on FreeBSD.
 	  Thank you Alexsej Sauchdev for reporting this.
@@ -15,7 +20,7 @@ V22  (unreleased)
 	- Modified ACCEPT so that a line at the end of a file that does NOT have a line
 	    terminator will now be processed.
 	- Use _getch(), _putch(), and _kbhit() so that KEY, EMIT and ?TERMINAL will work on PC.
-	- Fixed  : foo { -- } 55 ;  - was entering local frame but not exiting.
+	- Fixed  : foo { -- } 55 ;  - Was entering local frame but not exiting. Now prints error.
     - Redefined MAKE_ID to protect it from 16 bit ints
     - John Providenza says "If you split local variables onto 2 lines, PForth crashes." Fixed. Also allow \
     - Fixed float evaluation in EVALUATE in "quit.fth".
