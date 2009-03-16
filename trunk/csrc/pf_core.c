@@ -427,9 +427,9 @@ void pfMessage( const char *CString )
 }
 
 /**************************************************************************
-** Main entry point fo pForth
+** Main entry point for pForth
 */
-int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
+int32 pfDoForth( const char *DicFileName, const char *SourceName, int32 IfInit )
 {
 	pfTaskData_t *cftd;
 	pfDictionary_t *dic = NULL;
@@ -439,7 +439,7 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 
 #ifdef PF_USER_INIT
 	Result = PF_USER_INIT;
-	if( Result < 0 ) goto error;
+	if( Result < 0 ) goto error1;
 #endif
 
 	pfInit();
@@ -473,7 +473,7 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 
 
 #ifdef PF_NO_GLOBAL_INIT
-		if( LoadCustomFunctionTable() < 0 ) goto error; /* Init custom 'C' call array. */
+		if( LoadCustomFunctionTable() < 0 ) goto error2; /* Init custom 'C' call array. */
 #endif
 
 #if (!defined(PF_NO_INIT)) && (!defined(PF_NO_SHELL))
@@ -487,11 +487,11 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 		TOUCH(IfInit);
 #endif /* !PF_NO_INIT && !PF_NO_SHELL*/
 		{
-			if( DicName )
+			if( DicFileName )
 			{
-				pfDebugMessage("DicName = "); pfDebugMessage(DicName); pfDebugMessage("\n");
+				pfDebugMessage("DicFileName = "); pfDebugMessage(DicFileName); pfDebugMessage("\n");
 				EMIT_CR;
-				dic = pfLoadDictionary( DicName, &EntryPoint );
+				dic = pfLoadDictionary( DicFileName, &EntryPoint );
 			}
 			else
 			{
@@ -500,7 +500,7 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 				dic = pfLoadStaticDictionary();			
 			}
 		}
-		if( dic == NULL ) goto error;
+		if( dic == NULL ) goto error2;
 		EMIT_CR;
 
 		pfDebugMessage("pfDoForth: try AUTO.INIT\n");
@@ -508,9 +508,9 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 		if( Result != 0 )
 		{
 			MSG("Error in AUTO.INIT");
-			goto error;
+			goto error2;
 		}
-
+ 
 		if( EntryPoint != 0 )
 		{
 			Result = pfCatch( EntryPoint );
@@ -550,8 +550,15 @@ int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit )
 	
 	return Result;
 	
-error:
+error2:
 	MSG("pfDoForth: Error occured.\n");
 	pfDeleteTask( cftd );
+	// Terminate so we restore normal shell tty mode.
+	pfTerm();
+
+#ifdef PF_USER_INIT
+error1:
+#endif
+
 	return -1;
 }
