@@ -2,6 +2,10 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
+V?? 
+	- Allow space after -d command line option.
+	- Restore normal tty mode if pForth dictionary loading fails.
+	 
 V24 2/20/09
 	- Fixed Posix IO on Mac. ?TERMINAL was always returning true.
 	- ACCCEPT now emits a space at end of line before output.
@@ -9,7 +13,7 @@ V24 2/20/09
 
 V23 8/4/2008
 	- Removed -v option from mkdir in build/unix/Makefile. It was not supported on FreeBSD.
-	  Thank you Alexsej Sauchdev for reporting this.
+	  Thank you Alexsej Saushev for reporting this.
 	
 V23  7/20/2008
     - Reorganized for Google Code project.

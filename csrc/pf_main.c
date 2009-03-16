@@ -90,13 +90,25 @@ int main( int argc, char **argv )
 				IfInit = TRUE;
 				DicName = NULL;
 				break;
+				
 			case 'q':
 				pfSetQuiet( TRUE );
 				break;
+				
 			case 'd':
 				if( *s != '\0' ) DicName = s;
-				else DicName = PF_DEFAULT_DICTIONARY;
+				// Allow space after -d (Thanks Aleksej Saushev)
+				// Make sure there is another argument.
+				else if( (i+1) < argc )
+				{
+					DicName = argv[++i];
+				}
+				if (DicName == NULL || *DicName == '\0')
+				{
+					DicName = PF_DEFAULT_DICTIONARY;
+				}
 				break;
+				
 			default:
 				ERR(("Unrecognized option!\n"));
 				ERR(("pforth {-i} {-q} {-dfilename.dic} {sourcefilename}\n"));
