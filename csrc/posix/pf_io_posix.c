@@ -26,6 +26,7 @@
  */
 
 #include <unistd.h>
+#include <sys/time.h>
 #ifdef sun
 #include <sys/int_types.h> /* Needed on Solaris for uint32_t in termio.h */
 #endif
@@ -36,7 +37,9 @@ static struct termios save_termios;
 static int stdin_is_tty;
 
 /* poll() is broken in Mac OS X Tiger OS so use select() instead. */
+#ifndef PF_USE_SELECT
 #define PF_USE_SELECT  (1)
+#endif
 
 /* Default portable terminal I/O. */
 int  sdTerminalOut( char c )
@@ -68,6 +71,7 @@ int  sdTerminalFlush( void )
 int sdQueryTerminal( void )
 {
 #if PF_USE_SELECT
+	int select_retval;
 	fd_set readfds;
 	struct timeval tv;
 	FD_ZERO(&readfds);
@@ -75,7 +79,7 @@ int sdQueryTerminal( void )
 	/* Set timeout to zero so that we just poll and return. */
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
-	int select_retval = select(STDIN_FILENO+1, &readfds, NULL, NULL, &tv);
+	select_retval = select(STDIN_FILENO+1, &readfds, NULL, NULL, &tv);
 	if (select_retval < 0)
 	{
 		perror("sdTerminalInit: select");
@@ -83,11 +87,12 @@ int sdQueryTerminal( void )
 	return FD_ISSET(STDIN_FILENO,&readfds) ? FTRUE : FFALSE;
 
 #else
+	int result;
 	struct pollfd  pfd = { 0 };
 	sdTerminalFlush();
 	pfd.fd = STDIN_FILENO;
 	pfd.events = POLLIN;
-	int result = poll( &pfd, 1, 0 );
+	result = poll( &pfd, 1, 0 );
     /* On a Mac it may set revents to POLLNVAL because poll() is broken on Tiger. */
 	if( pfd.revents & POLLNVAL )
 	{
