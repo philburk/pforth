@@ -5,7 +5,7 @@
 
 = Introduction =
 
-PForth is very easy to build on most platforms. The main steps are:
+PForth is very easy to build on most platforms, including desktop or embedded. The main steps are:
 
  # Build pForth kernel in 'C'.
  # Run pForth and build Forth dictionary. It will save automatically.
@@ -25,7 +25,7 @@ If you want to compile pForth for a new platform, please follow these instructio
 
 == Custom Compile of Kernel ==
 
- # Add all of the 'C' code in the "csrc/" folder.
+ # Add all of the 'C' code in the "csrc/" folder to your project.
  # If your system supports getchar() and putchar() then add all of the files in "csrc/stdio/".
  # If you want floating support then define preprocessor variable PF_SUPPORT_FP
  # Compile, link and place the executable called "pforth" in the "fth/" folder.
@@ -58,7 +58,7 @@ Now add a couple numbers together to test the interpreter. Enter:
 5  2  +  .
 bye
 }}}
-It should added 5 and 2 then printed the result.
+It should have added 5 and 2 then printed the result.
 
 You can also run several unit tests. By entering:
 {{{
