@@ -18,6 +18,8 @@
         EOL word drop
 ; immediate
 
+\ 1 echo !  \ Uncomment this line to echo Forth code while compiling.
+
 \ *********************************************************************
 \ This is another style of comment that is common in Forth.
 \ pFORTH - Portable Forth System
@@ -809,7 +811,7 @@ auto.init
     THEN
 ;
 
-\ load remainder of dictionary
+\ Now that we can load from files, load remainder of dictionary.
 
 trace-include on
 trace-stack on
@@ -824,4 +826,5 @@ FREEZE    \ prevent forgetting below this point
 .( Dictionary compiled, save in "pforth.dic".) cr
 c" pforth.dic" save-forth
 
+\ Save the dictionary in "pfdicdat.h" file so pForth can be compiled for standalone mode.
 SDAD

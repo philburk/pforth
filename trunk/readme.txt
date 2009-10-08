@@ -3,14 +3,21 @@ README for pForth - a Portable ANS-like Forth written in ANSI 'C'
 by Phil Burk
 with Larry Polansky, David Rosenboom and Darren Gibbs.
 
-Last updated: July 20, 2008 V23
+Last updated: Feb 20, 2009 V24
 
-Documentation for pForth at http://www.softsynth.com/pforth/
+Code for pForth is maintained on Google at:
+   http://code.google.com/p/pforth/
+   
+Documentation for pForth at:
+  http://www.softsynth.com/pforth/
 
+For technical support please use the pForth forum at:
+  http://groups.google.com/group/pforthdev
+  
 The author is available for customization of pForth, porting to new
 platforms, or developing pForth applications on a contractual basis.
-
-If interested, contact Phil Burk at http://www.softsynth.com/contacts.php
+If interested, contact Phil Burk at:
+  http://www.softsynth.com/contacts.php
 
 -- LEGAL NOTICE -----------------------------------------
 

@@ -427,7 +427,7 @@ void pfMessage( const char *CString )
 }
 
 /**************************************************************************
-** Main entry point for pForth
+** Main entry point for pForth.
 */
 int32 pfDoForth( const char *DicFileName, const char *SourceName, int32 IfInit )
 {
@@ -435,7 +435,6 @@ int32 pfDoForth( const char *DicFileName, const char *SourceName, int32 IfInit )
 	pfDictionary_t *dic = NULL;
 	int32 Result = 0;
 	ExecToken  EntryPoint = 0;
-	
 
 #ifdef PF_USER_INIT
 	Result = PF_USER_INIT;

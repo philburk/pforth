@@ -3,6 +3,8 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 Documentation for pForth at http://www.softsynth.com/pforth/
 
 V?? 
+	- Added -m32 to Makefile so we get 32 bit longs on Snow Leopard.
+	- Added "-x c" to Makefile CCOPTS to prevent confusion with C++
 	- Allow space after -d command line option.
 	- Restore normal tty mode if pForth dictionary loading fails.
 	 

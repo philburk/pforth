@@ -9,8 +9,9 @@
 \ MOD: PLB 9/9/88 Print U/S , add ADST
 \ MOD: PLB 12/6/90 Modified to work with H4th
 \ 941109 PLB Converted to pforth.  Added RP detection.
+\ 090609 PLB Convert >rel to use->rel and ..! to s!
 
-include? task-member member.fth
+include? task-member.fth member.fth
 include? task-c_struct c_struct.fth
 
 ANEW TASK-DUMP_STRUCT
@@ -84,11 +85,11 @@ VARIABLE DS-ADDR
 ; immediate
 
 : ADST ( absolute_address -- , dump structure )
-    >rel [compile] dst
+    use->rel [compile] dst     \ mod 090609
 ; immediate
 
 \ For Testing Purposes
-false .IF
+false [IF]
 :STRUCT GOO
     LONG DATAPTR
     SHORT GOO_WIDTH
@@ -105,11 +106,11 @@ false .IF
 
 FOO AFOO
 : AFOO.INIT
-    $ 12345678 afoo ..! along1
-    $ -665 afoo ..! ashort1
-    $ 21 afoo ..! abyte
-    $ 43 afoo ..! abyte2
-    -234 afoo .. agoo ..! goo_height
+    $ 12345678 afoo s! along1
+    $ -665 afoo s! ashort1
+    $ 21 afoo s! abyte
+    $ 43 afoo s! abyte2
+    -234 afoo .. agoo s! goo_height
 ;
 afoo.init
 
@@ -117,4 +118,5 @@ afoo.init
     dst foo
 ;
 
-.THEN
+[THEN]
+
