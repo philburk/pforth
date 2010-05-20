@@ -661,102 +661,117 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 			}
 			endcase;
 			
-/* Perform 32*32 bit multiply for 64 bit result, by factoring into 16 bit quantities. */
-/* Using an improved algorithm suggested by Steve Green. */
-		case ID_D_UMTIMES:  /* UM* ( a b -- pl ph ) */ 
+/* Assume 8-bit char and calculate cell width. */
+#define NBITS ((sizeof(ucell_t)) * 8)
+/* Define half the number of bits in a cell. */
+#define HNBITS (NBITS / 2)
+/* Assume two-complement arithmetic to calculate lower half. */
+#define LOWER_HALF(n) ((n) & (((ucell_t)1 << HNBITS) - 1))
+#define HIGH_BIT ((ucell_t)1 << (NBITS - 1))
+
+/* Perform cell*cell bit multiply for a 2 cell result, by factoring into half cell quantities.
+ * Using an improved algorithm suggested by Steve Green.
+ * Converted to 64-bit by Aleksej Saushev.
+ */
+		case ID_D_UMTIMES:  /* UM* ( a b -- lo hi ) */ 
 			{
-				ucell_t ahi, alo, bhi, blo, temp;
-				ucell_t pl, ph;
+				ucell_t ahi, alo, bhi, blo; /* input parts */
+				ucell_t lo, hi, temp;
 /* Get values from stack. */
 				ahi = M_POP;
 				bhi = TOS;
 /* Break into hi and lo 16 bit parts. */
-				alo = ahi & 0xFFFF;
-				ahi = ahi>>16;
-				blo = bhi & 0xFFFF;
-				bhi = bhi>>16;
-				ph = 0;
-/* ahi * bhi */
-				pl = ahi * bhi;
-				ph = pl >> 16;  /* shift 64 bit value by 16 */
-				pl = pl << 16;
-/* ahi * blo */
-				temp = ahi * blo;
-				pl += temp;
-				if( pl < temp ) ph += 1; /* Carry */
-/* alo * bhi  */
-				temp = alo * bhi;
-				pl += temp;
-				if( pl < temp ) ph += 1; /* Carry */
-				ph = (ph << 16) | (pl >> 16); /* shift 64 bit value by 16 */
-				pl = pl << 16;
-/* alo * blo */
-				temp = alo * blo;
-				pl += temp;
-				if( pl < temp ) ph += 1; /* Carry */
+				alo = LOWER_HALF(ahi);
+				ahi = ahi >> HNBITS;
+				blo = LOWER_HALF(bhi);
+				bhi = bhi >> HNBITS;
 
-				M_PUSH( pl );
-				TOS = ph;
+				lo = 0;
+				hi = 0;
+/* higher part: ahi * bhi */
+				hi += ahi * bhi;
+/* middle (overlapping) part: ahi * blo */
+				temp = ahi * blo;
+				lo += LOWER_HALF(temp);
+				hi += temp >> HNBITS;
+/* middle (overlapping) part: alo * bhi  */
+				temp = alo * bhi;
+				lo += LOWER_HALF(temp);
+				hi += temp >> HNBITS;
+/* lower part: alo * blo */
+				temp = alo * blo;
+/* its higher half overlaps with middle's lower half: */
+				lo += temp >> HNBITS;
+/* process carry: */
+				hi += lo >> HNBITS;
+				lo = LOWER_HALF(lo);
+/* combine lower part of result: */
+				lo = (lo << HNBITS) + LOWER_HALF(temp);
+
+				M_PUSH( lo );
+				TOS = hi;
 			}
 			endcase;
 			
-/* Perform 32*32 bit multiply for 64 bit result, using shift and add. */
+/* Perform cell*cell bit multiply for 2 cell result, using shift and add. */
 		case ID_D_MTIMES:  /* M* ( a b -- pl ph ) */ 
 			{
-				cell_t a,b;
-				ucell_t ap,bp, ahi, alo, bhi, blo, temp;
-				ucell_t pl, ph;
+				ucell_t ahi, alo, bhi, blo; /* input parts */
+				ucell_t lo, hi, temp;
+				int sg;
 /* Get values from stack. */
-				a = M_POP;
-				b = TOS;
-				ap = (a < 0) ? -a : a ; /* Positive A */
-				bp = (b < 0) ? -b : b ; /* Positive B */
+				ahi = M_POP;
+				bhi = TOS;
+
+/* Calculate product sign: */
+				sg = ((cell_t)(ahi ^ bhi) < 0);
+/* Take absolute values and reduce to um* */
+				if ((cell_t)ahi < 0) ahi = (ucell_t)(-ahi);
+				if ((cell_t)bhi < 0) bhi = (ucell_t)(-bhi);
+
 /* Break into hi and lo 16 bit parts. */
-				alo = ap & 0xFFFF;
-				ahi = ap>>16;
-				blo = bp & 0xFFFF;
-				bhi = bp>>16;
-				ph = 0;
-/* ahi * bhi */
-				pl = ahi * bhi;
-				ph = pl >> 16;  /* shift 64 bit value by 16 */
-				pl = pl << 16;
-/* ahi * blo */
+				alo = LOWER_HALF(ahi);
+				ahi = ahi >> HNBITS;
+				blo = LOWER_HALF(bhi);
+				bhi = bhi >> HNBITS;
+
+				lo = 0;
+				hi = 0;
+/* higher part: ahi * bhi */
+				hi += ahi * bhi;
+/* middle (overlapping) part: ahi * blo */
 				temp = ahi * blo;
-				pl += temp;
-				if( pl < temp ) ph += 1; /* Carry */
-/* alo * bhi  */
+				lo += LOWER_HALF(temp);
+				hi += temp >> HNBITS;
+/* middle (overlapping) part: alo * bhi  */
 				temp = alo * bhi;
-				pl += temp;
-				if( pl < temp ) ph += 1; /* Carry */
-				ph = (ph << 16) | (pl >> 16); /* shift 64 bit value by 16 */
-				pl = pl << 16;
-/* alo * blo */
+				lo += LOWER_HALF(temp);
+				hi += temp >> HNBITS;
+/* lower part: alo * blo */
 				temp = alo * blo;
-				pl += temp;
-				if( pl < temp ) ph += 1; /* Carry */
+/* its higher half overlaps with middle's lower half: */
+				lo += temp >> HNBITS;
+/* process carry: */
+				hi += lo >> HNBITS;
+				lo = LOWER_HALF(lo);
+/* combine lower part of result: */
+				lo = (lo << HNBITS) + LOWER_HALF(temp);
 
 /* Negate product if one operand negative. */
-				if( ((a ^ b) & 0x80000000) )
+				if(sg)
 				{
-					pl = 0-pl;
-					if( pl & 0x80000000 )
-					{
-						ph = -1 - ph;   /* Borrow */
-					}
-					else
-					{
-						ph = 0 - ph;
-					}
+					/* lo = (ucell_t)(- lo); */
+					lo = ~lo + 1;
+					hi = ~hi + ((lo == 0) ? 1 : 0);
 				}
 
-				M_PUSH( pl );
-				TOS = ph;
+				M_PUSH( lo );
+				TOS = hi;
 			}
 			endcase;
 
 #define DULT(du1l,du1h,du2l,du2h) ( (du2h<du1h) ? FALSE : ( (du2h==du1h) ? (du1l<du2l) : TRUE) )
-/* Perform 64/32 bit divide for 32 bit result, using shift and subtract. */
+/* Perform 2 cell by 1 cell divide for 1 cell result and remainder, using shift and subtract. */
 		case ID_D_UMSMOD:  /* UM/MOD ( al ah bdiv -- rem q ) */ 
 			{
 				ucell_t ah,al, q,di, bl,bh, sl,sh;
@@ -765,7 +780,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 				bh = TOS;
 				bl = 0;
 				q = 0;
-				for( di=0; di<32; di++ )
+				for( di=0; di<NBITS; di++ )
 				{
 					if( !DULT(al,ah,bl,bh) )
 					{
@@ -778,7 +793,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 						q |= 1;
 					}
 					q = q << 1;
-					bl = (bl >> 1) | (bh << 31);
+					bl = (bl >> 1) | (bh << (NBITS-1));
 					bh = bh >> 1;
 				}
 				if( !DULT(al,ah,bl,bh) )
@@ -792,7 +807,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 			}
 			endcase;
 
-/* Perform 64/32 bit divide for 64 bit result, using shift and subtract. */
+/* Perform 2 cell by 1 cell divide for 2 cell result and remainder, using shift and subtract. */
 		case ID_D_MUSMOD:  /* MU/MOD ( al am bdiv -- rem ql qh ) */ 
 			{
 				register ucell_t ah,am,al,ql,qh,di;
@@ -801,7 +816,6 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 				am = M_POP;
 				al = M_POP;
 				qh = ql = 0;
-#define NBITS (sizeof(cell_t)*8)
 				for( di=0; di<2*NBITS; di++ )
 				{
 					if( bdiv <= ah )
