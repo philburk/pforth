@@ -27,26 +27,26 @@
 #ifdef PF_NO_CLIB
 /* Count chars until NUL.  Replace strlen() */
 #define  NUL  ((char) 0)
-cell pfCStringLength( const char *s )
+cell_t pfCStringLength( const char *s )
 {
-	cell len = 0;
+	cell_t len = 0;
 	while( *s++ != NUL ) len++;
 	return len;
 }
  
-/*    void *memset (void *s, int32 c, size_t n); */
-void *pfSetMemory( void *s, cell c, cell n )
+/*    void *memset (void *s, cell_t c, size_t n); */
+void *pfSetMemory( void *s, cell_t c, cell_t n )
 {
-	uint8 *p = s, byt = (uint8) c;
+	uint8_t *p = s, byt = (uint8_t) c;
 	while( (n--) > 0) *p++ = byt;
 	return s;
 }
 
-/*  void *memccpy (void *s1, const void *s2, int32 c, size_t n); */
-void *pfCopyMemory( void *s1, const void *s2, cell n)
+/*  void *memccpy (void *s1, const void *s2, cell_t c, size_t n); */
+void *pfCopyMemory( void *s1, const void *s2, cell_t n)
 {
-	uint8 *p1 = s1;
-	const uint8 *p2 = s2;
+	uint8_t *p1 = s1;
+	const uint8_t *p2 = s2;
 	while( (n--) > 0) *p1++ = *p2++;
 	return s1;
 }

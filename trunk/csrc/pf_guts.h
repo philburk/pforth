@@ -23,7 +23,7 @@
 ** PFORTH_VERSION changes when PForth is modified and released.
 ** See README file for version info.
 */
-#define PFORTH_VERSION "24"
+#define PFORTH_VERSION "25"
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
@@ -35,9 +35,10 @@
 ** FV6 - 961213 - Added ID_LOCAL_PLUSSTORE, ID_COLON_P, etc.
 ** FV7 - 971203 - Added ID_FILL, (1LOCAL@),  etc., ran out of reserved, resorted.
 ** FV8 - 980818 - Added Endian flag.
+** FV9 - 20100503 - Added support for 64-bit CELL.
 */
-#define PF_FILE_VERSION (8)   /* Bump this whenever primitives added. */
-#define PF_EARLIEST_FILE_VERSION (8)  /* earliest one still compatible */
+#define PF_FILE_VERSION (9)   /* Bump this whenever primitives added. */
+#define PF_EARLIEST_FILE_VERSION (9)  /* earliest one still compatible */
 
 /***************************************************************
 ** Sizes and other constants
@@ -72,7 +73,7 @@
 #define NUM_TYPE_DOUBLE (2)
 #define NUM_TYPE_FLOAT  (3)
 
-#define CREATE_BODY_OFFSET  (3*sizeof(cell))
+#define CREATE_BODY_OFFSET  (3*sizeof(cell_t))
 
 /***************************************************************
 ** Primitive Token IDS
@@ -275,6 +276,9 @@ enum cforth_primitive_ids
 	ID_INTERPRET,
 	ID_FILE_WO,
 	ID_FILE_BIN,
+	/* Added to support 64 bit operation. */
+	ID_CELL,
+	ID_CELLS,
 /* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
@@ -294,8 +298,6 @@ enum cforth_primitive_ids
 	ID_RESERVED12,
 	ID_RESERVED13,
 	ID_RESERVED14,
-	ID_RESERVED15,
-	ID_RESERVED16,
 	ID_FP_D_TO_F,
 	ID_FP_FSTORE,
 	ID_FP_FTIMES,
@@ -377,26 +379,26 @@ enum cforth_primitive_ids
 
 typedef struct pfTaskData_s
 {
-	cell   *td_StackPtr;       /* Primary data stack */
-	cell   *td_StackBase;
-	cell   *td_StackLimit;
-	cell   *td_ReturnPtr;      /* Return stack */
-	cell   *td_ReturnBase;
-	cell   *td_ReturnLimit;
+	cell_t   *td_StackPtr;       /* Primary data stack */
+	cell_t   *td_StackBase;
+	cell_t   *td_StackLimit;
+	cell_t   *td_ReturnPtr;      /* Return stack */
+	cell_t   *td_ReturnBase;
+	cell_t   *td_ReturnLimit;
 #ifdef PF_SUPPORT_FP
 	PF_FLOAT  *td_FloatStackPtr;
 	PF_FLOAT  *td_FloatStackBase;
 	PF_FLOAT  *td_FloatStackLimit;
 #endif
-	cell   *td_InsPtr;          /* Instruction pointer, "PC" */
+	cell_t   *td_InsPtr;          /* Instruction pointer, "PC" */
 	FileStream   *td_InputStream;
 /* Terminal. */
 	char    td_TIB[TIB_SIZE];   /* Buffer for terminal input. */
-	cell    td_IN;              /* Index into Source */
-	cell    td_SourceNum;       /* #TIB after REFILL */
+	cell_t    td_IN;              /* Index into Source */
+	cell_t    td_SourceNum;       /* #TIB after REFILL */
 	char   *td_SourcePtr;       /* Pointer to TIB or other source. */
-	int32   td_LineNumber;      /* Incremented on every refill. */
-	cell    td_OUT;             /* Current output column. */
+	cell_t   td_LineNumber;      /* Incremented on every refill. */
+	cell_t    td_OUT;             /* Current output column. */
 } pfTaskData_t;
 
 typedef struct pfNode
@@ -408,7 +410,7 @@ typedef struct pfNode
 /* Structure of header entry in dictionary. These will be stored in dictionary specific endian format*/
 typedef struct cfNameLinks
 {
-	cell       cfnl_PreviousName;   /* name relative address of previous */
+	cell_t       cfnl_PreviousName;   /* name relative address of previous */
 	ExecToken  cfnl_ExecToken;      /* Execution token for word. */
 /* Followed by variable length name field. */
 } cfNameLinks;
@@ -417,38 +419,38 @@ typedef struct cfNameLinks
 typedef struct pfDictionary_s
 {
 	pfNode	dic_Node;
-	uint32  dic_Flags;
+	ucell_t  dic_Flags;
 /* Headers contain pointers to names and dictionary. */
 
-	uint8	*dic_HeaderBaseUnaligned;
+	uint8_t	*dic_HeaderBaseUnaligned;
 
-	uint8	*dic_HeaderBase;
+	uint8_t	*dic_HeaderBase;
 	union
 	{
-		cell	*Cell;
-		uint8	*Byte;
+		cell_t	*Cell;
+		uint8_t	*Byte;
 	} dic_HeaderPtr;
-	uint8	*dic_HeaderLimit;
+	uint8_t	*dic_HeaderLimit;
 /* Code segment contains tokenized code and data. */
 
-	uint8	*dic_CodeBaseUnaligned;
+	uint8_t	*dic_CodeBaseUnaligned;
 
-	uint8	*dic_CodeBase;
+	uint8_t	*dic_CodeBase;
 	union
 	{
-		cell	*Cell;
-		uint8	*Byte;
+		cell_t	*Cell;
+		uint8_t	*Byte;
 	} dic_CodePtr;
-	uint8	*dic_CodeLimit;
+	uint8_t	*dic_CodeLimit;
 } pfDictionary_t;
 
 /* Save state of include when nesting files. */
 typedef struct IncludeFrame
 {
 	FileStream   *inf_FileID;
-	int32         inf_LineNumber;
-	int32         inf_SourceNum;
-	int32         inf_IN;
+	cell_t         inf_LineNumber;
+	cell_t         inf_SourceNum;
+	cell_t         inf_IN;
 	char          inf_SaveTIB[TIB_SIZE];
 } IncludeFrame;
 
@@ -474,7 +476,7 @@ int pfCatch( ExecToken XT );
 extern pfTaskData_t *gCurrentTask;
 extern pfDictionary_t *gCurrentDictionary;
 extern char          gScratch[TIB_SIZE];
-extern int32         gNumPrimitives;
+extern cell_t         gNumPrimitives;
 
 extern ExecToken     gLocalCompiler_XT;      /* CFA of (LOCAL) compiler. */
 extern ExecToken     gNumberQ_XT;         /* XT of NUMBER? */
@@ -482,22 +484,22 @@ extern ExecToken     gQuitP_XT;           /* XT of (QUIT) */
 extern ExecToken     gAcceptP_XT;         /* XT of ACCEPT */
 
 #define DEPTH_AT_COLON_INVALID (-100)
-extern int32         gDepthAtColon;
+extern cell_t         gDepthAtColon;
 
 /* Global variables. */
 extern char         *gVarContext;    /* Points to last name field. */
-extern cell          gVarState;      /* 1 if compiling. */
-extern cell          gVarBase;       /* Numeric Base. */
-extern cell          gVarEcho;       /* Echo input from file. */
-extern cell          gVarEchoAccept; /* Echo input from ACCEPT. */
-extern cell          gVarTraceLevel;
-extern cell          gVarTraceStack;
-extern cell          gVarTraceFlags;
-extern cell          gVarQuiet;	     /* Suppress unnecessary messages, OK, etc. */
-extern cell          gVarReturnCode; /* Returned to caller of Forth, eg. UNIX shell. */
+extern cell_t        gVarState;      /* 1 if compiling. */
+extern cell_t        gVarBase;       /* Numeric Base. */
+extern cell_t        gVarEcho;       /* Echo input from file. */
+extern cell_t        gVarEchoAccept; /* Echo input from ACCEPT. */
+extern cell_t        gVarTraceLevel;
+extern cell_t        gVarTraceStack;
+extern cell_t        gVarTraceFlags;
+extern cell_t        gVarQuiet;	     /* Suppress unnecessary messages, OK, etc. */
+extern cell_t        gVarReturnCode; /* Returned to caller of Forth, eg. UNIX shell. */
 
 extern IncludeFrame  gIncludeStack[MAX_INCLUDE_DEPTH];
-extern int32         gIncludeIndex;
+extern cell_t         gIncludeIndex;
 /***************************************************************
 ** Macros
 ***************************************************************/
@@ -512,51 +514,51 @@ extern int32         gIncludeIndex;
 #if defined(PF_BIG_ENDIAN_DIC)
 
 #define WRITE_FLOAT_DIC             WriteFloatBigEndian
-#define WRITE_LONG_DIC(addr,data)   WriteLongBigEndian((uint32 *)(addr),(uint32)(data))
-#define WRITE_SHORT_DIC(addr,data)  WriteShortBigEndian((uint16 *)(addr),(uint16)(data))
+#define WRITE_CELL_DIC(addr,data)   WriteCellBigEndian((uint8_t *)(addr),(ucell_t)(data))
+#define WRITE_SHORT_DIC(addr,data)  Write16BigEndian((uint8_t *)(addr),(uint16_t)(data))
 #define READ_FLOAT_DIC              ReadFloatBigEndian
-#define READ_LONG_DIC(addr)         ReadLongBigEndian((const uint32 *)(addr))
-#define READ_SHORT_DIC(addr)        ReadShortBigEndian((const uint16 *)(addr))
+#define READ_CELL_DIC(addr)         ReadCellBigEndian((const uint8_t *)(addr))
+#define READ_SHORT_DIC(addr)        Read16BigEndian((const uint8_t *)(addr))
 
 #elif defined(PF_LITTLE_ENDIAN_DIC)
 
 #define WRITE_FLOAT_DIC             WriteFloatLittleEndian
-#define WRITE_LONG_DIC(addr,data)   WriteLongLittleEndian((uint32 *)(addr),(uint32)(data))
-#define WRITE_SHORT_DIC(addr,data)  WriteShortLittleEndian((uint16 *)(addr),(uint16)(data))
+#define WRITE_CELL_DIC(addr,data)   WriteCellLittleEndian((uint8_t *)(addr),(ucell_t)(data))
+#define WRITE_SHORT_DIC(addr,data)  Write16LittleEndian((uint8_t *)(addr),(uint16_t)(data))
 #define READ_FLOAT_DIC              ReadFloatLittleEndian
-#define READ_LONG_DIC(addr)         ReadLongLittleEndian((const uint32 *)(addr))
-#define READ_SHORT_DIC(addr)        ReadShortLittleEndian((const uint16 *)(addr))
+#define READ_CELL_DIC(addr)         ReadCellLittleEndian((const uint8_t *)(addr))
+#define READ_SHORT_DIC(addr)        Read16LittleEndian((const uint8_t *)(addr))
 
 #else
 
 #define WRITE_FLOAT_DIC(addr,data)  { *((PF_FLOAT *)(addr)) = (PF_FLOAT)(data); }
-#define WRITE_LONG_DIC(addr,data)   { *((int32 *)(addr)) = (int32)(data); }
-#define WRITE_SHORT_DIC(addr,data)  { *((int16 *)(addr)) = (int16)(data); }
+#define WRITE_CELL_DIC(addr,data)   { *((cell_t *)(addr)) = (cell_t)(data); }
+#define WRITE_SHORT_DIC(addr,data)  { *((int16_t *)(addr)) = (int16_t)(data); }
 #define READ_FLOAT_DIC(addr)        ( *((PF_FLOAT *)(addr)) )
-#define READ_LONG_DIC(addr)         ( *((const uint32 *)(addr)) )
-#define READ_SHORT_DIC(addr)        ( *((const uint16 *)(addr)) )
+#define READ_CELL_DIC(addr)         ( *((const ucell_t *)(addr)) )
+#define READ_SHORT_DIC(addr)        ( *((const uint16_t *)(addr)) )
 
 #endif
 
 
 #define HEADER_HERE (gCurrentDictionary->dic_HeaderPtr.Cell)
 #define CODE_HERE (gCurrentDictionary->dic_CodePtr.Cell)
-#define CODE_COMMA( N ) WRITE_LONG_DIC(CODE_HERE++,(N))
+#define CODE_COMMA( N ) WRITE_CELL_DIC(CODE_HERE++,(N))
 #define NAME_BASE (gCurrentDictionary->dic_HeaderBase)
 #define CODE_BASE (gCurrentDictionary->dic_CodeBase)
 #define NAME_SIZE (gCurrentDictionary->dic_HeaderLimit - gCurrentDictionary->dic_HeaderBase)
 #define CODE_SIZE (gCurrentDictionary->dic_CodeLimit - gCurrentDictionary->dic_CodeBase)
 
-#define IN_CODE_DIC(addr) ( ( ((uint8 *)(addr)) >= gCurrentDictionary->dic_CodeBase)   && ( ((uint8 *)(addr)) < gCurrentDictionary->dic_CodeLimit) )
+#define IN_CODE_DIC(addr) ( ( ((uint8_t *)(addr)) >= gCurrentDictionary->dic_CodeBase)   && ( ((uint8_t *)(addr)) < gCurrentDictionary->dic_CodeLimit) )
 
-#define IN_NAME_DIC(addr) ( ( ((uint8 *)(addr)) >= gCurrentDictionary->dic_HeaderBase) && ( ((uint8 *)(addr)) < gCurrentDictionary->dic_HeaderLimit) )
+#define IN_NAME_DIC(addr) ( ( ((uint8_t *)(addr)) >= gCurrentDictionary->dic_HeaderBase) && ( ((uint8_t *)(addr)) < gCurrentDictionary->dic_HeaderLimit) )
 #define IN_DICS(addr) (IN_CODE_DIC(addr) || IN_NAME_DIC(addr))
 
 /* Address conversion */
-#define ABS_TO_NAMEREL( a ) ((int32)  (((uint8 *) a) - NAME_BASE ))
-#define ABS_TO_CODEREL( a ) ((int32)  (((uint8 *) a) - CODE_BASE ))
-#define NAMEREL_TO_ABS( a ) ((char *) (((int32) a) + NAME_BASE))
-#define CODEREL_TO_ABS( a ) ((cell *) (((int32) a) + CODE_BASE))
+#define ABS_TO_NAMEREL( a ) ((cell_t)  (((uint8_t *) a) - NAME_BASE ))
+#define ABS_TO_CODEREL( a ) ((cell_t)  (((uint8_t *) a) - CODE_BASE ))
+#define NAMEREL_TO_ABS( a ) ((char *) (((cell_t) a) + NAME_BASE))
+#define CODEREL_TO_ABS( a ) ((cell_t *) (((cell_t) a) + CODE_BASE))
 
 /* The check for >0 is only needed for CLONE testing. !!! */
 #define IsTokenPrimitive(xt) ((xt<gNumPrimitives) && (xt>=0))
@@ -566,7 +568,7 @@ extern int32         gIncludeIndex;
 #define DATA_STACK_DEPTH (gCurrentTask->td_StackBase - gCurrentTask->td_StackPtr)
 #define DROP_DATA_STACK (gCurrentTask->td_StackPtr++)
 #define POP_DATA_STACK (*gCurrentTask->td_StackPtr++)
-#define PUSH_DATA_STACK(x) {*(--(gCurrentTask->td_StackPtr)) = (cell) x; }
+#define PUSH_DATA_STACK(x) {*(--(gCurrentTask->td_StackPtr)) = (cell_t) x; }
 
 /* Force Quad alignment. */
 #define QUADUP(x) (((x)+3)&~3)
@@ -592,9 +594,9 @@ extern int32         gIncludeIndex;
 #define DBUG(x)  /* PRT(x) */
 #define DBUGX(x) /* DBUG(x) */
 
-#define MSG_NUM_D(msg,num) { MSG(msg); ffDot((int32) num); EMIT_CR; }
-#define MSG_NUM_H(msg,num) { MSG(msg); ffDotHex((int32) num); EMIT_CR; }
+#define MSG_NUM_D(msg,num) { MSG(msg); ffDot((cell_t) num); EMIT_CR; }
+#define MSG_NUM_H(msg,num) { MSG(msg); ffDotHex((cell_t) num); EMIT_CR; }
 
-#define DBUG_NUM_D(msg,num) { pfDebugMessage(msg); pfDebugPrintDecimalNumber((int32) num); pfDebugMessage("\n"); }
+#define DBUG_NUM_D(msg,num) { pfDebugMessage(msg); pfDebugPrintDecimalNumber((cell_t) num); pfDebugMessage("\n"); }
 
 #endif  /* _pf_guts_h */

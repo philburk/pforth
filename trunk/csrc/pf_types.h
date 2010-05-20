@@ -23,28 +23,11 @@
 ** Type Declarations
 ***************************************************************/
 
-#ifndef uint32
-	typedef unsigned long uint32;
-#endif
-#ifndef int16
-	typedef signed short int16;
-#endif
-#ifndef uint16
-	typedef unsigned short uint16;
-#endif
-#ifndef int8
-	typedef signed char int8;
-#endif
-#ifndef uint8
-	typedef unsigned char uint8;
-#endif
 #ifndef Err
 	typedef long Err;
 #endif
 
-typedef int32  cell;
-typedef uint32 ucell;
-typedef cell  *dicptr;
+typedef cell_t  *dicptr;
 
 typedef char  ForthString;
 typedef char *ForthStringPtr;

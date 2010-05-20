@@ -2,9 +2,9 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
-V?? 
-	- Added -m32 to Makefile so we get 32 bit longs on Snow Leopard.
-	- Added "-x c" to Makefile CCOPTS to prevent confusion with C++
+V25  5/19/2010
+    - Added 64-bit CELL support contributed by Aleksej Saushev. Thanks Aleksej!
+    - Added "-x c" to Makefile CCOPTS to prevent confusion with C++
 	- Allow space after -d command line option.
 	- Restore normal tty mode if pForth dictionary loading fails.
 	 
@@ -32,7 +32,7 @@ V22  (unreleased)
     - Fixed float evaluation in EVALUATE in "quit.fth".
     - Flush register cache for ffColon and ffSemiColon to prevent stack warnings from ;
 
-V21 - 9/16/98
+V21 - 9/16/1998
 	- Fixed some compiler warnings.
 
 V20
@@ -57,7 +57,7 @@ V20
 	  started with "-i" option.  It used to always consider numeric input as HEX.
 	  Initial BASE is decimal.  
 
-V19  4/98
+V19  4/1998
 
 	- Warn if local var name matches dictionary, : foo { count -- } ;
 	- TO -> and +-> now parse input stream. No longer use to-flag.

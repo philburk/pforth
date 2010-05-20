@@ -41,6 +41,7 @@
 #define PF_ERR_OUT_OF_RANGE    (PF_ERR_BASE | 18)
 #define PF_ERR_ENDIAN_CONFLICT (PF_ERR_BASE | 19)
 #define PF_ERR_FLOAT_CONFLICT  (PF_ERR_BASE | 20)
+#define PF_ERR_CELL_SIZE_CONFLICT (PF_ERR_BASE | 21)
 /* If you add an error code here, also add a text message in "pf_text.c". */
 
 #ifdef __cplusplus
@@ -53,12 +54,12 @@ void pfReportThrow( ThrowCode code );
 char  *ForthStringToC( char *dst, const char *FString );
 char  *CStringToForth( char *dst, const char *CString );
 
-int32 ffCompare( const char *s1, int32 len1, const char *s2, int32 len2 );
-int32 ffCompareText( const char *s1, const char *s2, int32 len );
-int32 ffCompareTextCaseN( const char *s1, const char *s2, int32 len );
+cell_t ffCompare( const char *s1, cell_t len1, const char *s2, int32_t len2 );
+cell_t ffCompareText( const char *s1, const char *s2, cell_t len );
+cell_t ffCompareTextCaseN( const char *s1, const char *s2, cell_t len );
 
-void  DumpMemory( void *addr, int32 cnt);
-char *ConvertNumberToText( int32 Num, int32 Base, int32 IfSigned, int32 MinChars );
+void  DumpMemory( void *addr, cell_t cnt);
+char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t MinChars );
 void  TypeName( const char *Name );
 
 #ifdef __cplusplus

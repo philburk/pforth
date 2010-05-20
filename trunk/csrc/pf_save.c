@@ -24,8 +24,10 @@
 **            of names and code was the same when saved and reloaded.
 ** 940228 PLB Added PF_NO_FILEIO version
 ** 961204 PLB Added PF_STATIC_DIC
-** 000623 PLB Cast chars as uint32 before shifting for 16 bit systems.
+** 000623 PLB Cast chars as ucell_t before shifting for 16 bit systems.
 ***************************************************************/
+
+#include <assert.h>
 
 #include "pf_all.h"
 
@@ -65,41 +67,72 @@ Chunks
 
 /***************************************************************/
 /* Endian-ness tools. */
-uint32 ReadLongBigEndian( const uint32 *addr )
+ucell_t ReadCellBigEndian( const uint8_t *addr )
 {
-	const unsigned char *bp = (const unsigned char *) addr;
-/* We must cast char to uint32 before shifting because
-** of systems with 16 bit ints. 000623 */
-	uint32 temp = ((uint32)bp[0])<<24;
-	temp |= ((uint32)bp[1])<<16;
-	temp |= ((uint32)bp[2])<<8;
-	temp |= ((uint32)bp[3]);
+	ucell_t temp = (ucell_t)addr[0];
+	temp = (temp << 8) | ((ucell_t)addr[1]);
+	temp = (temp << 8) | ((ucell_t)addr[2]);
+	temp = (temp << 8) | ((ucell_t)addr[3]);
+	if( sizeof(ucell_t) == 8 )
+	{
+		temp = (temp << 8) | ((ucell_t)addr[4]);
+		temp = (temp << 8) | ((ucell_t)addr[5]);
+		temp = (temp << 8) | ((ucell_t)addr[6]);
+		temp = (temp << 8) | ((ucell_t)addr[7]);
+	}
+		
 	return temp;
 }
 /***************************************************************/
-uint16 ReadShortBigEndian( const uint16 *addr )
+/* Endian-ness tools. */
+uint32_t Read32BigEndian( const uint8_t *addr )
 {
-	const unsigned char *bp = (const unsigned char *) addr;
-	return (uint16) ((bp[0]<<8) | bp[1]);
+	uint32_t temp = (uint32_t)addr[0];
+	temp = (temp << 8) | ((uint32_t)addr[1]);
+	temp = (temp << 8) | ((uint32_t)addr[2]);
+	temp = (temp << 8) | ((uint32_t)addr[3]);
+	return temp;
 }
 
 /***************************************************************/
-uint32 ReadLongLittleEndian( const uint32 *addr )
+uint16_t Read16BigEndian( const uint8_t *addr )
 {
-	const unsigned char *bp = (const unsigned char *) addr;
-/* We must cast char to uint32 before shifting because
-** of systems with 16 bit ints. 000623 */
-	uint32 temp = ((uint32)bp[3])<<24;
-	temp |= ((uint32)bp[2])<<16;
-	temp |= ((uint32)bp[1])<<8;
-	temp |= ((uint32)bp[0]);
+	return (uint16_t) ((addr[0]<<8) | addr[1]);
+}
+
+/***************************************************************/
+ucell_t ReadCellLittleEndian( const uint8_t *addr )
+{
+	ucell_t temp = 0;
+	if( sizeof(ucell_t) == 8 )
+	{
+		temp = (temp << 8) | ((uint32_t)addr[7]);
+		temp = (temp << 8) | ((uint32_t)addr[6]);
+		temp = (temp << 8) | ((uint32_t)addr[5]);
+		temp = (temp << 8) | ((uint32_t)addr[4]);
+	}
+	temp = (temp << 8) | ((uint32_t)addr[3]);
+	temp = (temp << 8) | ((uint32_t)addr[2]);
+	temp = (temp << 8) | ((uint32_t)addr[1]);
+	temp = (temp << 8) | ((uint32_t)addr[0]);
 	return temp;
 }
+
 /***************************************************************/
-uint16 ReadShortLittleEndian( const uint16 *addr )
+uint32_t Read32LittleEndian( const uint8_t *addr )
+{
+	uint32_t temp = (uint32_t)addr[3];
+	temp = (temp << 8) | ((uint32_t)addr[2]);
+	temp = (temp << 8) | ((uint32_t)addr[1]);
+	temp = (temp << 8) | ((uint32_t)addr[0]);
+	return temp;
+}
+
+/***************************************************************/
+uint16_t Read16LittleEndian( const uint8_t *addr )
 {
 	const unsigned char *bp = (const unsigned char *) addr;
-	return (uint16) ((bp[1]<<8) | bp[0]);
+	return (uint16_t) ((bp[1]<<8) | bp[0]);
 }
 
 #ifdef PF_SUPPORT_FP
@@ -178,42 +211,81 @@ PF_FLOAT ReadFloatLittleEndian( const PF_FLOAT *addr )
 #endif /* PF_SUPPORT_FP */
 
 /***************************************************************/
-void WriteLongBigEndian( uint32 *addr, uint32 data )
+void WriteCellBigEndian( uint8_t *addr, ucell_t data )
 {
-	unsigned char *bp = (unsigned char *) addr;
-
-	bp[0] = (unsigned char) (data>>24);
-	bp[1] = (unsigned char) (data>>16);
-	bp[2] = (unsigned char) (data>>8);
-	bp[3] = (unsigned char) (data);
+	// Write should be in order of increasing address
+	// to optimize for burst writes to DRAM.
+	if( sizeof(ucell_t) == 8 )
+	{
+		*addr++ = (uint8_t) (data>>56);
+		*addr++ = (uint8_t) (data>>48);
+		*addr++ = (uint8_t) (data>>40);
+		*addr++ = (uint8_t) (data>>32);
+	}
+	*addr++ = (uint8_t) (data>>24);
+	*addr++ = (uint8_t) (data>>16);
+	*addr++ = (uint8_t) (data>>8);
+	*addr = (uint8_t) (data);
 }
 
 /***************************************************************/
-void WriteShortBigEndian( uint16 *addr, uint16 data )
+void Write32BigEndian( uint8_t *addr, uint32_t data )
 {
-	unsigned char *bp = (unsigned char *) addr;
-
-	bp[0] = (unsigned char) (data>>8);
-	bp[1] = (unsigned char) (data);
+	*addr++ = (uint8_t) (data>>24);
+	*addr++ = (uint8_t) (data>>16);
+	*addr++ = (uint8_t) (data>>8);
+	*addr = (uint8_t) (data);
 }
 
 /***************************************************************/
-void WriteLongLittleEndian( uint32 *addr, uint32 data )
+void Write16BigEndian( uint8_t *addr, uint16_t data )
 {
-	unsigned char *bp = (unsigned char *) addr;
+	*addr++ = (uint8_t) (data>>8);
+	*addr = (uint8_t) (data);
+}
 
-	bp[0] = (unsigned char) (data);
-	bp[1] = (unsigned char) (data>>8);
-	bp[2] = (unsigned char) (data>>16);
-	bp[3] = (unsigned char) (data>>24);
+/***************************************************************/
+void WriteCellLittleEndian( uint8_t *addr, ucell_t data )
+{
+	// Write should be in order of increasing address
+	// to optimize for burst writes to DRAM.
+	if( sizeof(ucell_t) == 8 )
+	{
+		*addr++ = (uint8_t) data;  // LSB at near end
+		data = data >> 8;
+		*addr++ = (uint8_t) data;
+		data = data >> 8;
+		*addr++ = (uint8_t) data;
+		data = data >> 8;
+		*addr++ = (uint8_t) data;
+		data = data >> 8;
+	}
+	*addr++ = (uint8_t) data;
+	data = data >> 8;
+	*addr++ = (uint8_t) data;
+	data = data >> 8;
+	*addr++ = (uint8_t) data;
+	data = data >> 8;
+	*addr = (uint8_t) data;
 }
 /***************************************************************/
-void WriteShortLittleEndian( uint16 *addr, uint16 data )
+void Write32LittleEndian( uint8_t *addr, uint32_t data )
 {
-	unsigned char *bp = (unsigned char *) addr;
+	*addr++ = (uint8_t) data;
+	data = data >> 8;
+	*addr++ = (uint8_t) data;
+	data = data >> 8;
+	*addr++ = (uint8_t) data;
+	data = data >> 8;
+	*addr = (uint8_t) data;
+}
 
-	bp[0] = (unsigned char) (data);
-	bp[1] = (unsigned char) (data>>8);
+/***************************************************************/
+void Write16LittleEndian( uint8_t *addr, uint16_t data )
+{
+	*addr++ = (uint8_t) data;
+	data = data >> 8;
+	*addr = (uint8_t) data;
 }
 
 /***************************************************************/
@@ -227,7 +299,7 @@ int IsHostLittleEndian( void )
 
 #if defined(PF_NO_FILEIO) || defined(PF_NO_SHELL)
 
-int32 ffSaveForth( const char *FileName, ExecToken EntryPoint, int32 NameSize, int32 CodeSize)
+cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize, cell_t CodeSize)
 {
 	TOUCH(FileName);
 	TOUCH(EntryPoint);
@@ -241,33 +313,33 @@ int32 ffSaveForth( const char *FileName, ExecToken EntryPoint, int32 NameSize, i
 #else /* PF_NO_FILEIO or PF_NO_SHELL */
 
 /***************************************************************/
-static int32 WriteLong( FileStream *fid, int32 Val )
+static int Write32ToFile( FileStream *fid, uint32_t Val )
 {
-	int32 numw;
-	uint32 pad;
+	int numw;
+	uint8_t pad[4];
 
-	WriteLongBigEndian(&pad,Val);
-	numw = sdWriteFile( (char *) &pad, 1, sizeof(int32), fid );
-	if( numw != sizeof(int32) ) return -1;
+	Write32BigEndian(pad,Val);
+	numw = sdWriteFile( pad, 1, sizeof(pad), fid );
+	if( numw != sizeof(pad) ) return -1;
 	return 0;
 }
 
 /***************************************************************/
-static int32 WriteChunk( FileStream *fid, int32 ID, char *Data, int32 NumBytes )
+static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t NumBytes )
 {
-	int32 numw;
-	int32 EvenNumW;
+	cell_t numw;
+	cell_t EvenNumW;
 
 	EvenNumW = EVENUP(NumBytes);
 
-	if( WriteLong( fid, ID ) < 0 ) goto error;
-	if( WriteLong( fid, EvenNumW ) < 0 ) goto error;
+	if( Write32ToFile( fid, ID ) < 0 ) goto error;
+	if( Write32ToFile( fid, EvenNumW ) < 0 ) goto error;
 
 	numw = sdWriteFile( Data, 1, EvenNumW, fid );
 	if( numw != EvenNumW ) goto error;
 	return 0;
 error:
-	pfReportError("WriteChunk", PF_ERR_WRITE_FILE);
+	pfReportError("WriteChunkToFile", PF_ERR_WRITE_FILE);
 	return -1;
 }
 
@@ -276,15 +348,14 @@ error:
 ** If EntryPoint is NULL, save as development environment.
 ** If EntryPoint is non-NULL, save as turnKey environment with no names.
 */
-int32 ffSaveForth( const char *FileName, ExecToken EntryPoint, int32 NameSize, int32 CodeSize)
+cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize, cell_t CodeSize)
 {
 	FileStream *fid;
 	DictionaryInfoChunk SD;
-	int32 FormSize;
-	int32 NameChunkSize = 0;
-	int32 CodeChunkSize;
-	uint32 rhp, rcp;
-	uint32 *p;
+	uint32_t FormSize;
+	uint32_t NameChunkSize = 0;
+	uint32_t CodeChunkSize;
+	uint32_t relativeCodePtr;
 	int   i;
 
 	fid = sdOpenFile( FileName, "wb" );
@@ -298,17 +369,17 @@ int32 ffSaveForth( const char *FileName, ExecToken EntryPoint, int32 NameSize, i
 	pfExecIfDefined("AUTO.TERM");
 
 /* Write FORM Header ---------------------------- */
-	if( WriteLong( fid, ID_FORM ) < 0 ) goto error;
-	if( WriteLong( fid, 0 ) < 0 ) goto error;
-	if( WriteLong( fid, ID_P4TH ) < 0 ) goto error;
+	if( Write32ToFile( fid, ID_FORM ) < 0 ) goto error;
+	if( Write32ToFile( fid, 0 ) < 0 ) goto error;
+	if( Write32ToFile( fid, ID_P4TH ) < 0 ) goto error;
 
 /* Write P4DI Dictionary Info  ------------------ */
 	SD.sd_Version = PF_FILE_VERSION;
 
-	rcp = ABS_TO_CODEREL(gCurrentDictionary->dic_CodePtr.Byte); /* 940225 */
-	SD.sd_RelCodePtr = rcp; 
-	SD.sd_UserStackSize = sizeof(cell) * (gCurrentTask->td_StackBase - gCurrentTask->td_StackLimit);
-	SD.sd_ReturnStackSize = sizeof(cell) * (gCurrentTask->td_ReturnBase - gCurrentTask->td_ReturnLimit);
+	relativeCodePtr = ABS_TO_CODEREL(gCurrentDictionary->dic_CodePtr.Byte); /* 940225 */
+	SD.sd_RelCodePtr = relativeCodePtr; 
+	SD.sd_UserStackSize = sizeof(cell_t) * (gCurrentTask->td_StackBase - gCurrentTask->td_StackLimit);
+	SD.sd_ReturnStackSize = sizeof(cell_t) * (gCurrentTask->td_ReturnBase - gCurrentTask->td_ReturnLimit);
 	SD.sd_NumPrimitives = gNumPrimitives;  /* Must match compiled dictionary. */
 
 #ifdef PF_SUPPORT_FP
@@ -317,9 +388,9 @@ int32 ffSaveForth( const char *FileName, ExecToken EntryPoint, int32 NameSize, i
 	SD.sd_FloatSize = 0;
 #endif
 
-	SD.sd_Reserved = 0;
+	SD.sd_CellSize = sizeof(cell_t);
 
-/* Set bit that specifiec whether dictionary is BIG or LITTLE Endian. */
+/* Set bit that specifies whether dictionary is BIG or LITTLE Endian. */
 	{
 #if defined(PF_BIG_ENDIAN_DIC)
 		int eflag = SD_F_BIG_ENDIAN_DIC;
@@ -349,13 +420,14 @@ int32 ffSaveForth( const char *FileName, ExecToken EntryPoint, int32 NameSize, i
 	}
 	else
 	{
+		uint32_t relativeHeaderPtr;
 /* Development mode. */
 		SD.sd_RelContext = ABS_TO_NAMEREL(gVarContext);
-		rhp = ABS_TO_NAMEREL(gCurrentDictionary->dic_HeaderPtr.Byte);
-		SD.sd_RelHeaderPtr = rhp;
+		relativeHeaderPtr = ABS_TO_NAMEREL(gCurrentDictionary->dic_HeaderPtr.Byte);
+		SD.sd_RelHeaderPtr = relativeHeaderPtr;
 
 /* How much real name space is there? */
-		NameChunkSize = QUADUP(rhp);  /* Align */
+		NameChunkSize = QUADUP(relativeHeaderPtr);  /* Align */
 
 /* NameSize must be 0 or greater than NameChunkSize + 1K */
 		NameSize = QUADUP(NameSize);  /* Align */
@@ -367,53 +439,52 @@ int32 ffSaveForth( const char *FileName, ExecToken EntryPoint, int32 NameSize, i
 	}
 
 /* How much real code is there? */
-	CodeChunkSize = QUADUP(rcp);
+	CodeChunkSize = QUADUP(relativeCodePtr);
 	CodeSize = QUADUP(CodeSize);  /* Align */
 	CodeSize = MAX( CodeSize, (CodeChunkSize + 2048) );
 	SD.sd_CodeSize = CodeSize;
 
 	
-/* Convert all fields in structure from Native to BigEndian. */
-	p = (uint32 *) &SD;
-	for( i=0; i<((int)(sizeof(SD)/sizeof(int32))); i++ )
+/* Convert all fields in DictionaryInfoChunk from Native to BigEndian. 
+ * This assumes they are all 32-bit integers.
+ */
 	{
-		WriteLongBigEndian( &p[i], p[i] );
+		uint32_t *p = (uint32_t *) &SD;
+		for( i=0; i<((int)(sizeof(SD)/sizeof(uint32_t))); i++ )
+		{
+			Write32BigEndian( (uint8_t *)&p[i], p[i] );
+		}
 	}
 
-	if( WriteChunk( fid, ID_P4DI, (char *) &SD, sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
+	if( WriteChunkToFile( fid, ID_P4DI, (char *) &SD, sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
 
 /* Write Name Fields if NameSize non-zero ------- */
 	if( NameSize > 0 )
 	{
-		if( WriteChunk( fid, ID_P4NM, (char *) NAME_BASE,
+		if( WriteChunkToFile( fid, ID_P4NM, (char *) NAME_BASE,
 			NameChunkSize ) < 0 ) goto error;
 	}
 
 /* Write Code Fields ---------------------------- */
-	if( WriteChunk( fid, ID_P4CD, (char *) CODE_BASE,
+	if( WriteChunkToFile( fid, ID_P4CD, (char *) CODE_BASE,
 		CodeChunkSize ) < 0 ) goto error;
 
 	FormSize = sdTellFile( fid ) - 8;
 	sdSeekFile( fid, 4, PF_SEEK_SET );
-	if( WriteLong( fid, FormSize ) < 0 ) goto error;
+	if( Write32ToFile( fid, FormSize ) < 0 ) goto error;
 
 	sdCloseFile( fid );
 
-
-
 /* Restore initialization. */
-
 	pfExecIfDefined("AUTO.INIT");
-
 	return 0;
 
 error:
 	sdSeekFile( fid, 0, PF_SEEK_SET );
-	WriteLong( fid, ID_BADF ); /* Mark file as bad. */
+	Write32ToFile( fid, ID_BADF ); /* Mark file as bad. */
 	sdCloseFile( fid );
 
 /* Restore initialization. */
-
 	pfExecIfDefined("AUTO.INIT");
 
 	return -1;
@@ -425,14 +496,13 @@ error:
 #ifndef PF_NO_FILEIO
 
 /***************************************************************/
-static int32 ReadLong( FileStream *fid, int32 *ValPtr )
+static uint32_t Read32FromFile( FileStream *fid, uint32_t *ValPtr )
 {
-	int32 numr;
-	uint32 temp;
-
-	numr = sdReadFile( &temp, 1, sizeof(int32), fid );
-	if( numr != sizeof(int32) ) return -1;
-	*ValPtr = ReadLongBigEndian( &temp );
+	int32_t numr;
+	uint8_t pad[4];
+	numr = sdReadFile( pad, 1, sizeof(pad), fid );
+	if( numr != sizeof(pad) ) return -1;
+	*ValPtr = Read32BigEndian( pad );
 	return 0;
 }
 
@@ -442,12 +512,11 @@ PForthDictionary pfLoadDictionary( const char *FileName, ExecToken *EntryPointPt
 	pfDictionary_t *dic = NULL;
 	FileStream *fid;
 	DictionaryInfoChunk *sd;
-	int32 ChunkID;
-	int32 ChunkSize;
-	int32 FormSize;
-	int32 BytesLeft;
-	int32 numr;
-	uint32 *p;
+	uint32_t ChunkID;
+	uint32_t ChunkSize;
+	uint32_t FormSize;
+	uint32_t BytesLeft;
+	uint32_t numr;
 	int   i;
 	int   isDicBigEndian;
 
@@ -462,17 +531,17 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 	}
 
 /* Read FORM, Size, ID */
-	if (ReadLong( fid, &ChunkID ) < 0) goto read_error;
+	if (Read32FromFile( fid, &ChunkID ) < 0) goto read_error;
 	if( ChunkID != ID_FORM )
 	{
 		pfReportError("pfLoadDictionary", PF_ERR_WRONG_FILE);
 		goto error;
 	}
 
-	if (ReadLong( fid, &FormSize ) < 0) goto read_error;
+	if (Read32FromFile( fid, &FormSize ) < 0) goto read_error;
 	BytesLeft = FormSize;
 
-	if (ReadLong( fid, &ChunkID ) < 0) goto read_error;
+	if (Read32FromFile( fid, &ChunkID ) < 0) goto read_error;
 	BytesLeft -= 4;
 	if( ChunkID != ID_P4TH )
 	{
@@ -483,11 +552,11 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 /* Scan and parse all chunks in file. */
 	while( BytesLeft > 0 )
 	{
-		if (ReadLong( fid, &ChunkID ) < 0) goto read_error;
-		if (ReadLong( fid, &ChunkSize ) < 0) goto read_error;
+		if (Read32FromFile( fid, &ChunkID ) < 0) goto read_error;
+		if (Read32FromFile( fid, &ChunkSize ) < 0) goto read_error;
 		BytesLeft -= 8;
 
-		DBUG(("ChunkID = %4s, Size = %d\n", &ChunkID, ChunkSize ));
+		DBUG(("ChunkID = %4s, Size = %d\n", (char *)&ChunkID, ChunkSize ));
 
 		switch( ChunkID )
 		{
@@ -500,12 +569,14 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 			BytesLeft -= ChunkSize;
 			
 /* Convert all fields in structure from BigEndian to Native. */
-			p = (uint32 *) sd;
-			for( i=0; i<((int)(sizeof(*sd)/sizeof(int32))); i++ )
 			{
-				p[i] = ReadLongBigEndian( &p[i] );
+				uint32_t *p = (uint32_t *) sd;
+				for( i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++ )
+				{
+					p[i] = Read32BigEndian( (uint8_t *)&p[i] );
+				}
 			}
-
+				
 			isDicBigEndian = sd->sd_Flags & SD_F_BIG_ENDIAN_DIC;
 
 			if( !gVarQuiet )
@@ -516,6 +587,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 				MSG_NUM_D("     Name space size = ", sd->sd_NameSize );
 				MSG_NUM_D("     Code space size = ", sd->sd_CodeSize );
 				MSG_NUM_D("     Entry Point     = ", sd->sd_EntryPoint );
+				MSG_NUM_D("     Cell Size       = ", sd->sd_CellSize );
 				MSG( (isDicBigEndian ? "     Big Endian Dictionary" :
 				                       "     Little  Endian Dictionary") );
 				if( isDicBigEndian == IsHostLittleEndian() ) MSG(" !!!!");
@@ -530,6 +602,11 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 			if( sd->sd_Version < PF_EARLIEST_FILE_VERSION )
 			{
 				pfReportError("pfLoadDictionary", PF_ERR_VERSION_PAST );
+				goto error;
+			}
+			if( sd->sd_CellSize != sizeof(cell_t) )
+			{
+				pfReportError("pfLoadDictionary", PF_ERR_CELL_SIZE_CONFLICT );
 				goto error;
 			}
 			if( sd->sd_NumPrimitives > NUM_PRIMITIVES )
@@ -568,7 +645,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 			if( sd->sd_NameSize > 0 )
 			{
 				gVarContext = (char *) NAMEREL_TO_ABS(sd->sd_RelContext); /* Restore context. */
-				gCurrentDictionary->dic_HeaderPtr.Byte = (uint8 *)
+				gCurrentDictionary->dic_HeaderPtr.Byte = (uint8_t *)
 					NAMEREL_TO_ABS(sd->sd_RelHeaderPtr);
 			}
 			else
@@ -576,7 +653,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 				gVarContext = 0;
 				gCurrentDictionary->dic_HeaderPtr.Byte = NULL;
 			}
-			gCurrentDictionary->dic_CodePtr.Byte = (uint8 *) CODEREL_TO_ABS(sd->sd_RelCodePtr);
+			gCurrentDictionary->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(sd->sd_RelCodePtr);
 			gNumPrimitives = sd->sd_NumPrimitives;  /* Must match compiled dictionary. */
 /* Pass EntryPoint back to caller. */
 			if( EntryPointPtr != NULL ) *EntryPointPtr = sd->sd_EntryPoint;
@@ -636,7 +713,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 
 	if( NAME_BASE != NULL)
 	{
-		int32 Result;
+		cell_t Result;
 /* Find special words in dictionary for global XTs. */
 		if( (Result = FindSpecialXTs()) < 0 )
 		{
@@ -645,7 +722,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 		}
 	}
 
-DBUG(("pfLoadDictionary: return 0x%x\n", dic));
+DBUG(("pfLoadDictionary: return %p\n", dic));
 	return (PForthDictionary) dic;
 
 nomem_error:
@@ -677,9 +754,9 @@ PForthDictionary pfLoadDictionary( const char *FileName, ExecToken *EntryPointPt
 PForthDictionary pfLoadStaticDictionary( void )
 {
 #ifdef PF_STATIC_DIC
-	int32 Result;
+	cell_t Result;
 	pfDictionary_t *dic;
-	int32 NewNameSize, NewCodeSize;
+	cell_t NewNameSize, NewCodeSize;
 	
 	if( IF_LITTLE_ENDIAN != IsHostLittleEndian() )
 	{
@@ -725,15 +802,15 @@ PForthDictionary pfLoadStaticDictionary( void )
 
 	pfCopyMemory( dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
 	pfCopyMemory( dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode) );
-	DBUG("Static data copied to newly allocated dictionaries.\n");
+	DBUG(("Static data copied to newly allocated dictionaries.\n"));
 
-	dic->dic_CodePtr.Byte = (uint8 *) CODEREL_TO_ABS(CODEPTR);
+	dic->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(CODEPTR);
 	gNumPrimitives = NUM_PRIMITIVES;
 
 	if( NAME_BASE != NULL)
 	{
 /* Setup name space. */
-		dic->dic_HeaderPtr.Byte = (uint8 *) NAMEREL_TO_ABS(HEADERPTR);
+		dic->dic_HeaderPtr.Byte = (uint8_t *) NAMEREL_TO_ABS(HEADERPTR);
 		gVarContext = (char *) NAMEREL_TO_ABS(RELCONTEXT); /* Restore context. */
 
 /* Find special words in dictionary for global XTs. */

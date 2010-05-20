@@ -39,7 +39,7 @@ void ioTerm( void )
 */
 void ioEmit( char c )
 {
-	int32 Result;
+	cell_t Result;
 	
 	Result = sdTerminalOut(c);
 	if( Result < 0 ) EXIT(1);
@@ -61,9 +61,9 @@ void ioEmit( char c )
 /***************************************************************
 ** Send an entire string..
 */
-void ioType( const char *s, int32 n )
+void ioType( const char *s, cell_t n )
 {
-	int32 i;
+	cell_t i;
 
 	for( i=0; i<n; i++)
 	{
@@ -74,9 +74,9 @@ void ioType( const char *s, int32 n )
 /***************************************************************
 ** Return single character from input device, always keyboard.
 */
-cell ioKey( void )
+cell_t ioKey( void )
 {
-	cell c;
+	cell_t c;
 	sdEnableInput();
 	c = sdTerminalIn();
 	sdDisableInput();
@@ -90,7 +90,7 @@ cell ioKey( void )
 #define SPACE      (0x20)
 #define BACKSPACE  (0x08)
 #define DELETE     (0x7F)
-cell ioAccept( char *buffer, cell maxChars )
+cell_t ioAccept( char *buffer, cell_t maxChars )
 {
 	int c;
 	int len;
@@ -157,7 +157,7 @@ gotline:
 FileStream *PF_STDIN;
 FileStream *PF_STDOUT;
 
-int32  sdInputChar( FileStream *stream )
+cell_t  sdInputChar( FileStream *stream )
 {
 	UNIMPLEMENTED("sdInputChar");
 	TOUCH(stream);
@@ -171,12 +171,12 @@ FileStream *sdOpenFile( const char *FileName, const char *Mode )
 	TOUCH(Mode);
 	return NULL;
 }
-int32 sdFlushFile( FileStream * Stream  )
+cell_t sdFlushFile( FileStream * Stream  )
 {
 	TOUCH(Stream);
 	return 0;
 }
-int32 sdReadFile( void *ptr, int32 Size, int32 nItems, FileStream * Stream  ) 
+cell_t sdReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  ) 
 { 
 	UNIMPLEMENTED("sdReadFile");
 	TOUCH(ptr);
@@ -185,7 +185,7 @@ int32 sdReadFile( void *ptr, int32 Size, int32 nItems, FileStream * Stream  )
 	TOUCH(Stream);
 	return 0; 
 }
-int32 sdWriteFile( void *ptr, int32 Size, int32 nItems, FileStream * Stream  )
+cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  )
 { 
 	UNIMPLEMENTED("sdWriteFile");
 	TOUCH(ptr);
@@ -194,7 +194,7 @@ int32 sdWriteFile( void *ptr, int32 Size, int32 nItems, FileStream * Stream  )
 	TOUCH(Stream);
 	return 0; 
 }
-int32 sdSeekFile( FileStream * Stream, int32 Position, int32 Mode ) 
+cell_t sdSeekFile( FileStream * Stream, cell_t Position, int32_t Mode ) 
 { 
 	UNIMPLEMENTED("sdSeekFile");
 	TOUCH(Stream);
@@ -202,13 +202,13 @@ int32 sdSeekFile( FileStream * Stream, int32 Position, int32 Mode )
 	TOUCH(Mode);
 	return 0; 
 }
-int32 sdTellFile( FileStream * Stream ) 
+cell_t sdTellFile( FileStream * Stream ) 
 { 
 	UNIMPLEMENTED("sdTellFile");
 	TOUCH(Stream);
 	return 0; 
 }
-int32 sdCloseFile( FileStream * Stream ) 
+cell_t sdCloseFile( FileStream * Stream ) 
 { 
 	UNIMPLEMENTED("sdCloseFile");
 	TOUCH(Stream);

@@ -25,23 +25,23 @@
 #include "pfcompil.h"
 
 #define ABORT_RETURN_CODE   (10)
-#define UINT32_MASK  ((sizeof(uint32)-1))
+#define UINT32_MASK  ((sizeof(ucell_t)-1))
 
 /***************************************************************/
 /************** Static Prototypes ******************************/
 /***************************************************************/
 
 static void  ffStringColon( const ForthStringPtr FName );
-static int32 CheckRedefinition( const ForthStringPtr FName );
+static cell_t CheckRedefinition( const ForthStringPtr FName );
 static void  ffUnSmudge( void );
-static int32 FindAndCompile( const char *theWord );
-static int32 ffCheckDicRoom( void );
+static cell_t FindAndCompile( const char *theWord );
+static cell_t ffCheckDicRoom( void );
 
 #ifndef PF_NO_INIT
 	static void CreateDeferredC( ExecToken DefaultXT, const char *CName );
 #endif
 
-int32 NotCompiled( const char *FunctionName )
+cell_t NotCompiled( const char *FunctionName )
 {
 	MSG("Function ");
 	MSG(FunctionName);
@@ -54,7 +54,7 @@ int32 NotCompiled( const char *FunctionName )
 ** Create an entry in the Dictionary for the given ExecutionToken.
 ** FName is name in Forth format.
 */
-void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, uint32 Flags )
+void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 {
 	cfNameLinks *cfnl;
 
@@ -63,7 +63,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, uint32 Flags )
 /* Set link to previous header, if any. */
 	if( gVarContext )
 	{
-		WRITE_LONG_DIC( &cfnl->cfnl_PreviousName, ABS_TO_NAMEREL( gVarContext ) );
+		WRITE_CELL_DIC( &cfnl->cfnl_PreviousName, ABS_TO_NAMEREL( gVarContext ) );
 	}
 	else
 	{
@@ -71,7 +71,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, uint32 Flags )
 	}
 
 /* Put Execution token in header. */
-	WRITE_LONG_DIC( &cfnl->cfnl_ExecToken, XT );
+	WRITE_CELL_DIC( &cfnl->cfnl_ExecToken, XT );
 
 /* Advance Header Dictionary Pointer */
 	gCurrentDictionary->dic_HeaderPtr.Byte += sizeof(cfNameLinks);
@@ -85,7 +85,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, uint32 Flags )
 	*gVarContext |= (char) Flags;
 	
 /* Align to quad byte boundaries with zeroes. */
-	while( ((uint32) gCurrentDictionary->dic_HeaderPtr.Byte) & UINT32_MASK )
+	while( ((ucell_t) gCurrentDictionary->dic_HeaderPtr.Byte) & UINT32_MASK )
 	{
 		*gCurrentDictionary->dic_HeaderPtr.Byte++ = 0;
 	}
@@ -94,7 +94,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, uint32 Flags )
 /***************************************************************
 ** Convert name then create dictionary entry.
 */
-void CreateDicEntryC( ExecToken XT, const char *CName, uint32 Flags )
+void CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags )
 {
 	ForthString FName[40];
 	CStringToForth( FName, CName );
@@ -107,14 +107,14 @@ void CreateDicEntryC( ExecToken XT, const char *CName, uint32 Flags )
 */
 const ForthString *NameToPrevious( const ForthString *NFA )
 {
-	cell RelNamePtr;
+	cell_t RelNamePtr;
 	const cfNameLinks *cfnl;
 
-/* DBUG(("\nNameToPrevious: NFA = 0x%x\n", (int32) NFA)); */
+/* DBUG(("\nNameToPrevious: NFA = 0x%x\n", (cell_t) NFA)); */
 	cfnl = (const cfNameLinks *) ( ((const char *) NFA) - sizeof(cfNameLinks) );
 
-	RelNamePtr = READ_LONG_DIC((const cell *) (&cfnl->cfnl_PreviousName));
-/* DBUG(("\nNameToPrevious: RelNamePtr = 0x%x\n", (int32) RelNamePtr )); */
+	RelNamePtr = READ_CELL_DIC((const cell_t *) (&cfnl->cfnl_PreviousName));
+/* DBUG(("\nNameToPrevious: RelNamePtr = 0x%x\n", (cell_t) RelNamePtr )); */
 	if( RelNamePtr )
 	{
 		return ( NAMEREL_TO_ABS( RelNamePtr ) );
@@ -134,18 +134,18 @@ ExecToken NameToToken( const ForthString *NFA )
 /* Convert absolute namefield address to absolute link field address. */
 	cfnl = (const cfNameLinks *) ( ((const char *) NFA) - sizeof(cfNameLinks) );
 
-	return READ_LONG_DIC((const cell *) (&cfnl->cfnl_ExecToken));
+	return READ_CELL_DIC((const cell_t *) (&cfnl->cfnl_ExecToken));
 }
 
 /***************************************************************
 ** Find XTs needed by compiler.
 */
-int32 FindSpecialXTs( void )
+cell_t FindSpecialXTs( void )
 {
 	if( ffFindC( "(QUIT)", &gQuitP_XT ) == 0) goto nofind;
 	if( ffFindC( "NUMBER?", &gNumberQ_XT ) == 0) goto nofind;
 	if( ffFindC( "ACCEPT", &gAcceptP_XT ) == 0) goto nofind;
-DBUG(("gNumberQ_XT = 0x%x\n", gNumberQ_XT ));
+DBUG(("gNumberQ_XT = 0x%x\n", (unsigned int)gNumberQ_XT ));
 	return 0;
 	
 nofind:
@@ -157,7 +157,7 @@ nofind:
 ** Build a dictionary from scratch.
 */
 #ifndef PF_NO_INIT
-PForthDictionary pfBuildDictionary( int32 HeaderSize, int32 CodeSize )
+PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
 {
 	pfDictionary_t *dic;
 
@@ -197,6 +197,8 @@ PForthDictionary pfBuildDictionary( int32 HeaderSize, int32 CodeSize )
 	CreateDicEntryC( ID_BODY_OFFSET, "BODY_OFFSET", 0 );
 	CreateDicEntryC( ID_BYE, "BYE", 0 );
 	CreateDicEntryC( ID_CATCH, "CATCH", 0 );
+	CreateDicEntryC( ID_CELL, "CELL", 0 );
+	CreateDicEntryC( ID_CELLS, "CELLS", 0 );
 	CreateDicEntryC( ID_CFETCH, "C@", 0 );
 	CreateDicEntryC( ID_CMOVE, "CMOVE", 0 );
 	CreateDicEntryC( ID_CMOVE_UP, "CMOVE>", 0 );
@@ -398,11 +400,11 @@ nomem:
 ** ( xt -- nfa 1 , x 0 , find NFA in dictionary from XT )
 ** 1 for IMMEDIATE values
 */
-cell ffTokenToName( ExecToken XT, const ForthString **NFAPtr )
+cell_t ffTokenToName( ExecToken XT, const ForthString **NFAPtr )
 {
 	const ForthString *NameField;
-	int32 Searching = TRUE;
-	cell Result = 0;
+	cell_t Searching = TRUE;
+	cell_t Result = 0;
 	ExecToken TempXT;
 	
 	NameField = gVarContext;
@@ -437,16 +439,16 @@ DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
 ** ( $name -- $addr 0 | nfa -1 | nfa 1 , find NFA in dictionary )
 ** 1 for IMMEDIATE values
 */
-cell ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
+cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
 {
 	const ForthString *WordChar;
-	uint8 WordLen;
+	uint8_t WordLen;
 	const char *NameField, *NameChar;
-	int8 NameLen;
-	int32 Searching = TRUE;
-	cell Result = 0;
+	int8_t NameLen;
+	cell_t Searching = TRUE;
+	cell_t Result = 0;
 	
-	WordLen = (uint8) ((uint32)*WordName & 0x1F);
+	WordLen = (uint8_t) ((ucell_t)*WordName & 0x1F);
 	WordChar = WordName+1;
 	
 	NameField = gVarContext;
@@ -454,7 +456,7 @@ DBUG(("\nffFindNFA: WordLen = %d, WordName = %*s\n", WordLen, WordLen, WordChar 
 DBUG(("\nffFindNFA: gVarContext = 0x%x\n", gVarContext));
 	do
 	{
-		NameLen = (uint8) ((uint32)(*NameField) & MASK_NAME_SIZE);
+		NameLen = (uint8_t) ((ucell_t)(*NameField) & MASK_NAME_SIZE);
 		NameChar = NameField+1;
 /* DBUG(("   %c\n", (*NameField & FLAG_SMUDGE) ? 'S' : 'V' )); */
 		if(	((*NameField & FLAG_SMUDGE) == 0) &&
@@ -485,10 +487,10 @@ DBUG(("ffFindNFA: returns 0x%x\n", Result));
 ** ( $name -- $name 0 | xt -1 | xt 1 )
 ** 1 for IMMEDIATE values
 */
-cell ffFind( const ForthString *WordName, ExecToken *pXT )
+cell_t ffFind( const ForthString *WordName, ExecToken *pXT )
 {
 	const ForthString *NFA;
-	int32 Result;
+	cell_t Result;
 	
 	Result = ffFindNFA( WordName, &NFA );
 DBUG(("ffFind: %8s at 0x%x\n", WordName+1, NFA)); /* WARNING, not NUL terminated. %Q */
@@ -507,7 +509,7 @@ DBUG(("ffFind: %8s at 0x%x\n", WordName+1, NFA)); /* WARNING, not NUL terminated
 /****************************************************************
 ** Find name when passed 'C' string.
 */
-cell ffFindC( const char *WordName, ExecToken *pXT )
+cell_t ffFindC( const char *WordName, ExecToken *pXT )
 {
 DBUG(("ffFindC: %s\n", WordName ));
 	CStringToForth( gScratch, WordName );
@@ -523,9 +525,9 @@ DBUG(("ffFindC: %s\n", WordName ));
 /*************************************************************
 **  Check for dictionary overflow. 
 */
-static int32 ffCheckDicRoom( void )
+static cell_t ffCheckDicRoom( void )
 {
-	int32 RoomLeft;
+	cell_t RoomLeft;
 	RoomLeft = gCurrentDictionary->dic_HeaderLimit -
 	           gCurrentDictionary->dic_HeaderPtr.Byte;
 	if( RoomLeft < DIC_SAFETY_MARGIN )
@@ -556,9 +558,8 @@ void ffCreateSecondaryHeader( const ForthStringPtr FName)
 	pfDebugMessage("ffCreateSecondaryHeader: CheckRedefinition()\n");
 	CheckRedefinition( FName );
 /* Align CODE_HERE */
-	CODE_HERE = (cell *)( (((uint32)CODE_HERE) + UINT32_MASK) & ~UINT32_MASK);
+	CODE_HERE = (cell_t *)( (((ucell_t)CODE_HERE) + UINT32_MASK) & ~UINT32_MASK);
 	CreateDicEntry( (ExecToken) ABS_TO_CODEREL(CODE_HERE), FName, FLAG_SMUDGE );
-DBUG(("ffCreateSecondaryHeader, XT = 0x%x, Name = %8s\n"));
 }
 
 /*************************************************************
@@ -589,15 +590,15 @@ void ffColon( void )
 /*************************************************************
 ** Check to see if name is already in dictionary.
 */
-static int32 CheckRedefinition( const ForthStringPtr FName )
+static cell_t CheckRedefinition( const ForthStringPtr FName )
 {
-	int32 flag;
+	cell_t flag;
 	ExecToken XT;
 	
 	flag = ffFind( FName, &XT);
 	if ( flag && !gVarQuiet)
 	{
-		ioType( FName+1, (int32) *FName );
+		ioType( FName+1, (cell_t) *FName );
 		MSG( " redefined.\n" ); // FIXME - allow user to run off this warning.
 	}
 	return flag;
@@ -692,18 +693,18 @@ void ffFinishSecondary( void )
 
 /**************************************************************/
 /* Used to pull a number from the dictionary to the stack */
-void ff2Literal( cell dHi, cell dLo )
+void ff2Literal( cell_t dHi, cell_t dLo )
 {
 	CODE_COMMA( ID_2LITERAL_P );
 	CODE_COMMA( dHi );
 	CODE_COMMA( dLo );
 }
-void ffALiteral( cell Num )
+void ffALiteral( cell_t Num )
 {
 	CODE_COMMA( ID_ALITERAL_P );
 	CODE_COMMA( Num );
 }
-void ffLiteral( cell Num )
+void ffLiteral( cell_t Num )
 {
 	CODE_COMMA( ID_LITERAL_P );
 	CODE_COMMA( Num );
@@ -716,11 +717,11 @@ void ffFPLiteral( PF_FLOAT fnum )
 	 * original expression. 
 	 */
 	PF_FLOAT  *temp;
-	cell      *dicPtr;
+	cell_t    *dicPtr;
 
 /* Make sure that literal float data is float aligned. */
 	dicPtr = CODE_HERE + 1;
-	while( (((uint32) dicPtr++) & (sizeof(PF_FLOAT) - 1)) != 0)
+	while( (((ucell_t) dicPtr++) & (sizeof(PF_FLOAT) - 1)) != 0)
 	{
 		DBUG((" comma NOOP to align FPLiteral\n"));
 		CODE_COMMA( ID_NOOP );
@@ -730,16 +731,16 @@ void ffFPLiteral( PF_FLOAT fnum )
 	temp = (PF_FLOAT *)CODE_HERE;
 	WRITE_FLOAT_DIC(temp,fnum);   /* Write to dictionary. */
 	temp++;
-	CODE_HERE = (cell *) temp;
+	CODE_HERE = (cell_t *) temp;
 }
 #endif /* PF_SUPPORT_FP */
 
 /**************************************************************/
 ThrowCode FindAndCompile( const char *theWord )
 {
-	int32 Flag;
+	cell_t Flag;
 	ExecToken XT;
-	cell Num;
+	cell_t Num;
 	ThrowCode exception = 0;
 	
 	Flag = ffFind( theWord, &XT);
@@ -765,7 +766,7 @@ DBUG(("FindAndCompile: IMMEDIATE, theWord = 0x%x\n", theWord ));
 	else /* try to interpret it as a number. */
 	{
 /* Call deferred NUMBER? */
-		int32 NumResult;
+		cell_t NumResult;
 		
 DBUG(("FindAndCompile: not found, try number?\n" ));
 		PUSH_DATA_STACK( theWord );   /* Push text of number */
@@ -820,7 +821,7 @@ error:
 */
 ThrowCode ffInterpret( void )
 {
-	int32 flag;
+	cell_t flag;
 	char *theWord;
 	ThrowCode exception = 0;
 	
@@ -852,7 +853,6 @@ ThrowCode ffInterpret( void )
 		DBUG(("ffInterpret: IN=%d, SourceNum=%d\n", gCurrentTask->td_IN,
 			gCurrentTask->td_SourceNum ) );
 	}
-	DBUG(("ffInterpret: CHECK_ABORT = %d\n", CHECK_ABORT));
 error:
 	return exception;
 }
@@ -860,7 +860,7 @@ error:
 /**************************************************************/
 ThrowCode ffOK( void )
 {
-	int32 exception = 0;
+	cell_t exception = 0;
 /* Check for stack underflow.   %Q what about overflows? */
 	if( (gCurrentTask->td_StackBase - gCurrentTask->td_StackPtr) < 0 )
 	{
@@ -909,7 +909,7 @@ void pfHandleIncludeError( void )
 ***************************************************************/
 ThrowCode ffOuterInterpreterLoop( void )
 {
-	int32 exception = 0;
+	cell_t exception = 0;
 	do
 	{
 		exception = ffRefill();
@@ -972,7 +972,7 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
 ***************************************************************/
 Err ffPushInputStream( FileStream *InputFile )
 {
-	cell Result = 0;
+	cell_t Result = 0;
 	IncludeFrame *inf;
 	
 /* Push current input state onto special include stack. */
@@ -1040,9 +1040,9 @@ DBUG(("ffPopInputStream: return = 0x%x\n", Result ));
 /***************************************************************
 ** Convert file pointer to value consistent with SOURCE-ID.
 ***************************************************************/
-cell ffConvertStreamToSourceID( FileStream *Stream )
+cell_t ffConvertStreamToSourceID( FileStream *Stream )
 {
-	cell Result;
+	cell_t Result;
 	if(Stream == PF_STDIN)
 	{
 		Result = 0;
@@ -1053,7 +1053,7 @@ cell ffConvertStreamToSourceID( FileStream *Stream )
 	}
 	else
 	{
-		Result = (cell) Stream;
+		Result = (cell_t) Stream;
 	}
 	return Result;
 }
@@ -1061,7 +1061,7 @@ cell ffConvertStreamToSourceID( FileStream *Stream )
 /***************************************************************
 ** Convert file pointer to value consistent with SOURCE-ID.
 ***************************************************************/
-FileStream * ffConvertSourceIDToStream( cell id )
+FileStream * ffConvertSourceIDToStream( cell_t id )
 {
 	FileStream *stream;
 	
@@ -1085,7 +1085,7 @@ FileStream * ffConvertSourceIDToStream( cell id )
 ** Return length, or -1 for EOF.
 */
 #define BACKSPACE  (8)
-static cell readLineFromStream( char *buffer, cell maxChars, FileStream *stream )
+static cell_t readLineFromStream( char *buffer, cell_t maxChars, FileStream *stream )
 {
 	int   c;
 	int   len;
@@ -1135,10 +1135,10 @@ DBUGX(("readLineFromStream(0x%x, 0x%x, 0x%x)\n", buffer, len, stream ));
 ** ( -- , fill Source from current stream )
 ** Return 1 if successful, 0 for EOF, or a negative error.
 */
-cell ffRefill( void )
+cell_t ffRefill( void )
 {
-	cell Num;
-	cell Result = 1;
+	cell_t Num;
+	cell_t Result = 1;
 
 /* reset >IN for parser */
 	gCurrentTask->td_IN = 0;

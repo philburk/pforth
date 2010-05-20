@@ -81,13 +81,13 @@ void ioTerm( void );
 	
 	/* Prototypes for stubs. */
 	FileStream *sdOpenFile( const char *FileName, const char *Mode );
-	int32 sdFlushFile( FileStream * Stream  );
-	int32 sdReadFile( void *ptr, int32 Size, int32 nItems, FileStream * Stream  );
-	int32 sdWriteFile( void *ptr, int32 Size, int32 nItems, FileStream * Stream  );
-	int32 sdSeekFile( FileStream * Stream, int32 Position, int32 Mode );
-	int32 sdTellFile( FileStream * Stream );
-	int32 sdCloseFile( FileStream * Stream );
-	int32 sdInputChar( FileStream *stream );
+	cell_t sdFlushFile( FileStream * Stream  );
+	cell_t sdReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
+	cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
+	cell_t sdSeekFile( FileStream * Stream, cell_t Position, int32_t Mode );
+	cell_t sdTellFile( FileStream * Stream );
+	cell_t sdCloseFile( FileStream * Stream );
+	cell_t sdInputChar( FileStream *stream );
 	
 	#ifdef __cplusplus
 	}   
@@ -143,10 +143,10 @@ void ioTerm( void );
 extern "C" {
 #endif
 
-cell ioAccept( char *Target, cell n1 );
-cell ioKey( void);
+cell_t ioAccept( char *Target, cell_t n1 );
+cell_t ioKey( void);
 void ioEmit( char c );
-void ioType( const char *s, int32 n);
+void ioType( const char *s, cell_t n);
 
 #ifdef __cplusplus
 }   

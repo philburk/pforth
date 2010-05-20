@@ -152,13 +152,13 @@ variable SDAD-BUFFER-FID
 	c" IF_LITTLE_ENDIAN" IS.LITTLE.ENDIAN? IF 1 ELSE 0 THEN sdad.define
 	
 ." Saving Names" cr
-	s" static const uint8 MinDicNames[] = {" sdad.type
+	s" static const uint8_t MinDicNames[] = {" sdad.type
 	namebase headers-ptr @ SDAD_NAMES_EXTRA sdad.dump.data
 	EOL sdad.emit
 	c" };" $sdad.line
 	
 ." Saving Code" cr
-	s" static const uint8 MinDicCode[] = {" sdad.type
+	s" static const uint8_t MinDicCode[] = {" sdad.type
 	codebase here SDAD_CODE_EXTRA sdad.dump.data
 	EOL sdad.emit
 	c" };" $sdad.line

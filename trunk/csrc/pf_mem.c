@@ -26,7 +26,7 @@
 #ifdef PF_NO_MALLOC
 
 static char  *gMemPoolPtr;
-static uint32 gMemPoolSize;
+static ucell_t gMemPoolSize;
 
 /* CUSTOM: Make the memory pool bigger if you want. */
 #ifndef PF_MEM_POOL_SIZE
@@ -97,7 +97,7 @@ void dllDumpNode( DoublyLinkedListNode *NodePtr )
 		dllNextNode( NodePtr ) ));
 }
 
-int32 dllCheckNode( DoublyLinkedListNode *NodePtr )
+cell_t dllCheckNode( DoublyLinkedListNode *NodePtr )
 {
 	if( (NodePtr->dlln_Next->dlln_Previous != NodePtr) ||
 	    (NodePtr->dlln_Previous->dlln_Next != NodePtr))
@@ -141,7 +141,7 @@ static DoublyLinkedList gMemList;
 typedef struct MemListNode
 {
 	DoublyLinkedListNode  mln_Node;
-	int32                 mln_Size;
+	cell_t                 mln_Size;
 } MemListNode;
 
 #ifdef PF_DEBUG
@@ -168,7 +168,7 @@ void maDumpList( void )
 /***************************************************************
 ** Free mem of any size.
 */
-static void pfFreeRawMem( char *Mem, int32 NumBytes )
+static void pfFreeRawMem( char *Mem, cell_t NumBytes )
 {
 	MemListNode *mln, *FreeNode;
 	MemListNode *AdjacentLower = NULL;
@@ -181,9 +181,9 @@ static void pfFreeRawMem( char *Mem, int32 NumBytes )
 	DBUG(("\npfFreeRawMem: Align NumBytes to 0x%x\n", NumBytes ));
 	
 /* Check memory alignment. */
-	if( ( ((int32)Mem) & (PF_MEM_BLOCK_SIZE - 1)) != 0)
+	if( ( ((cell_t)Mem) & (PF_MEM_BLOCK_SIZE - 1)) != 0)
 	{
-		MSG_NUM_H("pfFreeRawMem: misaligned Mem = 0x", (int32) Mem );
+		MSG_NUM_H("pfFreeRawMem: misaligned Mem = 0x", (cell_t) Mem );
 		return;
 	}
 	
@@ -245,10 +245,10 @@ DBUG((" Link before 0x%x\n", NextBiggest ));
 /***************************************************************
 ** Setup memory list. Initialize allocator.
 */
-static void pfInitMemBlock( void *addr, uint32 poolSize )
+static void pfInitMemBlock( void *addr, ucell_t poolSize )
 {
 	char *AlignedMemory;
-	int32 AlignedSize;
+	cell_t AlignedSize;
 
 	pfDebugMessage("pfInitMemBlock()\n");
 /* Set globals. */
@@ -258,7 +258,7 @@ static void pfInitMemBlock( void *addr, uint32 poolSize )
 	dllSetupList( &gMemList );
 	
 /* Adjust to next highest aligned memory location. */
-	AlignedMemory = (char *) ((((int32)gMemPoolPtr) + PF_MEM_BLOCK_SIZE - 1) &
+	AlignedMemory = (char *) ((((cell_t)gMemPoolPtr) + PF_MEM_BLOCK_SIZE - 1) &
 	                  ~(PF_MEM_BLOCK_SIZE - 1));
 					  
 /* Adjust size to reflect aligned memory. */
@@ -275,7 +275,7 @@ static void pfInitMemBlock( void *addr, uint32 poolSize )
 /***************************************************************
 ** Allocate mem from list of free nodes.
 */
-static char *pfAllocRawMem( int32 NumBytes )
+static char *pfAllocRawMem( cell_t NumBytes )
 {
 	char *Mem = NULL;
 	MemListNode *mln;
@@ -295,7 +295,7 @@ static char *pfAllocRawMem( int32 NumBytes )
 	{
 		if( mln->mln_Size >= NumBytes )
 		{
-			int32 RemSize;
+			cell_t RemSize;
 
 			Mem = (char *) mln;
 			
@@ -320,16 +320,16 @@ static char *pfAllocRawMem( int32 NumBytes )
 /***************************************************************
 ** Keep mem size at first cell.
 */
-char *pfAllocMem( int32 NumBytes )
+char *pfAllocMem( cell_t NumBytes )
 {
-	int32 *IntMem;
+	cell_t *IntMem;
 	
 	if( NumBytes <= 0 ) return NULL;
 	
 /* Allocate an extra cell for size. */
-	NumBytes += sizeof(int32);
+	NumBytes += sizeof(cell_t);
 	
-	IntMem = (int32 *)pfAllocRawMem( NumBytes );
+	IntMem = (cell_t *)pfAllocRawMem( NumBytes );
 	
 	if( IntMem != NULL ) *IntMem++ = NumBytes;
 	
@@ -341,13 +341,13 @@ char *pfAllocMem( int32 NumBytes )
 */
 void pfFreeMem( void *Mem )
 {
-	int32 *IntMem;
-	int32 NumBytes;
+	cell_t *IntMem;
+	cell_t NumBytes;
 	
 	if( Mem == NULL ) return;
 	
 /* Allocate an extra cell for size. */
-	IntMem = (int32 *) Mem;
+	IntMem = (cell_t *) Mem;
 	IntMem--;
 	NumBytes = *IntMem;
 	

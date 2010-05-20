@@ -26,7 +26,7 @@
 ** Print number in current base to output stream.
 ** This version does not handle double precision.
 */
-void ffDot( int32 n )
+void ffDot( cell_t n )
 {
 	MSG( ConvertNumberToText( n, gVarBase, TRUE, 1 ) );
 	EMIT(' ');
@@ -36,7 +36,7 @@ void ffDot( int32 n )
 ** Print number in current base to output stream.
 ** This version does not handle double precision.
 */
-void ffDotHex( int32 n )
+void ffDotHex( cell_t n )
 {
 	MSG( ConvertNumberToText( n, 16, FALSE, 1 ) );
 	EMIT(' ');
@@ -45,8 +45,8 @@ void ffDotHex( int32 n )
 /* ( ... --- ... , print stack ) */
 void ffDotS( void )
 {
-	cell *sp;
-	int32 i, Depth;
+	cell_t *sp;
+	cell_t i, Depth;
 
 	MSG("Stack<");
 	MSG( ConvertNumberToText( gVarBase, 10, TRUE, 1 ) ); /* Print base in decimal. */
@@ -72,7 +72,7 @@ void ffDotS( void )
 }
 
 /* ( addr cnt char -- addr' cnt' , skip leading characters ) */
-cell ffSkip( char *AddrIn, cell Cnt, char c, char **AddrOut )
+cell_t ffSkip( char *AddrIn, cell_t Cnt, char c, char **AddrOut )
 {
 	char *s;
 	
@@ -102,7 +102,7 @@ DBUGX(("ffSkip: %c=0x%x, %d\n", *s, Cnt ));
 }
 
 /* ( addr cnt char -- addr' cnt' , scan for char ) */
-cell ffScan( char *AddrIn, cell Cnt, char c, char **AddrOut )
+cell_t ffScan( char *AddrIn, cell_t Cnt, char c, char **AddrOut )
 {
 	char *s;
 	
@@ -139,7 +139,7 @@ DBUGX(("ffScan: %c, %d\n", *s, Cnt ));
 ***************************************************************/
 
 /* Convert a single digit to the corresponding hex number. */
-static cell HexDigitToNumber( char c )
+static cell_t HexDigitToNumber( char c )
 {	
 	if( (c >= '0') && (c <= '9') )
 	{
@@ -156,9 +156,9 @@ static cell HexDigitToNumber( char c )
 }
 
 /* Convert a string to the corresponding number using BASE. */
-cell ffNumberQ( const char *FWord, cell *Num )
+cell_t ffNumberQ( const char *FWord, cell_t *Num )
 {
-	int32 Len, i, Accum=0, n, Sign=1;
+	cell_t Len, i, Accum=0, n, Sign=1;
 	const char *s;
 	
 /* get count */
@@ -195,8 +195,8 @@ cell ffNumberQ( const char *FWord, cell *Num )
 char * ffWord( char c )
 {
 	char *s1,*s2,*s3;
-	int32 n1, n2, n3;
-	int32 i, nc;
+	cell_t n1, n2, n3;
+	cell_t i, nc;
 
 	s1 = gCurrentTask->td_SourcePtr + gCurrentTask->td_IN;
 	n1 = gCurrentTask->td_SourceNum - gCurrentTask->td_IN;
