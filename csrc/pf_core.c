@@ -42,7 +42,7 @@
 char          gScratch[TIB_SIZE];
 pfTaskData_t   *gCurrentTask = NULL;
 pfDictionary_t *gCurrentDictionary;
-int32         gNumPrimitives;
+cell_t         gNumPrimitives;
 
 ExecToken     gLocalCompiler_XT;   /* custom compiler for local variables */
 ExecToken     gNumberQ_XT;         /* XT of NUMBER? */
@@ -50,22 +50,22 @@ ExecToken     gQuitP_XT;           /* XT of (QUIT) */
 ExecToken     gAcceptP_XT;         /* XT of ACCEPT */
 
 /* Depth of data stack when colon called. */
-int32         gDepthAtColon;
+cell_t         gDepthAtColon;
 
 /* Global Forth variables. */
 char         *gVarContext;      /* Points to last name field. */
-cell          gVarState;        /* 1 if compiling. */
-cell          gVarBase;         /* Numeric Base. */
-cell          gVarEcho;	        /* Echo input. */
-cell          gVarTraceLevel;   /* Trace Level for Inner Interpreter. */
-cell          gVarTraceStack;   /* Dump Stack each time if true. */
-cell          gVarTraceFlags;   /* Enable various internal debug messages. */
-cell          gVarQuiet;        /* Suppress unnecessary messages, OK, etc. */
-cell          gVarReturnCode;   /* Returned to caller of Forth, eg. UNIX shell. */
+cell_t          gVarState;        /* 1 if compiling. */
+cell_t          gVarBase;         /* Numeric Base. */
+cell_t          gVarEcho;	        /* Echo input. */
+cell_t          gVarTraceLevel;   /* Trace Level for Inner Interpreter. */
+cell_t          gVarTraceStack;   /* Dump Stack each time if true. */
+cell_t          gVarTraceFlags;   /* Enable various internal debug messages. */
+cell_t          gVarQuiet;        /* Suppress unnecessary messages, OK, etc. */
+cell_t          gVarReturnCode;   /* Returned to caller of Forth, eg. UNIX shell. */
 
 /* data for INCLUDE that allows multiple nested files. */
 IncludeFrame  gIncludeStack[MAX_INCLUDE_DEPTH];
-int32         gIncludeIndex;
+cell_t         gIncludeIndex;
 
 static void pfResetForthTask( void );
 static void pfInit( void );
@@ -123,7 +123,7 @@ void pfDeleteTask( PForthTask task )
 
 /* Allocate some extra cells to protect against mild stack underflows. */
 #define STACK_SAFETY  (8)
-PForthTask pfCreateTask( int32 UserStackDepth, int32 ReturnStackDepth )
+PForthTask pfCreateTask( cell_t UserStackDepth, cell_t ReturnStackDepth )
 {
 	pfTaskData_t *cftd;
 
@@ -132,14 +132,14 @@ PForthTask pfCreateTask( int32 UserStackDepth, int32 ReturnStackDepth )
 	pfSetMemory( cftd, 0, sizeof( pfTaskData_t ));
 
 /* Allocate User Stack */
-	cftd->td_StackLimit = (cell *) pfAllocMem((uint32)(sizeof(int32) *
+	cftd->td_StackLimit = (cell_t *) pfAllocMem((ucell_t)(sizeof(cell_t) *
 				(UserStackDepth + STACK_SAFETY)));
 	if( !cftd->td_StackLimit ) goto nomem;
 	cftd->td_StackBase = cftd->td_StackLimit + UserStackDepth;
 	cftd->td_StackPtr = cftd->td_StackBase;
 
 /* Allocate Return Stack */
-	cftd->td_ReturnLimit = (cell *) pfAllocMem((uint32)(sizeof(int32) * ReturnStackDepth) );
+	cftd->td_ReturnLimit = (cell_t *) pfAllocMem((ucell_t)(sizeof(cell_t) * ReturnStackDepth) );
 	if( !cftd->td_ReturnLimit ) goto nomem;
 	cftd->td_ReturnBase = cftd->td_ReturnLimit + ReturnStackDepth;
 	cftd->td_ReturnPtr = cftd->td_ReturnBase;
@@ -147,7 +147,7 @@ PForthTask pfCreateTask( int32 UserStackDepth, int32 ReturnStackDepth )
 /* Allocate Float Stack */
 #ifdef PF_SUPPORT_FP
 /* Allocate room for as many Floats as we do regular data. */
-	cftd->td_FloatStackLimit = (PF_FLOAT *) pfAllocMem((uint32)(sizeof(PF_FLOAT) *
+	cftd->td_FloatStackLimit = (PF_FLOAT *) pfAllocMem((ucell_t)(sizeof(PF_FLOAT) *
 				(UserStackDepth + STACK_SAFETY)));
 	if( !cftd->td_FloatStackLimit ) goto nomem;
 	cftd->td_FloatStackBase = cftd->td_FloatStackLimit + UserStackDepth;
@@ -171,7 +171,7 @@ nomem:
 ** Dictionary Management
 ***************************************************************/
 
-int32 pfExecIfDefined( const char *CString )
+cell_t pfExecIfDefined( const char *CString )
 {
 	int result = 0;
 	if( NAME_BASE != NULL)
@@ -208,7 +208,7 @@ void pfDeleteDictionary( PForthDictionary dictionary )
 ** Delete using pfDeleteDictionary().
 ** Return pointer to dictionary management structure.
 */
-PForthDictionary pfCreateDictionary( int32 HeaderSize, int32 CodeSize )
+PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 {
 /* Allocate memory for initial dictionary. */
 	pfDictionary_t *dic;
@@ -221,19 +221,19 @@ PForthDictionary pfCreateDictionary( int32 HeaderSize, int32 CodeSize )
 
 /* Align dictionary segments to preserve alignment of floats across hosts.
  * Thank you Helmut Proelss for pointing out that this needs to be cast
- * to (uint32) on 16 bit systems.
+ * to (ucell_t) on 16 bit systems.
  */
-#define DIC_ALIGNMENT_SIZE  ((uint32)(0x10))
-#define DIC_ALIGN(addr)  ((uint8 *)((((uint32)(addr)) + DIC_ALIGNMENT_SIZE - 1) & ~(DIC_ALIGNMENT_SIZE - 1)))
+#define DIC_ALIGNMENT_SIZE  ((ucell_t)(0x10))
+#define DIC_ALIGN(addr)  ((uint8_t *)((((ucell_t)(addr)) + DIC_ALIGNMENT_SIZE - 1) & ~(DIC_ALIGNMENT_SIZE - 1)))
 
 /* Allocate memory for header. */
 	if( HeaderSize > 0 )
 	{
-		dic->dic_HeaderBaseUnaligned = ( uint8 * ) pfAllocMem( (uint32) HeaderSize + DIC_ALIGNMENT_SIZE );
+		dic->dic_HeaderBaseUnaligned = ( uint8_t * ) pfAllocMem( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE );
 		if( !dic->dic_HeaderBaseUnaligned ) goto nomem;
 /* Align header base. */
 		dic->dic_HeaderBase = DIC_ALIGN(dic->dic_HeaderBaseUnaligned);
-		pfSetMemory( dic->dic_HeaderBase, 0xA5, (uint32) HeaderSize);
+		pfSetMemory( dic->dic_HeaderBase, 0xA5, (ucell_t) HeaderSize);
 		dic->dic_HeaderLimit = dic->dic_HeaderBase + HeaderSize;
 		dic->dic_HeaderPtr.Byte = dic->dic_HeaderBase;
 	}
@@ -243,10 +243,10 @@ PForthDictionary pfCreateDictionary( int32 HeaderSize, int32 CodeSize )
 	}
 
 /* Allocate memory for code. */
-	dic->dic_CodeBaseUnaligned = ( uint8 * ) pfAllocMem( (uint32) CodeSize + DIC_ALIGNMENT_SIZE );
+	dic->dic_CodeBaseUnaligned = ( uint8_t * ) pfAllocMem( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
 	if( !dic->dic_CodeBaseUnaligned ) goto nomem;
 	dic->dic_CodeBase = DIC_ALIGN(dic->dic_CodeBaseUnaligned);
-	pfSetMemory( dic->dic_CodeBase, 0x5A, (uint32) CodeSize);
+	pfSetMemory( dic->dic_CodeBase, 0x5A, (ucell_t) CodeSize);
 
 	dic->dic_CodeLimit = dic->dic_CodeBase + CodeSize;
 	dic->dic_CodePtr.Byte = dic->dic_CodeBase + QUADUP(NUM_PRIMITIVES); 
@@ -291,16 +291,16 @@ void pfSetCurrentTask( PForthTask task )
 ** Set Quiet Flag.
 ***************************************************************/
 
-void pfSetQuiet( int32 IfQuiet )
+void pfSetQuiet( cell_t IfQuiet )
 {	
-	gVarQuiet = (cell) IfQuiet;
+	gVarQuiet = (cell_t) IfQuiet;
 }
 
 /***************************************************************
 ** Query message status.
 ***************************************************************/
 
-int32  pfQueryQuiet( void )
+cell_t  pfQueryQuiet( void )
 {	
 	return gVarQuiet;
 }
@@ -347,12 +347,12 @@ ThrowCode pfQuit( void )
 ** Include file based on 'C' name.
 ***************************************************************/
 
-int32 pfIncludeFile( const char *FileName )
+cell_t pfIncludeFile( const char *FileName )
 {
 	FileStream *fid;
-	int32 Result;
+	cell_t Result;
 	char  buffer[32];
-	int32 numChars, len;
+	cell_t numChars, len;
 	
 /* Open file. */
 	fid = sdOpenFile( FileName, "r" );
@@ -366,7 +366,7 @@ int32 pfIncludeFile( const char *FileName )
 	
 /* Create a dictionary word named ::::FileName for FILE? */
 	pfCopyMemory( &buffer[0], "::::", 4);
-	len = (int32) pfCStringLength(FileName);
+	len = (cell_t) pfCStringLength(FileName);
 	numChars = ( len > (32-4-1) ) ? (32-4-1) : len;
 	pfCopyMemory( &buffer[4], &FileName[len-numChars], numChars+1 );
 	CreateDicEntryC( ID_NOOP, buffer, 0 );
@@ -423,17 +423,17 @@ void pfDebugPrintDecimalNumber( int n )
 ***************************************************************/
 void pfMessage( const char *CString )
 {
-	ioType( CString, (int32) pfCStringLength(CString) );
+	ioType( CString, (cell_t) pfCStringLength(CString) );
 }
 
 /**************************************************************************
 ** Main entry point for pForth.
 */
-int32 pfDoForth( const char *DicFileName, const char *SourceName, int32 IfInit )
+cell_t pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit )
 {
 	pfTaskData_t *cftd;
 	pfDictionary_t *dic = NULL;
-	int32 Result = 0;
+	cell_t Result = 0;
 	ExecToken  EntryPoint = 0;
 
 #ifdef PF_USER_INIT
@@ -461,6 +461,15 @@ int32 pfDoForth( const char *DicFileName, const char *SourceName, int32 IfInit )
 #elif PF_LITTLE_ENDIAN_DIC
             MSG("/LE");
 #endif
+			if (sizeof(cell_t) == 8)
+			{
+				MSG("/64");
+			}
+			else if (sizeof(cell_t) == 4)
+			{
+				MSG("/32");
+			}
+			
 			MSG( ", built "__DATE__" "__TIME__ );
 		}
 

@@ -19,21 +19,21 @@
 **
 ***************************************************************/
 
-typedef cell (*CFunc0)( void );
-typedef cell (*CFunc1)( cell P1 );
-typedef cell (*CFunc2)( cell P1, cell P2 );
-typedef cell (*CFunc3)( cell P1, cell P2, cell P3 );
-typedef cell (*CFunc4)( cell P1, cell P2, cell P3, cell P4 );
-typedef cell (*CFunc5)( cell P1, cell P2, cell P3, cell P4, cell P5 );
+typedef cell_t (*CFunc0)( void );
+typedef cell_t (*CFunc1)( cell_t P1 );
+typedef cell_t (*CFunc2)( cell_t P1, cell_t P2 );
+typedef cell_t (*CFunc3)( cell_t P1, cell_t P2, cell_t P3 );
+typedef cell_t (*CFunc4)( cell_t P1, cell_t P2, cell_t P3, cell_t P4 );
+typedef cell_t (*CFunc5)( cell_t P1, cell_t P2, cell_t P3, cell_t P4, cell_t P5 );
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-Err   CreateGlueToC( const char *CName, uint32 Index, int32 ReturnMode, int32 NumParams );
+Err   CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t NumParams );
 Err   CompileCustomFunctions( void );
 Err   LoadCustomFunctionTable( void );
-int32 CallUserFunction( int32 Index, int32 ReturnMode, int32 NumParams );
+cell_t CallUserFunction( cell_t Index, int32_t ReturnMode, int32_t NumParams );
 
 #ifdef __cplusplus
 }   

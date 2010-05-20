@@ -82,6 +82,8 @@ void pfReportError( const char *FunctionName, Err ErrCode )
 		s = "endian-ness of dictionary does not match code";  break;
 	case PF_ERR_FLOAT_CONFLICT & 0xFF:
 		s = "float support mismatch between .dic file and code";  break;
+	case PF_ERR_CELL_SIZE_CONFLICT & 0xFF:
+		s = "cell size mismatch between .dic file and code";  break;
 	default:
 		s = "unrecognized error code!"; break;
 	}
@@ -135,9 +137,9 @@ void pfReportThrow( ThrowCode code )
 
 char *ForthStringToC( char *dst, const char *FString )
 {
-	int32 Len;
+	cell_t Len;
 
-	Len = (int32) *FString;
+	Len = (cell_t) *FString;
 	pfCopyMemory( dst, FString+1, Len );
 	dst[Len] = '\0';
 
@@ -150,7 +152,7 @@ char *ForthStringToC( char *dst, const char *FString )
 char *CStringToForth( char *dst, const char *CString )
 {
 	char *s;
-	int32 i;
+	cell_t i;
 
 	s = dst+1;
 	for( i=0; *CString; i++ )
@@ -165,9 +167,9 @@ char *CStringToForth( char *dst, const char *CString )
 ** Compare two test strings, case sensitive.
 ** Return TRUE if they match.
 */
-int32 ffCompareText( const char *s1, const char *s2, int32 len )
+cell_t ffCompareText( const char *s1, const char *s2, cell_t len )
 {
-	int32 i, Result;
+	cell_t i, Result;
 	
 	Result = TRUE;
 	for( i=0; i<len; i++ )
@@ -187,9 +189,9 @@ DBUGX(("ffCompareText: return 0x%x\n", Result ));
 ** Compare two test strings, case INsensitive.
 ** Return TRUE if they match.
 */
-int32 ffCompareTextCaseN( const char *s1, const char *s2, int32 len )
+cell_t ffCompareTextCaseN( const char *s1, const char *s2, cell_t len )
 {
-	int32 i, Result;
+	cell_t i, Result;
 	char  c1,c2;
 	
 	Result = TRUE;
@@ -212,9 +214,9 @@ DBUGX(("ffCompareText: return 0x%x\n", Result ));
 ** Compare two strings, case sensitive.
 ** Return zero if they match, -1 if s1<s2, +1 is s1>s2;
 */
-int32 ffCompare( const char *s1, int32 len1, const char *s2, int32 len2 )
+cell_t ffCompare( const char *s1, cell_t len1, const char *s2, int32_t len2 )
 {
-	int32 i, result, n, diff;
+	cell_t i, result, n, diff;
 	
 	result = 0;
 	n = MIN(len1,len2);
@@ -243,15 +245,15 @@ int32 ffCompare( const char *s1, int32 len1, const char *s2, int32 len2 )
 /***************************************************************
 ** Convert number to text.
 */
-#define CNTT_PAD_SIZE ((sizeof(int32)*8)+2)  /* PLB 19980522 - Expand PAD so "-1 binary .s" doesn't crash. */
+#define CNTT_PAD_SIZE ((sizeof(cell_t)*8)+2)  /* PLB 19980522 - Expand PAD so "-1 binary .s" doesn't crash. */
 static char cnttPad[CNTT_PAD_SIZE];
 
-char *ConvertNumberToText( int32 Num, int32 Base, int32 IfSigned, int32 MinChars )
+char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t MinChars )
 {
-	int32 IfNegative = 0;
+	cell_t IfNegative = 0;
 	char *p,c;
-	uint32 NewNum, Rem, uNum;
-	int32 i = 0;
+	ucell_t NewNum, Rem, uNum;
+	cell_t i = 0;
 	
 	uNum = Num;
 	if( IfSigned )
@@ -287,9 +289,9 @@ char *ConvertNumberToText( int32 Num, int32 Base, int32 IfSigned, int32 MinChars
 /***************************************************************
 ** Diagnostic routine that prints memory in table format.
 */
-void DumpMemory( void *addr, int32 cnt)
+void DumpMemory( void *addr, cell_t cnt)
 {
-	int32 ln, cn, nlines;
+	cell_t ln, cn, nlines;
 	unsigned char *ptr, *cptr, c;
 
 	nlines = (cnt + 15) / 16;
@@ -300,12 +302,12 @@ void DumpMemory( void *addr, int32 cnt)
 	
 	for (ln=0; ln<nlines; ln++)
 	{
-		MSG( ConvertNumberToText( (int32) ptr, 16, FALSE, 8 ) );
+		MSG( ConvertNumberToText( (cell_t) ptr, 16, FALSE, 8 ) );
 		MSG(": ");
 		cptr = ptr;
 		for (cn=0; cn<16; cn++)
 		{
-			MSG( ConvertNumberToText( (int32) *cptr++, 16, FALSE, 2 ) );
+			MSG( ConvertNumberToText( (cell_t) *cptr++, 16, FALSE, 2 ) );
 			EMIT(' ');
 		}
 		EMIT(' ');
@@ -324,7 +326,7 @@ void DumpMemory( void *addr, int32 cnt)
 void TypeName( const char *Name )
 {
 	const char *FirstChar;
-	int32 Len;
+	cell_t Len;
 	
 	FirstChar = Name+1;
 	Len = *Name & 0x1F;

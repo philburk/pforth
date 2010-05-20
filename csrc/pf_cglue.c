@@ -21,10 +21,10 @@
 extern CFunc0 CustomFunctionTable[];
 
 /***************************************************************/
-int32 CallUserFunction( int32 Index, int32 ReturnMode, int32 NumParams )
+cell_t CallUserFunction( cell_t Index, int32_t ReturnMode, int32_t NumParams )
 {
-	cell P1, P2, P3, P4, P5;
-	cell Result = 0;
+	cell_t P1, P2, P3, P4, P5;
+	cell_t Result = 0;
 	CFunc0 CF;
 
 DBUG(("CallUserFunction: Index = %d, ReturnMode = %d, NumParams = %d\n",
@@ -80,9 +80,9 @@ DBUG(("CallUserFunction: Index = %d, ReturnMode = %d, NumParams = %d\n",
 
 #if (!defined(PF_NO_INIT)) && (!defined(PF_NO_SHELL))
 /***************************************************************/
-Err CreateGlueToC( const char *CName, uint32 Index, int32 ReturnMode, int32 NumParams )
+Err CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t NumParams )
 {
-	uint32 Packed;
+	ucell_t Packed;
 	char FName[40];
 	
 	CStringToForth( FName, CName );

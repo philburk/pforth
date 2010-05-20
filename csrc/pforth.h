@@ -26,31 +26,32 @@
 typedef void *PForthTask;
 typedef void *PForthDictionary;
 
-typedef unsigned long ExecToken;              /* Execution Token */
-typedef long          ThrowCode;
+#include <stdint.h>
+/* Integer types for Forth cells, signed and unsigned: */
+typedef intptr_t cell_t;
+typedef uintptr_t ucell_t;
 
-#ifndef int32
-	typedef long int32;
-#endif
+typedef ucell_t ExecToken;              /* Execution Token */
+typedef cell_t ThrowCode;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Main entry point to pForth. */
-int32 pfDoForth( const char *DicName, const char *SourceName, int32 IfInit );
+cell_t pfDoForth( const char *DicName, const char *SourceName, cell_t IfInit );
 
 /* Turn off messages. */
-void  pfSetQuiet( int32 IfQuiet );
+void  pfSetQuiet( cell_t IfQuiet );
 
 /* Query message status. */
-int32  pfQueryQuiet( void );
+cell_t  pfQueryQuiet( void );
 
 /* Send a message using low level I/O of pForth */
 void  pfMessage( const char *CString );
 
 /* Create a task used to maintain context of execution. */
-PForthTask pfCreateTask( int32 UserStackDepth, int32 ReturnStackDepth );
+PForthTask pfCreateTask( cell_t UserStackDepth, cell_t ReturnStackDepth );
 
 /* Establish this task as the current task. */
 void  pfSetCurrentTask( PForthTask task );
@@ -59,10 +60,10 @@ void  pfSetCurrentTask( PForthTask task );
 void  pfDeleteTask( PForthTask task );
 
 /* Build a dictionary with all the basic kernel words. */
-PForthDictionary pfBuildDictionary( int32 HeaderSize, int32 CodeSize );
+PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize );
 
 /* Create an empty dictionary. */
-PForthDictionary pfCreateDictionary( int32 HeaderSize, int32 CodeSize );
+PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize );
 
 /* Load dictionary from a file. */
 PForthDictionary pfLoadDictionary( const char *FileName, ExecToken *EntryPointPtr );

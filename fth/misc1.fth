@@ -18,7 +18,6 @@ decimal
 
 : >> rshift ;
 : << lshift ;
-: CELL* ( n -- n*cell )  2 lshift ;
 
 : (WARNING")  ( flag $message -- )
     swap

@@ -41,7 +41,7 @@
 		{
 			fpTemp = ((PF_FLOAT) TOS); /* dhi */
 			fpTemp *= FP_DHI1;
-			fpScratch = ( (PF_FLOAT) ((uint32)Scratch) );  /* Convert TOS and push on FP stack. */
+			fpScratch = ( (PF_FLOAT) ((ucell_t)Scratch) );  /* Convert TOS and push on FP stack. */
 			FP_TOS = fpTemp + fpScratch;
 		}	
 		M_DROP;
@@ -102,8 +102,8 @@
 	case ID_FP_F_TO_D: /* ( -- dlo dhi) ( F: r -- ) */
 		/* printf("f2d = %g\n", FP_TOS); */
 		{
-			uint32 dlo;
-			int32 dhi;
+			ucell_t dlo;
+			cell_t dhi;
 			int ifNeg;
 	/* Convert absolute value, then negate D if negative. */
 			PUSH_TOS;   /* Save old TOS */
@@ -116,12 +116,12 @@
 			}
 			fpScratch = fpTemp / FP_DHI1;
 		/* printf("f2d - fpScratch = %g\n", fpScratch); */
-			dhi = (int32) fpScratch;  /* dhi */
+			dhi = (cell_t) fpScratch;  /* dhi */
 			fpScratch = ((PF_FLOAT) dhi) * FP_DHI1;
 		/* printf("f2d - , dhi = 0x%x, fpScratch = %g\n", dhi, fpScratch); */
 		
 			fpTemp = fpTemp - fpScratch; /* Remainder */
-			dlo = (uint32) fpTemp;
+			dlo = (ucell_t) fpTemp;
 		/* printf("f2d - , dlo = 0x%x, fpTemp = %g\n", dlo, fpTemp); */
 			if( ifNeg )
 			{
@@ -284,7 +284,7 @@
 			PF_FLOAT *fptr;
 			fptr = (PF_FLOAT *)InsPtr;
 			FP_TOS = READ_FLOAT_DIC( fptr++ );
-			InsPtr = (cell *) fptr;
+			InsPtr = (cell_t *) fptr;
 		}
 #endif
 		endcase;

@@ -23,11 +23,11 @@
 extern "C" {
 #endif
 
-void ffDot( int32 n );
-void ffDotHex( int32 n );
+void ffDot( cell_t n );
+void ffDotHex( cell_t n );
 void ffDotS( void );
-cell ffSkip( char *AddrIn, cell Cnt, char c, char **AddrOut );
-cell ffScan( char *AddrIn, cell Cnt, char c, char **AddrOut );
+cell_t ffSkip( char *AddrIn, cell_t Cnt, char c, char **AddrOut );
+cell_t ffScan( char *AddrIn, cell_t Cnt, char c, char **AddrOut );
 
 #ifdef __cplusplus
 }   

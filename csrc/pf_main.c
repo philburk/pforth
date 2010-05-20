@@ -44,20 +44,12 @@
 #define FALSE (0)
 #endif
 
-static const char *gErrorMsg32Bit = "ERROR - A long is not 4 bytes. Are we running on a 64-bit machine?!\n";
-
 #ifdef PF_EMBEDDED
 int main( void )
 {
     char IfInit = 0; 
     const char *DicName = NULL;
     const char *SourceName = NULL;
-	// Check to make sure we are running in 32-bit mode.
-	if( sizeof(long) != 4 )
-	{
-		pfMessage(gErrorMsg32Bit);
-		return 1;
-	}
     pfMessage("\npForth Embedded\n");
     return pfDoForth( DicName, SourceName, IfInit);
 }
@@ -74,21 +66,14 @@ int main( int argc, char **argv )
 	const char *SourceName = NULL;
 	char IfInit = FALSE;
 	char *s;
-	int32 i;
+	cell_t i;
 	int Result;
 
-	// Check to make sure we are running in 32-bit mode.
-	if( sizeof(long) != 4 )
-	{
-		ERR((gErrorMsg32Bit));
-		return 1;
-	}
-	
 /* For Metroworks on Mac */
 #ifdef __MWERKS__
 	argc = ccommand(&argv);
 #endif
-
+	
 /* Parse command line. */
 	for( i=1; i<argc; i++ )
 	{

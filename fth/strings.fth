@@ -24,7 +24,7 @@ ANEW TASK-STRINGS.FTH
         2+ * even-up allot
     DOES>    ( index -- $addr )
         dup @  ( get #chars )
-        rot * + 4 +
+        rot * + cell+
 ;
 
 \ Compare two strings

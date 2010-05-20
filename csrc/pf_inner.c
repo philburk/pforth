@@ -41,7 +41,7 @@
 
 #define STKPTR   (DataStackPtr)
 #define M_POP    (*(STKPTR++))
-#define M_PUSH(n) {*(--(STKPTR)) = (cell) (n);}
+#define M_PUSH(n) {*(--(STKPTR)) = (cell_t) (n);}
 #define M_STACK(n) (STKPTR[n])
 
 #define TOS      (TopOfStack)
@@ -74,13 +74,13 @@
 #define M_R_DROP {TORPTR++;}
 #define M_R_POP (*(TORPTR++))
 #define M_R_PICK(n) (TORPTR[n])
-#define M_R_PUSH(n) {*(--(TORPTR)) = (cell) (n);}
+#define M_R_PUSH(n) {*(--(TORPTR)) = (cell_t) (n);}
 
 /***************************************************************
 ** Misc Forth macros
 ***************************************************************/
 			
-#define M_BRANCH   { InsPtr = (cell *) (((uint8 *) InsPtr) + READ_LONG_DIC(InsPtr)); }
+#define M_BRANCH   { InsPtr = (cell_t *) (((uint8_t *) InsPtr) + READ_CELL_DIC(InsPtr)); }
 
 /* Cache top of data stack like in JForth. */
 #ifdef PF_SUPPORT_FP
@@ -124,7 +124,7 @@
 	ffDotS( ); \
 	LOAD_REGISTERS;
 	
-#define DO_VAR(varname) { PUSH_TOS; TOS = (cell) &varname; }
+#define DO_VAR(varname) { PUSH_TOS; TOS = (cell_t) &varname; }
 
 #ifdef PF_SUPPORT_FP
 #define M_THROW(err) \
@@ -154,14 +154,14 @@
 	#define TRACENAMES /* no names */
 #else
 /* Display name of executing routine. */
-static void TraceNames( ExecToken Token, int32 Level )
+static void TraceNames( ExecToken Token, cell_t Level )
 {
 	char *DebugName;
-	int32 i;
+	cell_t i;
 	
 	if( ffTokenToName( Token, &DebugName ) )
 	{
-		cell NumSpaces;
+		cell_t NumSpaces;
 		if( gCurrentTask->td_OUT > 0 ) EMIT_CR;
 		EMIT( '>' );
 		for( i=0; i<Level; i++ )
@@ -191,7 +191,7 @@ static void TraceNames( ExecToken Token, int32 Level )
 #endif /* PF_NO_SHELL */
 
 /* Use local copy of CODE_BASE for speed. */
-#define LOCAL_CODEREL_TO_ABS( a ) ((cell *) (((int32) a) + CodeBase))
+#define LOCAL_CODEREL_TO_ABS( a ) ((cell_t *) (((cell_t) a) + CodeBase))
 
 static const char *pfSelectFileModeCreate( int fam );
 static const char *pfSelectFileModeOpen( int fam );
@@ -253,12 +253,12 @@ static const char *pfSelectFileModeOpen( int fam )
 /**************************************************************/
 int pfCatch( ExecToken XT )
 {
-	register cell  TopOfStack;    /* Cache for faster execution. */
-	register cell *DataStackPtr;
-	register cell *ReturnStackPtr;
-	register cell *InsPtr = NULL;
-	register cell  Token;
-	cell           Scratch;
+	register cell_t  TopOfStack;    /* Cache for faster execution. */
+	register cell_t *DataStackPtr;
+	register cell_t *ReturnStackPtr;
+	register cell_t *InsPtr = NULL;
+	register cell_t  Token;
+	cell_t           Scratch;
 	
 #ifdef PF_SUPPORT_FP
 	PF_FLOAT       fpTopOfStack;
@@ -268,17 +268,17 @@ int pfCatch( ExecToken XT )
 	PF_FLOAT      *InitialFloatStack;
 #endif
 #ifdef PF_SUPPORT_TRACE
-	int32 Level = 0;
+	cell_t Level = 0;
 #endif
-	cell          *LocalsPtr = NULL;
-	cell           Temp;
-	cell          *InitialReturnStack;
-	cell          *InitialDataStack;
-	cell           FakeSecondary[2];
+	cell_t        *LocalsPtr = NULL;
+	cell_t         Temp;
+	cell_t        *InitialReturnStack;
+	cell_t        *InitialDataStack;
+	cell_t         FakeSecondary[2];
 	char          *CharPtr;
-	cell          *CellPtr;
+	cell_t        *CellPtr;
 	FileStream    *FileID;
-	uint8         *CodeBase = CODE_BASE;
+	uint8_t         *CodeBase = CODE_BASE;
 	ThrowCode      ExceptionReturnCode = 0;
 	
 /* FIXME
@@ -327,10 +327,10 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
 			M_R_PUSH( InsPtr );
 			
 /* Convert execution token to absolute address. */
-			InsPtr = (cell *) ( LOCAL_CODEREL_TO_ABS(Token) );
+			InsPtr = (cell_t *) ( LOCAL_CODEREL_TO_ABS(Token) );
 
 /* Fetch token at IP. */
-			Token = READ_LONG_DIC(InsPtr++);
+			Token = READ_CELL_DIC(InsPtr++);
 			
 #ifdef PF_SUPPORT_TRACE
 /* Bump level for trace display */
@@ -351,7 +351,7 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
 	** Used to implement semicolon.
 	** Put first in switch because ID_EXIT==0 */
 		case ID_EXIT:
-			InsPtr = ( cell *) M_R_POP;
+			InsPtr = ( cell_t *) M_R_POP;
 #ifdef PF_SUPPORT_TRACE
 			Level--;
 #endif
@@ -371,8 +371,8 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
 		case ID_2LITERAL_P:
 /* hi part stored first, put on top of stack */
 			PUSH_TOS;
-			TOS = READ_LONG_DIC(InsPtr++);
-			M_PUSH(READ_LONG_DIC(InsPtr++));
+			TOS = READ_CELL_DIC(InsPtr++);
+			M_PUSH(READ_CELL_DIC(InsPtr++));
 			endcase;
 			
 		case ID_2MINUS:  TOS -= 2; endcase;
@@ -434,30 +434,30 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
 
 		case ID_ALITERAL_P:
 			PUSH_TOS;
-			TOS = (cell) LOCAL_CODEREL_TO_ABS( READ_LONG_DIC(InsPtr++) );
+			TOS = (cell_t) LOCAL_CODEREL_TO_ABS( READ_CELL_DIC(InsPtr++) );
 			endcase;
 			
 /* Allocate some extra and put validation identifier at base */
 #define PF_MEMORY_VALIDATOR  (0xA81B4D69)
 		case ID_ALLOCATE:
 			/* Allocate at least one cell's worth because we clobber first cell. */
-			if ( TOS < sizeof(cell) )
+			if ( TOS < sizeof(cell_t) )
 			{
-				Temp = sizeof(cell);
+				Temp = sizeof(cell_t);
 			}
 			else
 			{
 				Temp = TOS;
 			}
 			/* Allocate extra cells worth because we store validation info. */
-			CellPtr = (cell *) pfAllocMem( Temp + sizeof(cell) );
+			CellPtr = (cell_t *) pfAllocMem( Temp + sizeof(cell_t) );
 			if( CellPtr )
 			{
 /* This was broken into two steps because different compilers incremented
 ** CellPtr before or after the XOR step. */
-				Temp = (int32)CellPtr ^ PF_MEMORY_VALIDATOR;
+				Temp = (cell_t)CellPtr ^ PF_MEMORY_VALIDATOR;
 				*CellPtr++ = Temp;
-				M_PUSH( (cell) CellPtr );
+				M_PUSH( (cell_t) CellPtr );
 				TOS = 0;
 			}
 			else
@@ -504,20 +504,30 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 
 		case ID_CALL_C:
 			SAVE_REGISTERS;
-			Scratch = READ_LONG_DIC(InsPtr++);
+			Scratch = READ_CELL_DIC(InsPtr++);
 			CallUserFunction( Scratch & 0xFFFF,
 				(Scratch >> 31) & 1,
 				(Scratch >> 24) & 0x7F );
 			LOAD_REGISTERS;
 			endcase;
-
-		case ID_CFETCH:   TOS = *((uint8 *) TOS); endcase;
+				
+		/* Support 32/64 bit operation. */
+		case ID_CELL:
+				M_PUSH( TOS );
+				TOS = sizeof(cell_t);
+				endcase;
+				
+		case ID_CELLS:
+				TOS = TOS * sizeof(cell_t);
+				endcase;
+				
+		case ID_CFETCH:   TOS = *((uint8_t *) TOS); endcase;
 
 		case ID_CMOVE: /* ( src dst n -- ) */
 			{
 				register char *DstPtr = (char *) M_POP; /* dst */
 				CharPtr = (char *) M_POP;    /* src */
-				for( Scratch=0; (uint32) Scratch < (uint32) TOS ; Scratch++ )
+				for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
 				{
 					*DstPtr++ = *CharPtr++;
 				}
@@ -529,7 +539,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 			{
 				register char *DstPtr = ((char *) M_POP) + TOS; /* dst */
 				CharPtr = ((char *) M_POP) + TOS;;    /* src */
-				for( Scratch=0; (uint32) Scratch < (uint32) TOS ; Scratch++ )
+				for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
 				{
 					*(--DstPtr) = *(--CharPtr);
 				}
@@ -552,7 +562,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 		case ID_COMPARE:
 			{
 				const char *s1, *s2;
-				int32 len1;
+				cell_t len1;
 				s2 = (const char *) M_POP;
 				len1 = M_POP;
 				s1 = (const char *) M_POP;
@@ -574,10 +584,10 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 			TOS = (  M_POP < TOS ) ? FTRUE : FFALSE ;
 			endcase;
 		case ID_COMP_U_GREATERTHAN:
-			TOS = ( ((uint32)M_POP) > ((uint32)TOS) ) ? FTRUE : FFALSE ;
+			TOS = ( ((ucell_t)M_POP) > ((ucell_t)TOS) ) ? FTRUE : FFALSE ;
 			endcase;
 		case ID_COMP_U_LESSTHAN:
-			TOS = ( ((uint32)M_POP) < ((uint32)TOS) ) ? FTRUE : FFALSE ;
+			TOS = ( ((ucell_t)M_POP) < ((ucell_t)TOS) ) ? FTRUE : FFALSE ;
 			endcase;
 		case ID_COMP_ZERO_EQUAL:
 			TOS = ( TOS == 0 ) ? FTRUE : FFALSE ;
@@ -607,18 +617,18 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 		case ID_CREATE_P:
 			PUSH_TOS;
 /* Put address of body on stack.  Insptr points after code start. */
-			TOS = (cell) ((char *)InsPtr - sizeof(cell) + CREATE_BODY_OFFSET );
+			TOS = (cell_t) ((char *)InsPtr - sizeof(cell_t) + CREATE_BODY_OFFSET );
 			endcase;
 	
 		case ID_CSTORE: /* ( c caddr -- ) */
-			*((uint8 *) TOS) = (uint8) M_POP;
+			*((uint8_t *) TOS) = (uint8_t) M_POP;
 			M_DROP;
 			endcase;
 
 /* Double precision add. */
 		case ID_D_PLUS:  /* D+ ( al ah bl bh -- sl sh ) */ 
 			{
-				register ucell ah,al,bl,sh,sl;
+				register ucell_t ah,al,bl,sh,sl;
 #define bh TOS
 				bl = M_POP;
 				ah = M_POP;
@@ -636,7 +646,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 /* Double precision subtract. */
 		case ID_D_MINUS:  /* D- ( al ah bl bh -- sl sh ) */ 
 			{
-				register ucell ah,al,bl,sh,sl;
+				register ucell_t ah,al,bl,sh,sl;
 #define bh TOS
 				bl = M_POP;
 				ah = M_POP;
@@ -653,10 +663,10 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 			
 /* Perform 32*32 bit multiply for 64 bit result, by factoring into 16 bit quantities. */
 /* Using an improved algorithm suggested by Steve Green. */
-		case ID_D_UMTIMES:  /* M* ( a b -- pl ph ) */ 
+		case ID_D_UMTIMES:  /* UM* ( a b -- pl ph ) */ 
 			{
-				ucell ahi, alo, bhi, blo, temp;
-				ucell pl, ph;
+				ucell_t ahi, alo, bhi, blo, temp;
+				ucell_t pl, ph;
 /* Get values from stack. */
 				ahi = M_POP;
 				bhi = TOS;
@@ -693,9 +703,9 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 /* Perform 32*32 bit multiply for 64 bit result, using shift and add. */
 		case ID_D_MTIMES:  /* M* ( a b -- pl ph ) */ 
 			{
-				cell a,b;
-				ucell ap,bp, ahi, alo, bhi, blo, temp;
-				ucell pl, ph;
+				cell_t a,b;
+				ucell_t ap,bp, ahi, alo, bhi, blo, temp;
+				ucell_t pl, ph;
 /* Get values from stack. */
 				a = M_POP;
 				b = TOS;
@@ -749,7 +759,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 /* Perform 64/32 bit divide for 32 bit result, using shift and subtract. */
 		case ID_D_UMSMOD:  /* UM/MOD ( al ah bdiv -- rem q ) */ 
 			{
-				ucell ah,al, q,di, bl,bh, sl,sh;
+				ucell_t ah,al, q,di, bl,bh, sl,sh;
 				ah = M_POP;
 				al = M_POP;
 				bh = TOS;
@@ -785,23 +795,24 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 /* Perform 64/32 bit divide for 64 bit result, using shift and subtract. */
 		case ID_D_MUSMOD:  /* MU/MOD ( al am bdiv -- rem ql qh ) */ 
 			{
-				register ucell ah,am,al,ql,qh,di;
-#define bdiv ((ucell)TOS)
+				register ucell_t ah,am,al,ql,qh,di;
+#define bdiv ((ucell_t)TOS)
 				ah = 0;
 				am = M_POP;
 				al = M_POP;
 				qh = ql = 0;
-				for( di=0; di<64; di++ )
+#define NBITS (sizeof(cell_t)*8)
+				for( di=0; di<2*NBITS; di++ )
 				{
 					if( bdiv <= ah )
 					{
 						ah = ah - bdiv;
 						ql |= 1;
 					}
-					qh = (qh << 1) | (ql >> 31);
+					qh = (qh << 1) | (ql >> (NBITS-1));
 					ql = ql << 1;
-					ah = (ah << 1) | (am >> 31);
-					am = (am << 1) | (al >> 31);
+					ah = (ah << 1) | (am >> (NBITS-1));
+					am = (am << 1) | (al >> (NBITS-1));
 					al = al << 1;
 DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 				}
@@ -860,7 +871,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			
 		case ID_EOL:    /* ( -- end_of_line_char ) */
 			PUSH_TOS;
-			TOS = (cell) '\n';
+			TOS = (cell_t) '\n';
 			endcase;
 			
 		case ID_ERRORQ_P:  /* ( flag num -- , quit if flag true ) */
@@ -890,12 +901,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #endif
 			if( IsTokenPrimitive( TOS ) )
 			{
-				WRITE_LONG_DIC( (cell *) &FakeSecondary[0], TOS);   /* Build a fake secondary and execute it. */
+				WRITE_CELL_DIC( (cell_t *) &FakeSecondary[0], TOS);   /* Build a fake secondary and execute it. */
 				InsPtr = &FakeSecondary[0];
 			}
 			else
 			{
-				InsPtr = (cell *) LOCAL_CODEREL_TO_ABS(TOS);
+				InsPtr = (cell_t *) LOCAL_CODEREL_TO_ABS(TOS);
 			}
 			M_DROP;
 			endcase;
@@ -904,14 +915,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				TOS = (cell) READ_LONG_DIC((cell *)TOS);
+				TOS = (cell_t) READ_CELL_DIC((cell_t *)TOS);
 			}
 			else
 			{
-				TOS = *((cell *)TOS);
+				TOS = *((cell_t *)TOS);
 			}
 #else
-			TOS = *((cell *)TOS);
+			TOS = *((cell_t *)TOS);
 #endif
 			endcase;
 		
@@ -922,12 +933,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			if( Scratch < TIB_SIZE-2 )
 			{
 				const char *famText = pfSelectFileModeCreate( TOS );
-				pfCopyMemory( gScratch, (char *) Temp, (uint32) Scratch );
+				pfCopyMemory( gScratch, (char *) Temp, (ucell_t) Scratch );
 				gScratch[Scratch] = '\0';
 				DBUG(("Create file = %s with famTxt %s\n", gScratch, famText ));
 				FileID = sdOpenFile( gScratch, famText );
 				TOS = ( FileID == NULL ) ? -1 : 0 ;
-				M_PUSH( (cell) FileID );
+				M_PUSH( (cell_t) FileID );
 			}
 			else
 			{
@@ -944,13 +955,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			if( Scratch < TIB_SIZE-2 )
 			{
 				const char *famText = pfSelectFileModeOpen( TOS );
-				pfCopyMemory( gScratch, (char *) Temp, (uint32) Scratch );
+				pfCopyMemory( gScratch, (char *) Temp, (ucell_t) Scratch );
 				gScratch[Scratch] = '\0';
 				DBUG(("Open file = %s\n", gScratch ));
 				FileID = sdOpenFile( gScratch, famText );
 
 				TOS = ( FileID == NULL ) ? -1 : 0 ;
-				M_PUSH( (cell) FileID );
+				M_PUSH( (cell_t) FileID );
 			}
 			else
 			{
@@ -1026,7 +1037,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 				register char *DstPtr;
 				Temp = M_POP;    /* num */
 				DstPtr = (char *) M_POP; /* dst */
-				for( Scratch=0; (uint32) Scratch < (uint32) Temp ; Scratch++ )
+				for( Scratch=0; (ucell_t) Scratch < (ucell_t) Temp ; Scratch++ )
 				{
 					*DstPtr++ = (char) TOS;
 				}
@@ -1042,7 +1053,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			
 		case ID_FINDNFA:
 			TOS = ffFindNFA( (const ForthString *) TOS, (const ForthString **) &Temp );
-			M_PUSH( (cell) Temp );
+			M_PUSH( (cell_t) Temp );
 			endcase;
 #endif  /* !PF_NO_SHELL */
 
@@ -1059,9 +1070,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			}
 			else
 			{
-				CellPtr = (cell *) TOS;
+				CellPtr = (cell_t *) TOS;
 				CellPtr--;
-				if( ((uint32)*CellPtr) != ((uint32)CellPtr ^ PF_MEMORY_VALIDATOR))
+				if( ((ucell_t)*CellPtr) != ((ucell_t)CellPtr ^ PF_MEMORY_VALIDATOR))
 				{
 					TOS = -2; /* FIXME error code */
 				}
@@ -1078,14 +1089,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 		case ID_HERE:
 			PUSH_TOS;
-			TOS = (cell)CODE_HERE;
+			TOS = (cell_t)CODE_HERE;
 			endcase;
 		
 		case ID_NUMBERQ_P:   /* ( addr -- 0 | n 1 ) */
 /* Convert using number converter in 'C'.
 ** Only supports single precision for bootstrap.
 */
-			TOS = (cell) ffNumberQ( (char *) TOS, &Temp );
+			TOS = (cell_t) ffNumberQ( (char *) TOS, &Temp );
 			if( TOS == NUM_TYPE_SINGLE)
 			{
 				M_PUSH( Temp );   /* Push single number */
@@ -1137,7 +1148,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		case ID_LITERAL_P:
 			DBUG(("ID_LITERAL_P: InsPtr = 0x%x, *InsPtr = 0x%x\n", InsPtr, *InsPtr ));
 			PUSH_TOS;
-			TOS = READ_LONG_DIC(InsPtr++);
+			TOS = READ_CELL_DIC(InsPtr++);
 			endcase;
 	
 #ifndef PF_NO_SHELL
@@ -1191,8 +1202,8 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		case ID_LOCAL_ENTRY: /* ( x0 x1 ... xn n -- ) */
 		/* create local stack frame */
 			{
-				int32 i = TOS;
-				cell *lp;
+				cell_t i = TOS;
+				cell_t *lp;
 				DBUG(("LocalEntry: n = %d\n", TOS));
 				/* End of locals. Create stack frame */
 				DBUG(("LocalEntry: before RP@ = 0x%x, LP = 0x%x\n",
@@ -1215,7 +1226,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			DBUG(("LocalExit: before RP@ = 0x%x, LP = 0x%x\n",
 				TORPTR, LocalsPtr));
 			TORPTR = LocalsPtr;
-			LocalsPtr = (cell *) M_R_POP;
+			LocalsPtr = (cell_t *) M_R_POP;
 			DBUG(("LocalExit: after RP@ = 0x%x, LP = 0x%x\n",
 				TORPTR, LocalsPtr));
 			endcase;
@@ -1278,11 +1289,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			
 #ifndef PF_NO_SHELL
 		case ID_NAME_TO_TOKEN:
-			TOS = (cell) NameToToken((ForthString *)TOS);
+			TOS = (cell_t) NameToToken((ForthString *)TOS);
 			endcase;
 			
 		case ID_NAME_TO_PREVIOUS:
-			TOS = (cell) NameToPrevious((ForthString *)TOS);
+			TOS = (cell_t) NameToPrevious((ForthString *)TOS);
 			endcase;
 #endif
 			
@@ -1306,23 +1317,23 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				Scratch = READ_LONG_DIC((cell *)TOS);
+				Scratch = READ_CELL_DIC((cell_t *)TOS);
 				Scratch += M_POP;
-				WRITE_LONG_DIC((cell *)TOS,Scratch);
+				WRITE_CELL_DIC((cell_t *)TOS,Scratch);
 			}
 			else
 			{
-				*((cell *)TOS) += M_POP;
+				*((cell_t *)TOS) += M_POP;
 			}
 #else
-			*((cell *)TOS) += M_POP;
+			*((cell_t *)TOS) += M_POP;
 #endif
 			M_DROP;
 			endcase;
 
 		case ID_PLUSLOOP_P: /* ( delta -- ) ( R: index limit -- | index limit ) */
 			{
-				ucell OldIndex, NewIndex, Limit;
+				ucell_t OldIndex, NewIndex, Limit;
 
 				Limit = M_R_POP;
 				OldIndex = M_R_POP;
@@ -1397,10 +1408,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 /* Resize memory allocated by ALLOCATE. */
 		case ID_RESIZE:  /* ( addr1 u -- addr2 result ) */
 			{
-				cell *Addr1 = (cell *) M_POP;
+				cell_t *Addr1 = (cell_t *) M_POP;
 				// Point to validator below users address.
-				cell *FreePtr = Addr1 - 1;
-				if( ((uint32)*FreePtr) != ((uint32)FreePtr ^ PF_MEMORY_VALIDATOR))
+				cell_t *FreePtr = Addr1 - 1;
+				if( ((ucell_t)*FreePtr) != ((ucell_t)FreePtr ^ PF_MEMORY_VALIDATOR))
 				{
 					// 090218 - Fixed bug, was returning zero.
 					M_PUSH( Addr1 );
@@ -1409,15 +1420,15 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 				else
 				{
 					/* Try to allocate. */
-					CellPtr = (cell *) pfAllocMem( TOS + sizeof(cell) );
+					CellPtr = (cell_t *) pfAllocMem( TOS + sizeof(cell_t) );
 					if( CellPtr )
 					{
 						/* Copy memory including validation. */
-						pfCopyMemory( (char *) CellPtr, (char *) FreePtr, TOS + sizeof(cell) );
-						*CellPtr = (cell)(((uint32)CellPtr) ^ (uint32)PF_MEMORY_VALIDATOR);
+						pfCopyMemory( (char *) CellPtr, (char *) FreePtr, TOS + sizeof(cell_t) );
+						*CellPtr = (cell_t)(((ucell_t)CellPtr) ^ (ucell_t)PF_MEMORY_VALIDATOR);
 						// 090218 - Fixed bug that was incrementing the address twice. Thanks Reinhold Straub.
 						// Increment past validator to user address.
-			            M_PUSH( (cell) (CellPtr + 1) );
+			            M_PUSH( (cell_t) (CellPtr + 1) );
 						TOS = 0; // Result code.
 						// Mark old cell as dead so we can't free it twice.
 						FreePtr[0] = 0xDeadBeef;
@@ -1439,18 +1450,18 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 */
 		case ID_RP_FETCH:    /* ( -- rp , address of top of return stack ) */
 			PUSH_TOS;
-			TOS = (cell)TORPTR;  /* value before calling RP@ */
+			TOS = (cell_t)TORPTR;  /* value before calling RP@ */
 			endcase;
 			
 		case ID_RP_STORE:    /* ( rp -- , address of top of return stack ) */
-			TORPTR = (cell *) TOS;
+			TORPTR = (cell_t *) TOS;
 			M_DROP;
 			endcase;
 			
 		case ID_ROLL: /* ( xu xu-1 xu-1 ... x0 u -- xu-1 xu-1 ... x0 xu ) */
 			{
-				int32 ri;
-				cell *srcPtr, *dstPtr;
+				cell_t ri;
+				cell_t *srcPtr, *dstPtr;
 				Scratch = M_STACK(TOS);
 				srcPtr = &M_STACK(TOS-1);
 				dstPtr = &M_STACK(TOS);
@@ -1472,12 +1483,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			endcase;
 
 /* Logical right shift */
-		case ID_RSHIFT:     { TOS = ((uint32)M_POP) >> TOS; } endcase;   
+		case ID_RSHIFT:     { TOS = ((ucell_t)M_POP) >> TOS; } endcase;   
 		
 #ifndef PF_NO_SHELL
 		case ID_SAVE_FORTH_P:   /* ( $name Entry NameSize CodeSize -- err ) */
 			{
-				int32 NameSize, CodeSize, EntryPoint;
+				cell_t NameSize, CodeSize, EntryPoint;
 				CodeSize = TOS;
 				NameSize = M_POP;
 				EntryPoint = M_POP;
@@ -1499,11 +1510,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 		case ID_SP_FETCH:    /* ( -- sp , address of top of stack, sorta ) */
 			PUSH_TOS;
-			TOS = (cell)STKPTR;
+			TOS = (cell_t)STKPTR;
 			endcase;
 			
 		case ID_SP_STORE:    /* ( sp -- , address of top of stack, sorta ) */
-			STKPTR = (cell *) TOS;
+			STKPTR = (cell_t *) TOS;
 			M_DROP;
 			endcase;
 			
@@ -1511,14 +1522,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				WRITE_LONG_DIC((cell *)TOS,M_POP);
+				WRITE_CELL_DIC(TOS,M_POP);
 			}
 			else
 			{
-				*((cell *)TOS) = M_POP;
+				*((cell_t *)TOS) = M_POP;
 			}
 #else
-			*((cell *)TOS) = M_POP;
+			*((cell_t *)TOS) = M_POP;
 #endif
 			M_DROP;
 			endcase;
@@ -1527,7 +1538,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			Scratch = M_POP; /* cnt */
 			Temp = M_POP;    /* addr */
 			TOS = ffScan( (char *) Temp, Scratch, (char) TOS, &CharPtr );
-			M_PUSH((cell) CharPtr);
+			M_PUSH((cell_t) CharPtr);
 			endcase;
 			
 #ifndef PF_NO_SHELL
@@ -1543,13 +1554,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			Scratch = M_POP; /* cnt */
 			Temp = M_POP;    /* addr */
 			TOS = ffSkip( (char *) Temp, Scratch, (char) TOS, &CharPtr );
-			M_PUSH((cell) CharPtr);
+			M_PUSH((cell_t) CharPtr);
 			endcase;
 
 		case ID_SOURCE:  /* ( -- c-addr num ) */
 			PUSH_TOS;
-			M_PUSH( (cell) gCurrentTask->td_SourcePtr );
-			TOS = (cell) gCurrentTask->td_SourceNum;
+			M_PUSH( (cell_t) gCurrentTask->td_SourcePtr );
+			TOS = (cell_t) gCurrentTask->td_SourceNum;
 			endcase;
 			
 		case ID_SOURCE_SET: /* ( c-addr num -- ) */
@@ -1569,7 +1580,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			endcase;
 			
 		case ID_SOURCE_ID_PUSH:  /* ( source-id -- ) */
-			TOS = (cell)ffConvertSourceIDToStream( TOS );
+			TOS = (cell_t)ffConvertSourceIDToStream( TOS );
 			Scratch = ffPushInputStream((FileStream *) TOS );
 			if( Scratch )
 			{
@@ -1652,21 +1663,21 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		case ID_VAR_RETURN_CODE: DO_VAR(gVarReturnCode); endcase;
 
 		case ID_WORD:
-			TOS = (cell) ffWord( (char) TOS );
+			TOS = (cell_t) ffWord( (char) TOS );
 			endcase;
 
 		case ID_WORD_FETCH: /* ( waddr -- w ) */
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				TOS = (uint16) READ_SHORT_DIC((uint16 *)TOS);
+				TOS = (uint16_t) READ_SHORT_DIC((uint8_t *)TOS);
 			}
 			else
 			{
-				TOS = *((uint16 *)TOS);
+				TOS = *((uint16_t *)TOS);
 			}
 #else
-			TOS = *((uint16 *)TOS);
+			TOS = *((uint16_t *)TOS);
 #endif
 			endcase;
 
@@ -1675,14 +1686,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				WRITE_SHORT_DIC((uint16 *)TOS,(uint16)M_POP);
+				WRITE_SHORT_DIC(TOS,M_POP);
 			}
 			else
 			{
-				*((uint16 *)TOS) = (uint16) M_POP;
+				*((uint16_t *)TOS) = (uint16_t) M_POP;
 			}
 #else
-			*((uint16 *)TOS) = (uint16) M_POP;
+			*((uint16_t *)TOS) = (uint16_t) M_POP;
 #endif
 			M_DROP;
 			endcase;
@@ -1709,13 +1720,13 @@ DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
 			ERR("pfCatch: Unrecognised token = 0x");
 			ffDotHex(Token);
 			ERR(" at 0x");
-			ffDotHex((int32) InsPtr);
+			ffDotHex((cell_t) InsPtr);
 			EMIT_CR;
 			InsPtr = 0;
 			endcase;
 		}
 		
-		if(InsPtr) Token = READ_LONG_DIC(InsPtr++);   /* Traverse to next token in secondary. */
+		if(InsPtr) Token = READ_CELL_DIC(InsPtr++);   /* Traverse to next token in secondary. */
 		
 #ifdef PF_DEBUG
 		M_DOTS;

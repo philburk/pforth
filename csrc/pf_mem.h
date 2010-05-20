@@ -22,7 +22,7 @@
 	#endif
 
 	void  pfInitMemoryAllocator( void );
-	char *pfAllocMem( int32 NumBytes );
+	char *pfAllocMem( cell_t NumBytes );
 	void  pfFreeMem( void *Mem );
 
 	#ifdef __cplusplus

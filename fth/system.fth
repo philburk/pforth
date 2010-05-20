@@ -48,13 +48,9 @@
         0 swap !
 ;
 
-\ size of data items
-\ FIXME - move these into 'C' code for portability ????
-: CELL ( -- size_of_stack_item ) 4 ;
-
 : CELL+ ( n -- n+cell )  cell + ;
 : CELL- ( n -- n+cell )  cell - ;
-: CELLS ( n -- n*cell )  2 lshift ;
+: CELL* ( n -- n*cell )  cells ;
 
 : CHAR+ ( n -- n+size_of_char ) 1+ ;
 : CHARS ( n -- n*size_of_char , don't do anything)  ; immediate
@@ -174,7 +170,7 @@
 ;
 
 : N>LINK  ( nfa -- lfa )
-        8 -
+        2 CELLS -
 ;
 
 : >BODY   ( xt -- pfa )
@@ -358,7 +354,8 @@
 ;
 
 : D2*  ( d -- d*2 )
-        2* over 31 rshift or  swap
+        2* over 
+        cell 8 * 1- rshift or  swap
         2* swap
 ;
 

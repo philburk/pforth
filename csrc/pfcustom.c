@@ -28,20 +28,20 @@
 
 #include "pf_all.h"
 
-static int32 CTest0( int32 Val );
-static void CTest1( int32 Val1, cell Val2 );
+static cell_t CTest0( cell_t Val );
+static void CTest1( cell_t Val1, cell_t Val2 );
 
 /****************************************************************
 ** Step 1: Put your own special glue routines here
 **     or link them in from another file or library.
 ****************************************************************/
-static int32 CTest0( int32 Val )
+static cell_t CTest0( cell_t Val )
 {
 	MSG_NUM_D("CTest0: Val = ", Val);
 	return Val+1;
 }
 
-static void CTest1( int32 Val1, cell Val2 )
+static void CTest1( cell_t Val1, cell_t Val2 )
 {
 
 	MSG("CTest1: Val1 = "); ffDot(Val1);

@@ -24,7 +24,7 @@ OBJECTDIR    = $(PFORTHDIR)/objects
 TEMPOBJECTDIR = $(PFORTHDIR)/tempobjects
 
 # This is needed to get pForth to build on Snow Leopard and other 64 bit platforms.
-WIDTHOPT=-m32
+WIDTHOPT=
 
 FULL_WARNINGS =  \
         -fsigned-char \
@@ -38,7 +38,7 @@ FULL_WARNINGS =  \
         -Winline  \
         -Wmissing-prototypes \
         -Wmissing-declarations
-        
+
 DEBUGOPTS = -g
 CCOPTS = $(WIDTHOPT) -x c -DPF_SUPPORT_FP -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
@@ -57,11 +57,11 @@ PFOBJS     = ${PFTEMP:${CSRCDIR}/%=${TEMPOBJECTDIR}/%}
 PFEMBOBJS  = ${PFTEMP:${CSRCDIR}/%=${OBJECTDIR}/%}
 
 COMPILE = $(COMPILER) $(CCOPTS) $(CDEFS)
-	
+
 ${TEMPOBJECTDIR}/%.o:  ${TEMPOBJECTDIR} $(PFINCLUDES)  ${CSRCDIR}/%.c
 	$(COMPILE) -O -o ${TEMPOBJECTDIR}/$*.o -c ${CSRCDIR}/$*.c
-	
-${OBJECTDIR}/%.o:  ${OBJECTDIR} $(PFINCLUDES) ${CSRCDIR}/%.c ${CSRCDIR}/pfdicdat.h 
+
+${OBJECTDIR}/%.o:  ${OBJECTDIR} $(PFINCLUDES) ${CSRCDIR}/%.c ${CSRCDIR}/pfdicdat.h
 	$(COMPILE) -O -o ${OBJECTDIR}/$*.o -c ${CSRCDIR}/$*.c $(EMBCCOPTS)
 
 all: $(PFORTHAPP)
@@ -77,12 +77,12 @@ pffiles:
 	@echo ${PFOBJS}
 	@echo "EMBEDDED OBJECT FILES ------------------"
 	@echo ${PFEMBOBJS}
-	
-${TEMPOBJECTDIR}: 
+
+${TEMPOBJECTDIR}:
 	mkdir -p ${TEMPOBJECTDIR}/posix
 	mkdir -p ${TEMPOBJECTDIR}/stdio
 
-${OBJECTDIR}: 
+${OBJECTDIR}:
 	mkdir -p ${OBJECTDIR}/posix
 	mkdir -p ${OBJECTDIR}/stdio
 
@@ -98,8 +98,8 @@ $(PFORTHAPP): $(PFDICDAT) $(PFEMBOBJS)
 	$(COMPILER) $(PFEMBOBJS) $(WIDTHOPT) -lm -o $(PFORTHAPP)
 	@echo ""
 	@echo "Standalone pForth executable written to $(PFORTHAPP)"
-	
-	
+
+
 # target aliases
 pfdicapp: $(PFDICAPP)
 
@@ -119,8 +119,8 @@ help:
 
 
 clean:
-	-rm -f $(PFOBJS) $(PFEMBOBJS)
-	-rm $(PFORTHAPP)
-	-rm $(PFDICDAT)
-	-rm $(PFORTHDIC)
-	-rm $(PFDICAPP)
+	rm -f $(PFOBJS) $(PFEMBOBJS)
+	rm -f $(PFORTHAPP)
+	rm -f $(PFDICDAT)
+	rm -f $(PFORTHDIC)
+	rm -f $(PFDICAPP)

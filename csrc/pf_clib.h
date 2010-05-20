@@ -25,9 +25,9 @@
 	extern "C" {
 	#endif
 
-	cell pfCStringLength( const char *s );
-	void *pfSetMemory( void *s, cell c, cell n );
-	void *pfCopyMemory( void *s1, const void *s2, cell n);
+	cell_t pfCStringLength( const char *s );
+	void *pfSetMemory( void *s, cell_t c, cell_t n );
+	void *pfCopyMemory( void *s1, const void *s2, cell_t n);
 	#define EXIT(n)  {while(1);}
 	
 	#ifdef __cplusplus
