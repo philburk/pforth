@@ -2,6 +2,9 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
+V26  5/20/2010
+    - 64-bit support for M* UM/MOD etc by Aleksej Saushev. Thanks Aleksej!
+    
 V25  5/19/2010
     - Added 64-bit CELL support contributed by Aleksej Saushev. Thanks Aleksej!
     - Added "-x c" to Makefile CCOPTS to prevent confusion with C++

@@ -2,8 +2,9 @@ README for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 by Phil Burk
 with Larry Polansky, David Rosenboom and Darren Gibbs.
+Support for 64-bit cells by Aleksej Saushev.
 
-Last updated: Feb 20, 2009 V24
+Last updated: May 20, 2010 V26
 
 Code for pForth is maintained on Google at:
    http://code.google.com/p/pforth/
