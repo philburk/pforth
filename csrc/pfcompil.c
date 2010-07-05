@@ -58,7 +58,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 {
 	cfNameLinks *cfnl;
 
-	cfnl = (cfNameLinks *) gCurrentDictionary->dic_HeaderPtr.Byte;
+	cfnl = (cfNameLinks *) gCurrentDictionary->dic_HeaderPtr;
 
 /* Set link to previous header, if any. */
 	if( gVarContext )
@@ -74,20 +74,20 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 	WRITE_CELL_DIC( &cfnl->cfnl_ExecToken, XT );
 
 /* Advance Header Dictionary Pointer */
-	gCurrentDictionary->dic_HeaderPtr.Byte += sizeof(cfNameLinks);
+	gCurrentDictionary->dic_HeaderPtr += sizeof(cfNameLinks);
 
 /* Laydown name. */
-	gVarContext = (char *) gCurrentDictionary->dic_HeaderPtr.Byte;
-	pfCopyMemory( gCurrentDictionary->dic_HeaderPtr.Byte, FName, (*FName)+1 );
-	gCurrentDictionary->dic_HeaderPtr.Byte += (*FName)+1;
+	gVarContext = (char *) gCurrentDictionary->dic_HeaderPtr;
+	pfCopyMemory( (char *)gCurrentDictionary->dic_HeaderPtr, FName, (*FName)+1 );
+	gCurrentDictionary->dic_HeaderPtr += (*FName)+1;
 
 /* Set flags. */
-	*gVarContext |= (char) Flags;
+	*(char*)gVarContext |= (char) Flags;
 	
 /* Align to quad byte boundaries with zeroes. */
-	while( ((ucell_t) gCurrentDictionary->dic_HeaderPtr.Byte) & UINT32_MASK )
+	while( gCurrentDictionary->dic_HeaderPtr & UINT32_MASK )
 	{
-		*gCurrentDictionary->dic_HeaderPtr.Byte++ = 0;
+		*(char*)(gCurrentDictionary->dic_HeaderPtr++) = 0;
 	}
 }
 
@@ -528,16 +528,16 @@ DBUG(("ffFindC: %s\n", WordName ));
 static cell_t ffCheckDicRoom( void )
 {
 	cell_t RoomLeft;
-	RoomLeft = gCurrentDictionary->dic_HeaderLimit -
-	           gCurrentDictionary->dic_HeaderPtr.Byte;
+	RoomLeft = (char *)gCurrentDictionary->dic_HeaderLimit -
+		   (char *)gCurrentDictionary->dic_HeaderPtr;
 	if( RoomLeft < DIC_SAFETY_MARGIN )
 	{
 		pfReportError("ffCheckDicRoom", PF_ERR_HEADER_ROOM);
 		return PF_ERR_HEADER_ROOM;
 	}
 
-	RoomLeft = gCurrentDictionary->dic_CodeLimit -
-	           gCurrentDictionary->dic_CodePtr.Byte;
+	RoomLeft = (char *)gCurrentDictionary->dic_CodeLimit -
+	           (char *)gCurrentDictionary->dic_CodePtr.Byte;
 	if( RoomLeft < DIC_SAFETY_MARGIN )
 	{
 		pfReportError("ffCheckDicRoom", PF_ERR_CODE_ROOM);
@@ -662,7 +662,7 @@ void ffDefer( void )
 /* Unsmudge the word to make it visible. */
 void ffUnSmudge( void )
 {
-	*gVarContext &= ~FLAG_SMUDGE;
+	*(char*)gVarContext &= ~FLAG_SMUDGE;
 }
 
 /* Implement ; */
