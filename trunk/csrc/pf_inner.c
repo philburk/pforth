@@ -1536,7 +1536,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				WRITE_CELL_DIC(TOS,M_POP);
+				WRITE_CELL_DIC((cell_t *)TOS,M_POP);
 			}
 			else
 			{
@@ -1666,7 +1666,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		case ID_VAR_ECHO: DO_VAR(gVarEcho); endcase;
 		case ID_VAR_HEADERS_BASE: DO_VAR(gCurrentDictionary->dic_HeaderBase); endcase;
 		case ID_VAR_HEADERS_LIMIT: DO_VAR(gCurrentDictionary->dic_HeaderLimit); endcase;
-		case ID_VAR_HEADERS_PTR: DO_VAR(gCurrentDictionary->dic_HeaderPtr.Cell); endcase;
+		case ID_VAR_HEADERS_PTR: DO_VAR(gCurrentDictionary->dic_HeaderPtr); endcase;
 		case ID_VAR_NUM_TIB: DO_VAR(gCurrentTask->td_SourceNum); endcase;
 		case ID_VAR_OUT: DO_VAR(gCurrentTask->td_OUT); endcase;
 		case ID_VAR_STATE: DO_VAR(gVarState); endcase;
@@ -1684,7 +1684,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				TOS = (uint16_t) READ_SHORT_DIC((uint8_t *)TOS);
+				TOS = (uint16_t) READ_SHORT_DIC((uint16_t *)TOS);
 			}
 			else
 			{
@@ -1700,7 +1700,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #if (defined(PF_BIG_ENDIAN_DIC) || defined(PF_LITTLE_ENDIAN_DIC))
 			if( IN_DICS( TOS ) )
 			{
-				WRITE_SHORT_DIC(TOS,M_POP);
+				WRITE_SHORT_DIC((uint16_t *)TOS,(uint16_t)M_POP);
 			}
 			else
 			{

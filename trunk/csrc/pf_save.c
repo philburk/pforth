@@ -423,7 +423,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 		uint32_t relativeHeaderPtr;
 /* Development mode. */
 		SD.sd_RelContext = ABS_TO_NAMEREL(gVarContext);
-		relativeHeaderPtr = ABS_TO_NAMEREL(gCurrentDictionary->dic_HeaderPtr.Byte);
+		relativeHeaderPtr = ABS_TO_NAMEREL(gCurrentDictionary->dic_HeaderPtr);
 		SD.sd_RelHeaderPtr = relativeHeaderPtr;
 
 /* How much real name space is there? */
@@ -645,13 +645,13 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 			if( sd->sd_NameSize > 0 )
 			{
 				gVarContext = (char *) NAMEREL_TO_ABS(sd->sd_RelContext); /* Restore context. */
-				gCurrentDictionary->dic_HeaderPtr.Byte = (uint8_t *)
+				gCurrentDictionary->dic_HeaderPtr = (ucell_t)(uint8_t *)
 					NAMEREL_TO_ABS(sd->sd_RelHeaderPtr);
 			}
 			else
 			{
 				gVarContext = 0;
-				gCurrentDictionary->dic_HeaderPtr.Byte = NULL;
+				gCurrentDictionary->dic_HeaderPtr = (ucell_t)NULL;
 			}
 			gCurrentDictionary->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(sd->sd_RelCodePtr);
 			gNumPrimitives = sd->sd_NumPrimitives;  /* Must match compiled dictionary. */
@@ -810,7 +810,7 @@ PForthDictionary pfLoadStaticDictionary( void )
 	if( NAME_BASE != NULL)
 	{
 /* Setup name space. */
-		dic->dic_HeaderPtr.Byte = (uint8_t *) NAMEREL_TO_ABS(HEADERPTR);
+		dic->dic_HeaderPtr = (ucell_t)(uint8_t *) NAMEREL_TO_ABS(HEADERPTR);
 		gVarContext = (char *) NAMEREL_TO_ABS(RELCONTEXT); /* Restore context. */
 
 /* Find special words in dictionary for global XTs. */

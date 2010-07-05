@@ -422,26 +422,22 @@ typedef struct pfDictionary_s
 	ucell_t  dic_Flags;
 /* Headers contain pointers to names and dictionary. */
 
-	uint8_t	*dic_HeaderBaseUnaligned;
+	ucell_t	dic_HeaderBaseUnaligned;
 
-	uint8_t	*dic_HeaderBase;
-	union
-	{
-		cell_t	*Cell;
-		uint8_t	*Byte;
-	} dic_HeaderPtr;
-	uint8_t	*dic_HeaderLimit;
+	ucell_t	dic_HeaderBase;
+	ucell_t	dic_HeaderPtr;
+	ucell_t	dic_HeaderLimit;
 /* Code segment contains tokenized code and data. */
 
-	uint8_t	*dic_CodeBaseUnaligned;
+	ucell_t	dic_CodeBaseUnaligned;
 
-	uint8_t	*dic_CodeBase;
+	ucell_t	dic_CodeBase;
 	union
 	{
 		cell_t	*Cell;
 		uint8_t	*Byte;
 	} dic_CodePtr;
-	uint8_t	*dic_CodeLimit;
+	ucell_t	dic_CodeLimit;
 } pfDictionary_t;
 
 /* Save state of include when nesting files. */
@@ -487,7 +483,7 @@ extern ExecToken     gAcceptP_XT;         /* XT of ACCEPT */
 extern cell_t         gDepthAtColon;
 
 /* Global variables. */
-extern char         *gVarContext;    /* Points to last name field. */
+extern cell_t        gVarContext;    /* Points to last name field. */
 extern cell_t        gVarState;      /* 1 if compiling. */
 extern cell_t        gVarBase;       /* Numeric Base. */
 extern cell_t        gVarEcho;       /* Echo input from file. */

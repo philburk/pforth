@@ -53,7 +53,7 @@ ExecToken     gAcceptP_XT;         /* XT of ACCEPT */
 cell_t         gDepthAtColon;
 
 /* Global Forth variables. */
-char         *gVarContext;      /* Points to last name field. */
+cell_t          gVarContext;      /* Points to last name field. */
 cell_t          gVarState;        /* 1 if compiling. */
 cell_t          gVarBase;         /* Numeric Base. */
 cell_t          gVarEcho;	        /* Echo input. */
@@ -87,7 +87,7 @@ static void pfInit( void )
 	gCurrentDictionary = NULL;
 	gNumPrimitives = 0;
 	gLocalCompiler_XT = 0;
-	gVarContext = NULL;   /* Points to last name field. */
+	gVarContext = (cell_t)NULL;   /* Points to last name field. */
 	gVarState = 0;        /* 1 if compiling. */
 	gVarEcho = 0;	    /* Echo input. */
 	gVarTraceLevel = 0;   /* Trace Level for Inner Interpreter. */
@@ -174,7 +174,7 @@ nomem:
 cell_t pfExecIfDefined( const char *CString )
 {
 	int result = 0;
-	if( NAME_BASE != NULL)
+	if( NAME_BASE != (cell_t)NULL)
 	{
 		ExecToken  XT;
 		if( ffFindC( CString, &XT ) )
@@ -235,7 +235,7 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 		dic->dic_HeaderBase = DIC_ALIGN(dic->dic_HeaderBaseUnaligned);
 		pfSetMemory( dic->dic_HeaderBase, 0xA5, (ucell_t) HeaderSize);
 		dic->dic_HeaderLimit = dic->dic_HeaderBase + HeaderSize;
-		dic->dic_HeaderPtr.Byte = dic->dic_HeaderBase;
+		dic->dic_HeaderPtr = dic->dic_HeaderBase;
 	}
 	else
 	{
