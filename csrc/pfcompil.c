@@ -250,6 +250,7 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
 	CreateDicEntryC( ID_FILL, "FILL", 0 );
 	CreateDicEntryC( ID_FIND, "FIND",  0 );
 	CreateDicEntryC( ID_FILE_CREATE, "CREATE-FILE",  0 );
+	CreateDicEntryC( ID_FILE_DELETE, "DELETE-FILE",  0 );
 	CreateDicEntryC( ID_FILE_OPEN, "OPEN-FILE",  0 );
 	CreateDicEntryC( ID_FILE_CLOSE, "CLOSE-FILE",  0 );
 	CreateDicEntryC( ID_FILE_READ, "READ-FILE",  0 );

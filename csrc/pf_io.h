@@ -114,6 +114,7 @@ void ioTerm( void );
 		typedef FILE FileStream;
 
 		#define sdOpenFile      fopen
+		#define sdDeleteFile      remove
 		#define sdFlushFile     fflush
 		#define sdReadFile      fread
 		#define sdWriteFile     fwrite

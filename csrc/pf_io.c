@@ -214,5 +214,12 @@ cell_t sdCloseFile( FileStream * Stream )
 	TOUCH(Stream);
 	return 0; 
 }
+
+FileStream *sdDeleteFile( const char *FileName )
+{
+	UNIMPLEMENTED("sdDeleteFile");
+	TOUCH(FileName);
+	return NULL;
+}
 #endif
 
