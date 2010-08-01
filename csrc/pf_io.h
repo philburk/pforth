@@ -84,8 +84,8 @@ void ioTerm( void );
 	cell_t sdFlushFile( FileStream * Stream  );
 	cell_t sdReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
 	cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
-	cell_t sdSeekFile( FileStream * Stream, cell_t Position, int32_t Mode );
-	cell_t sdTellFile( FileStream * Stream );
+	cell_t sdSeekFile( FileStream * Stream, off_t Position, int32_t Mode );
+	off_t sdTellFile( FileStream * Stream );
 	cell_t sdCloseFile( FileStream * Stream );
 	cell_t sdInputChar( FileStream *stream );
 	
@@ -118,8 +118,8 @@ void ioTerm( void );
 		#define sdFlushFile     fflush
 		#define sdReadFile      fread
 		#define sdWriteFile     fwrite
-		#define sdSeekFile      fseek
-		#define sdTellFile      ftell
+		#define sdSeekFile      fseeko
+		#define sdTellFile      ftello
 		#define sdCloseFile     fclose
 		#define sdInputChar     fgetc
 		

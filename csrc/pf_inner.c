@@ -278,7 +278,7 @@ int pfCatch( ExecToken XT )
 	char          *CharPtr;
 	cell_t        *CellPtr;
 	FileStream    *FileID;
-	uint8_t         *CodeBase = CODE_BASE;
+	uint8_t       *CodeBase = (uint8_t *) CODE_BASE;
 	ThrowCode      ExceptionReturnCode = 0;
 	
 /* FIXME
@@ -1018,11 +1018,18 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		case ID_FILE_SIZE: /* ( fid -- ud ior ) */
 /* Determine file size by seeking to end and returning position. */
 			FileID = (FileStream *) TOS;
-			Scratch = sdTellFile( FileID );
-			sdSeekFile( FileID, 0, PF_SEEK_END );
-			M_PUSH( sdTellFile( FileID ));
-			sdSeekFile( FileID, Scratch, PF_SEEK_SET );
-			TOS = (Scratch < 0) ? -4 : 0 ; /* !!! err num */
+			{
+				off_t endposition, offsetHi;
+				off_t original = sdTellFile( FileID );
+				sdSeekFile( FileID, 0, PF_SEEK_END );
+				endposition = sdTellFile( FileID );
+				M_PUSH(endposition);
+				// Just use a 0 if they are the same size.
+				offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (endposition >> (8*sizeof(cell_t))) : 0 ;
+				M_PUSH(offsetHi);
+				sdSeekFile( FileID, original, PF_SEEK_SET );
+				TOS = (original < 0) ? -4 : 0 ; /* !!! err num */
+			}
 			endcase;
 
 		case ID_FILE_WRITE: /* ( addr len fid -- ior ) */
@@ -1033,15 +1040,28 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			TOS = (Temp != Scratch) ? -3 : 0;
 			endcase;
 
-		case ID_FILE_REPOSITION: /* ( pos fid -- ior ) */
-			FileID = (FileStream *) TOS;
-			Scratch = M_POP;
-			TOS = sdSeekFile( FileID, Scratch, PF_SEEK_SET );
+		case ID_FILE_REPOSITION: /* ( ud fid -- ior ) */				
+			{
+				FileID = (FileStream *) TOS;
+				off_t offset = M_POP;
+				// Avoid compiler warnings on Mac.
+				offset = (sizeof(off_t) > sizeof(cell_t)) ? (offset << 8*sizeof(cell_t)) : 0 ;
+				offset += M_POP;
+				TOS = sdSeekFile( FileID, offset, PF_SEEK_SET );
+			}
 			endcase;
 
-		case ID_FILE_POSITION: /* ( pos fid -- ior ) */
-			M_PUSH( sdTellFile( (FileStream *) TOS ));
-			TOS = 0;
+		case ID_FILE_POSITION: /* ( fid -- ud ior ) */
+			{
+				off_t offsetHi;
+				FileID = (FileStream *) TOS;
+				off_t position = sdTellFile( FileID );
+				M_PUSH(position);
+				// Just use a 0 if they are the same size.
+				offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (position >> (8*sizeof(cell_t))) : 0 ;
+				M_PUSH(offsetHi);
+				TOS = (position < 0) ? -4 : 0 ; /* !!! err num */
+			}
 			endcase;
 
 		case ID_FILE_RO: /* (  -- fam ) */
