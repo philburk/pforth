@@ -279,6 +279,8 @@ enum cforth_primitive_ids
 	/* Added to support 64 bit operation. */
 	ID_CELL,
 	ID_CELLS,
+	/* DELETE-FILE */
+	ID_FILE_DELETE,
 /* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
@@ -297,7 +299,6 @@ enum cforth_primitive_ids
 	ID_RESERVED11,
 	ID_RESERVED12,
 	ID_RESERVED13,
-	ID_RESERVED14,
 	ID_FP_D_TO_F,
 	ID_FP_FSTORE,
 	ID_FP_FTIMES,

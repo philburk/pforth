@@ -962,6 +962,23 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			}
 			endcase;
 
+		case ID_FILE_DELETE: /* ( c-addr u -- ior ) */
+/* Build NUL terminated name string. */
+			Temp = M_POP;    /* caddr */
+			if( TOS < TIB_SIZE-2 )
+			{
+				pfCopyMemory( gScratch, (char *) Temp, (ucell_t) TOS );
+				gScratch[TOS] = '\0';
+				DBUG(("Delete file = %s\n", gScratch ));
+				TOS = sdDeleteFile( gScratch );
+			}
+			else
+			{
+				ERR("Filename too large for name buffer.\n");
+				TOS = -2;
+			}
+			endcase;
+
 		case ID_FILE_OPEN: /* ( c-addr u fam -- fid ior ) */
 /* Build NUL terminated name string. */
 			Scratch = M_POP; /* u */
