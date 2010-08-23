@@ -371,12 +371,11 @@ cell_t pfIncludeFile( const char *FileName )
 	pfCopyMemory( &buffer[4], &FileName[len-numChars], numChars+1 );
 	CreateDicEntryC( ID_NOOP, buffer, 0 );
 	
-	Result = ffIncludeFile( fid );
+	Result = ffIncludeFile( fid ); /* Also close the file. */
 	
 /* Create a dictionary word named ;;;; for FILE? */
 	CreateDicEntryC( ID_NOOP, ";;;;", 0 );
 	
-	sdCloseFile(fid);
 	return Result;
 }
 

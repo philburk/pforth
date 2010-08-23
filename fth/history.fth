@@ -51,6 +51,8 @@ KH-HISTORY kh_history_size erase
 \ The most recent entry is put at the beginning,
 \ older entries are shifted up.
 
+4 constant KH_LINE_EXTRA_SIZE ( 2 count bytes plus 2 size bytes )
+
 : KH-END ( -- addr , end of history buffer )
 	kh-history kh_history_size +
 ;
@@ -132,7 +134,9 @@ variable KH-INSIDE        ( true if we are scrolling inside the history buffer )
 			>r ( save count )
 \ Set look pointer to point to first count byte of last string.
 			0 kh-look !
-			r@ cell+ kh.make.room
+\ Make room for this line of text and line header. 
+\ PLB20100823 Was cell+ which broke on 64-bit code.
+			r@ KH_LINE_EXTRA_SIZE + kh.make.room
 \ Set count bytes at beginning and end.
 			r@ kh-history c!  ( start count )
 			r@ kh.endcount.addr c!

@@ -2,9 +2,14 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
-V??
+V27
     - Fixed REPOSITION-FILE FILE-SIZE and FILE-POSITION.
       They used to use single precision offset. Now use double as specified.
+    - Delete object directories in Makefile clean.
+    - Fixed "Issue 4: Filehandle remains locked upon INCLUDE error".
+      http://code.google.com/p/pforth/issues/detail?id=4&can=1
+    - Fixed scambled HISTORY on 64-bit systems. Was using CELL+ but really needed 4 +.
+    - Fixed floating point input. Now accepts "1E" as 1.0. Was Issue #2.
 
 V26  5/20/2010
     - 64-bit support for M* UM/MOD etc by Aleksej Saushev. Thanks Aleksej!
