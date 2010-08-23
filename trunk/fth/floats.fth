@@ -406,16 +406,21 @@ false fp-require-e !   \ violate ANSI !!
 			c-addr c@ [char] E =
 			c-addr c@ [char] e =  OR
 			IF
-				1 +-> c-addr   -1 +-> u'   \ skip char
-				c-addr c@ [char] + = \ ignore + on exponent
+				1 +-> c-addr   -1 +-> u'   \ skip E char
+				u' 0>
 				IF
-					1 +-> c-addr   -1 +-> u'   \ skip char
-				THEN
-				c-addr u' ((number?))
-				num_type_single =
-				IF
-					nshift + -> nshift
-					true -> flag
+    				c-addr c@ [char] + = \ ignore + on exponent
+    				IF
+                        1 +-> c-addr   -1 +-> u'   \ skip char
+                    THEN
+				    c-addr u' ((number?))
+				    num_type_single =
+				    IF
+					   nshift + -> nshift
+					   true -> flag
+				    THEN
+				ELSE
+				    true -> flag   \ allow "1E"
 				THEN
 			THEN
 		ELSE

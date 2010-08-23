@@ -738,16 +738,14 @@ variable TRACE-INCLUDE
                 drop ." Could not find file " $type cr abort
         ELSE ( -- $filename good-fid )
                 swap include.mark.start
-                dup >r   \ save fid for close-file
                 depth >r
-                include-file
+                include-file    \ will also close the file
                 depth 1+ r> -
                 IF
                         ." Warning: stack depth changed during include!" cr
                         .s cr
                         0sp
                 THEN
-                r> close-file drop
                 include.mark.end
         THEN
         trace-include @

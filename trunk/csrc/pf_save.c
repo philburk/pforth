@@ -343,6 +343,33 @@ error:
 	return -1;
 }
 
+/* Convert dictionary info chunk between native and on-disk (big-endian). */
+static void
+convertDictionaryInfoWrite (DictionaryInfoChunk *sd)
+{
+/* Convert all fields in DictionaryInfoChunk from Native to BigEndian. 
+ * This assumes they are all 32-bit integers.
+ */
+	int   i;
+	uint32_t *p = (uint32_t *) sd;
+	for (i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++)
+	{
+		Write32BigEndian( (uint8_t *)&p[i], p[i] );
+	}
+}
+
+static void
+convertDictionaryInfoRead (DictionaryInfoChunk *sd)
+{
+/* Convert all fields in structure from BigEndian to Native. */
+	int   i;
+	uint32_t *p = (uint32_t *) sd;
+	for (i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++)
+	{
+		p[i] = Read32BigEndian( (uint8_t *)&p[i] );
+	}
+}
+
 /****************************************************************
 ** Save Dictionary in File.
 ** If EntryPoint is NULL, save as development environment.
@@ -356,7 +383,6 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 	uint32_t NameChunkSize = 0;
 	uint32_t CodeChunkSize;
 	uint32_t relativeCodePtr;
-	int   i;
 
 	fid = sdOpenFile( FileName, "wb" );
 	if( fid == NULL )
@@ -445,16 +471,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 	SD.sd_CodeSize = CodeSize;
 
 	
-/* Convert all fields in DictionaryInfoChunk from Native to BigEndian. 
- * This assumes they are all 32-bit integers.
- */
-	{
-		uint32_t *p = (uint32_t *) &SD;
-		for( i=0; i<((int)(sizeof(SD)/sizeof(uint32_t))); i++ )
-		{
-			Write32BigEndian( (uint8_t *)&p[i], p[i] );
-		}
-	}
+	convertDictionaryInfoWrite (&SD);
 
 	if( WriteChunkToFile( fid, ID_P4DI, (char *) &SD, sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
 
@@ -517,7 +534,6 @@ PForthDictionary pfLoadDictionary( const char *FileName, ExecToken *EntryPointPt
 	uint32_t FormSize;
 	uint32_t BytesLeft;
 	uint32_t numr;
-	int   i;
 	int   isDicBigEndian;
 
 DBUG(("pfLoadDictionary( %s )\n", FileName ));
@@ -568,15 +584,8 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 			if( numr != ChunkSize ) goto read_error;
 			BytesLeft -= ChunkSize;
 			
-/* Convert all fields in structure from BigEndian to Native. */
-			{
-				uint32_t *p = (uint32_t *) sd;
-				for( i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++ )
-				{
-					p[i] = Read32BigEndian( (uint8_t *)&p[i] );
-				}
-			}
-				
+			convertDictionaryInfoRead (sd);
+
 			isDicBigEndian = sd->sd_Flags & SD_F_BIG_ENDIAN_DIC;
 
 			if( !gVarQuiet )

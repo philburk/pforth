@@ -124,3 +124,5 @@ clean:
 	rm -f $(PFDICDAT)
 	rm -f $(PFORTHDIC)
 	rm -f $(PFDICAPP)
+	rm -rf $(OBJECTDIR) $(TEMPOBJECTDIR)
+

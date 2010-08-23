@@ -1289,9 +1289,8 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 			if( FileID )
 			{
 				SAVE_REGISTERS;
-				Scratch = ffIncludeFile( FileID );
+				Scratch = ffIncludeFile( FileID ); /* Also closes the file. */
 				LOAD_REGISTERS;
-				sdCloseFile( FileID );
 				if( Scratch ) M_THROW(Scratch);
 			}
 			else

@@ -927,7 +927,7 @@ ThrowCode ffOuterInterpreterLoop( void )
 }
 
 /***************************************************************
-** Include a file
+** Include then close a file
 ***************************************************************/
 
 ThrowCode ffIncludeFile( FileStream *InputFile )
@@ -963,6 +963,9 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
 /* Pop file stream. */
 	ffPopInputStream();
 	
+/* ANSI spec specifies that this should also close the file. */
+	sdCloseFile(InputFile);
+
 	return exception;
 }
 
