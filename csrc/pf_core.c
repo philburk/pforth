@@ -92,7 +92,6 @@ static void pfInit( void )
 	gVarEcho = 0;	    /* Echo input. */
 	gVarTraceLevel = 0;   /* Trace Level for Inner Interpreter. */
 	gVarTraceFlags = 0;   /* Enable various internal debug messages. */
-	gVarQuiet = 0;        /* Suppress unnecessary messages, OK, etc. */
 	gVarReturnCode = 0;   /* Returned to caller of Forth, eg. UNIX shell. */
 	gIncludeIndex = 0;
 	
@@ -224,32 +223,32 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
  * to (ucell_t) on 16 bit systems.
  */
 #define DIC_ALIGNMENT_SIZE  ((ucell_t)(0x10))
-#define DIC_ALIGN(addr)  ((uint8_t *)((((ucell_t)(addr)) + DIC_ALIGNMENT_SIZE - 1) & ~(DIC_ALIGNMENT_SIZE - 1)))
+#define DIC_ALIGN(addr)  ((((ucell_t)(addr)) + DIC_ALIGNMENT_SIZE - 1) & ~(DIC_ALIGNMENT_SIZE - 1))
 
 /* Allocate memory for header. */
 	if( HeaderSize > 0 )
 	{
-		dic->dic_HeaderBaseUnaligned = ( uint8_t * ) pfAllocMem( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE );
+		dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocMem( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE );
 		if( !dic->dic_HeaderBaseUnaligned ) goto nomem;
 /* Align header base. */
 		dic->dic_HeaderBase = DIC_ALIGN(dic->dic_HeaderBaseUnaligned);
-		pfSetMemory( dic->dic_HeaderBase, 0xA5, (ucell_t) HeaderSize);
+		pfSetMemory( (char *) dic->dic_HeaderBase, 0xA5, (ucell_t) HeaderSize);
 		dic->dic_HeaderLimit = dic->dic_HeaderBase + HeaderSize;
 		dic->dic_HeaderPtr = dic->dic_HeaderBase;
 	}
 	else
 	{
-		dic->dic_HeaderBase = NULL;
+		dic->dic_HeaderBase = 0;
 	}
 
 /* Allocate memory for code. */
-	dic->dic_CodeBaseUnaligned = ( uint8_t * ) pfAllocMem( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
+	dic->dic_CodeBaseUnaligned = (ucell_t) pfAllocMem( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
 	if( !dic->dic_CodeBaseUnaligned ) goto nomem;
 	dic->dic_CodeBase = DIC_ALIGN(dic->dic_CodeBaseUnaligned);
-	pfSetMemory( dic->dic_CodeBase, 0x5A, (ucell_t) CodeSize);
+	pfSetMemory( (char *) dic->dic_CodeBase, 0x5A, (ucell_t) CodeSize);
 
 	dic->dic_CodeLimit = dic->dic_CodeBase + CodeSize;
-	dic->dic_CodePtr.Byte = dic->dic_CodeBase + QUADUP(NUM_PRIMITIVES); 
+	dic->dic_CodePtr.Byte = ((uint8_t *) (dic->dic_CodeBase + QUADUP(NUM_PRIMITIVES))); 
 	
 	return (PForthDictionary) dic;
 nomem:
@@ -450,7 +449,7 @@ cell_t pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit
 	{
 		pfSetCurrentTask( cftd );
 		
-		if( !pfQueryQuiet() )
+		if( !gVarQuiet )
 		{
 			MSG( "PForth V"PFORTH_VERSION );
 			if( IsHostLittleEndian() ) MSG("-LE");
@@ -508,8 +507,12 @@ cell_t pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit
 			}
 		}
 		if( dic == NULL ) goto error2;
-		EMIT_CR;
-
+		
+		if( !gVarQuiet )
+		{
+			EMIT_CR;
+		}
+		
 		pfDebugMessage("pfDoForth: try AUTO.INIT\n");
 		Result = pfExecIfDefined("AUTO.INIT");
 		if( Result != 0 )
@@ -560,7 +563,7 @@ cell_t pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit
 error2:
 	MSG("pfDoForth: Error occured.\n");
 	pfDeleteTask( cftd );
-	// Terminate so we restore normal shell tty mode.
+	/* Terminate so we restore normal shell tty mode. */
 	pfTerm();
 
 #ifdef PF_USER_INIT

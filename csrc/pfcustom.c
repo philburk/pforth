@@ -77,7 +77,7 @@ Err LoadCustomFunctionTable( void )
 ** If your loader supports global initialization (most do.) then just
 ** create the table like this.
 */
-void *CustomFunctionTable[] =
+CFunc0 CustomFunctionTable[] =
 {
 	(CFunc0) CTest0,
 	(CFunc0) CTest1

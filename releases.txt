@@ -8,8 +8,10 @@ V27
     - Delete object directories in Makefile clean.
     - Fixed "Issue 4: Filehandle remains locked upon INCLUDE error".
       http://code.google.com/p/pforth/issues/detail?id=4&can=1
-    - Fixed scambled HISTORY on 64-bit systems. Was using CELL+ but really needed 4 +.
+    - Fixed scrambled HISTORY on 64-bit systems. Was using CELL+ but really needed 4 +.
     - Fixed floating point input. Now accepts "1E" as 1.0. Was Issue #2.
+    - Fixed lots of warning and made code compatible with C89 and ANSI with -pedantic.
+    - Use fseek and ftell on WIN32 instead of fseeko and ftello.
 
 V26  5/20/2010
     - 64-bit support for M* UM/MOD etc by Aleksej Saushev. Thanks Aleksej!
