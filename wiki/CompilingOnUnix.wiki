@@ -15,4 +15,8 @@ It will also create a standalone executable image that includes the dictionary c
 
   ../../pforth_standalone
 
+= Testing =
+
+ Enter: make test
+
 Return to [PForthHome]
