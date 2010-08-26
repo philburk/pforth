@@ -213,8 +213,8 @@ PF_FLOAT ReadFloatLittleEndian( const PF_FLOAT *addr )
 /***************************************************************/
 void WriteCellBigEndian( uint8_t *addr, ucell_t data )
 {
-	// Write should be in order of increasing address
-	// to optimize for burst writes to DRAM.
+	/* Write should be in order of increasing address 
+	 * to optimize for burst writes to DRAM. */
 	if( sizeof(ucell_t) == 8 )
 	{
 		*addr++ = (uint8_t) (data>>56);
@@ -247,11 +247,11 @@ void Write16BigEndian( uint8_t *addr, uint16_t data )
 /***************************************************************/
 void WriteCellLittleEndian( uint8_t *addr, ucell_t data )
 {
-	// Write should be in order of increasing address
-	// to optimize for burst writes to DRAM.
+	/* Write should be in order of increasing address 
+	 * to optimize for burst writes to DRAM. */
 	if( sizeof(ucell_t) == 8 )
 	{
-		*addr++ = (uint8_t) data;  // LSB at near end
+		*addr++ = (uint8_t) data;  /* LSB at near end */
 		data = data >> 8;
 		*addr++ = (uint8_t) data;
 		data = data >> 8;
@@ -653,7 +653,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 			gCurrentDictionary = dic;
 			if( sd->sd_NameSize > 0 )
 			{
-				gVarContext = (char *) NAMEREL_TO_ABS(sd->sd_RelContext); /* Restore context. */
+				gVarContext = NAMEREL_TO_ABS(sd->sd_RelContext); /* Restore context. */
 				gCurrentDictionary->dic_HeaderPtr = (ucell_t)(uint8_t *)
 					NAMEREL_TO_ABS(sd->sd_RelHeaderPtr);
 			}
@@ -674,7 +674,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 			pfReportError("pfLoadDictionary", PF_ERR_NO_SHELL );
 			goto error;
 #else
-			if( NAME_BASE == NULL )
+			if( NAME_BASE == 0 )
 			{
 				pfReportError("pfLoadDictionary", PF_ERR_NO_NAMES );
 				goto error;
@@ -689,7 +689,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 				pfReportError("pfLoadDictionary", PF_ERR_TOO_BIG);
 				goto error;
 			}
-			numr = sdReadFile( NAME_BASE, 1, ChunkSize, fid );
+			numr = sdReadFile( (char *) NAME_BASE, 1, ChunkSize, fid );
 			if( numr != ChunkSize ) goto read_error;
 			BytesLeft -= ChunkSize;
 #endif /* PF_NO_SHELL */
@@ -706,7 +706,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 				pfReportError("pfLoadDictionary", PF_ERR_TOO_BIG);
 				goto error;
 			}
-			numr = sdReadFile( CODE_BASE, 1, ChunkSize, fid );
+			numr = sdReadFile( (uint8_t *) CODE_BASE, 1, ChunkSize, fid );
 			if( numr != ChunkSize ) goto read_error;
 			BytesLeft -= ChunkSize;
 			break;
@@ -720,7 +720,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 
 	sdCloseFile( fid );
 
-	if( NAME_BASE != NULL)
+	if( NAME_BASE != 0)
 	{
 		cell_t Result;
 /* Find special words in dictionary for global XTs. */
@@ -809,18 +809,18 @@ PForthDictionary pfLoadStaticDictionary( void )
 	gCurrentDictionary = dic = pfCreateDictionary( NewNameSize, NewCodeSize );
 	if( !dic ) goto nomem_error;
 
-	pfCopyMemory( dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
-	pfCopyMemory( dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode) );
+	pfCopyMemory( (uint8_t *) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
+	pfCopyMemory( (uint8_t *) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode) );
 	DBUG(("Static data copied to newly allocated dictionaries.\n"));
 
 	dic->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(CODEPTR);
 	gNumPrimitives = NUM_PRIMITIVES;
 
-	if( NAME_BASE != NULL)
+	if( NAME_BASE != 0)
 	{
 /* Setup name space. */
 		dic->dic_HeaderPtr = (ucell_t)(uint8_t *) NAMEREL_TO_ABS(HEADERPTR);
-		gVarContext = (char *) NAMEREL_TO_ABS(RELCONTEXT); /* Restore context. */
+		gVarContext = NAMEREL_TO_ABS(RELCONTEXT); /* Restore context. */
 
 /* Find special words in dictionary for global XTs. */
 		if( (Result = FindSpecialXTs()) < 0 )

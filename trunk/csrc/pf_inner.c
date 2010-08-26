@@ -1024,7 +1024,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 				sdSeekFile( FileID, 0, PF_SEEK_END );
 				endposition = sdTellFile( FileID );
 				M_PUSH(endposition);
-				// Just use a 0 if they are the same size.
+				/* Just use a 0 if they are the same size. */
 				offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (endposition >> (8*sizeof(cell_t))) : 0 ;
 				M_PUSH(offsetHi);
 				sdSeekFile( FileID, original, PF_SEEK_SET );
@@ -1042,9 +1042,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 		case ID_FILE_REPOSITION: /* ( ud fid -- ior ) */				
 			{
+				off_t offset;
 				FileID = (FileStream *) TOS;
-				off_t offset = M_POP;
-				// Avoid compiler warnings on Mac.
+				offset = M_POP;
+				/* Avoid compiler warnings on Mac. */
 				offset = (sizeof(off_t) > sizeof(cell_t)) ? (offset << 8*sizeof(cell_t)) : 0 ;
 				offset += M_POP;
 				TOS = sdSeekFile( FileID, offset, PF_SEEK_SET );
@@ -1053,11 +1054,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 		case ID_FILE_POSITION: /* ( fid -- ud ior ) */
 			{
+				off_t position;
 				off_t offsetHi;
 				FileID = (FileStream *) TOS;
-				off_t position = sdTellFile( FileID );
+				position = sdTellFile( FileID );
 				M_PUSH(position);
-				// Just use a 0 if they are the same size.
+				/* Just use a 0 if they are the same size. */
 				offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (position >> (8*sizeof(cell_t))) : 0 ;
 				M_PUSH(offsetHi);
 				TOS = (position < 0) ? -4 : 0 ; /* !!! err num */
@@ -1459,11 +1461,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		case ID_RESIZE:  /* ( addr1 u -- addr2 result ) */
 			{
 				cell_t *Addr1 = (cell_t *) M_POP;
-				// Point to validator below users address.
+				/* Point to validator below users address. */
 				cell_t *FreePtr = Addr1 - 1;
 				if( ((ucell_t)*FreePtr) != ((ucell_t)FreePtr ^ PF_MEMORY_VALIDATOR))
 				{
-					// 090218 - Fixed bug, was returning zero.
+					/* 090218 - Fixed bug, was returning zero. */
 					M_PUSH( Addr1 );
 					TOS = -3;
 				}
@@ -1476,17 +1478,17 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 						/* Copy memory including validation. */
 						pfCopyMemory( (char *) CellPtr, (char *) FreePtr, TOS + sizeof(cell_t) );
 						*CellPtr = (cell_t)(((ucell_t)CellPtr) ^ (ucell_t)PF_MEMORY_VALIDATOR);
-						// 090218 - Fixed bug that was incrementing the address twice. Thanks Reinhold Straub.
-						// Increment past validator to user address.
+						/* 090218 - Fixed bug that was incrementing the address twice. Thanks Reinhold Straub. */
+						/* Increment past validator to user address. */
 			            M_PUSH( (cell_t) (CellPtr + 1) );
-						TOS = 0; // Result code.
-						// Mark old cell as dead so we can't free it twice.
+						TOS = 0; /* Result code. */
+						/* Mark old cell as dead so we can't free it twice. */
 						FreePtr[0] = 0xDeadBeef;
 						pfFreeMem((char *) FreePtr);
 					}
 					else
 					{
-						// 090218 - Fixed bug, was returning zero.
+						/* 090218 - Fixed bug, was returning zero. */
 						M_PUSH( Addr1 );
 						TOS = -4;  /* FIXME Fix error code. */
 					}

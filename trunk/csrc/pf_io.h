@@ -118,8 +118,14 @@ void ioTerm( void );
 		#define sdFlushFile     fflush
 		#define sdReadFile      fread
 		#define sdWriteFile     fwrite
-		#define sdSeekFile      fseeko
-		#define sdTellFile      ftello
+		#if WIN32
+			/* TODO To support 64-bit file offset we probably need fseeki64(). */
+			#define sdSeekFile      fseek
+			#define sdTellFile      ftell
+		#else
+			#define sdSeekFile      fseeko
+			#define sdTellFile      ftello
+		#endif
 		#define sdCloseFile     fclose
 		#define sdInputChar     fgetc
 		

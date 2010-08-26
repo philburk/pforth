@@ -429,9 +429,7 @@ typedef struct pfDictionary_s
 	ucell_t	dic_HeaderPtr;
 	ucell_t	dic_HeaderLimit;
 /* Code segment contains tokenized code and data. */
-
 	ucell_t	dic_CodeBaseUnaligned;
-
 	ucell_t	dic_CodeBase;
 	union
 	{
@@ -552,15 +550,15 @@ extern cell_t         gIncludeIndex;
 #define IN_DICS(addr) (IN_CODE_DIC(addr) || IN_NAME_DIC(addr))
 
 /* Address conversion */
-#define ABS_TO_NAMEREL( a ) ((cell_t)  (((uint8_t *) a) - NAME_BASE ))
-#define ABS_TO_CODEREL( a ) ((cell_t)  (((uint8_t *) a) - CODE_BASE ))
-#define NAMEREL_TO_ABS( a ) ((char *) (((cell_t) a) + NAME_BASE))
-#define CODEREL_TO_ABS( a ) ((cell_t *) (((cell_t) a) + CODE_BASE))
+#define ABS_TO_NAMEREL( a ) ((cell_t)  (((ucell_t) a) - NAME_BASE ))
+#define ABS_TO_CODEREL( a ) ((cell_t)  (((ucell_t) a) - CODE_BASE ))
+#define NAMEREL_TO_ABS( a ) ((ucell_t) (((cell_t) a) + NAME_BASE))
+#define CODEREL_TO_ABS( a ) ((ucell_t) (((cell_t) a) + CODE_BASE))
 
 /* The check for >0 is only needed for CLONE testing. !!! */
 #define IsTokenPrimitive(xt) ((xt<gNumPrimitives) && (xt>=0))
 
-#define FREE_VAR(v) { if (v) { pfFreeMem(v); v = NULL; } }
+#define FREE_VAR(v) { if (v) { pfFreeMem((void *)(v)); v = 0; } }
 
 #define DATA_STACK_DEPTH (gCurrentTask->td_StackBase - gCurrentTask->td_StackPtr)
 #define DROP_DATA_STACK (gCurrentTask->td_StackPtr++)

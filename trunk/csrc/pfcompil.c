@@ -77,8 +77,8 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 	gCurrentDictionary->dic_HeaderPtr += sizeof(cfNameLinks);
 
 /* Laydown name. */
-	gVarContext = (char *) gCurrentDictionary->dic_HeaderPtr;
-	pfCopyMemory( (char *)gCurrentDictionary->dic_HeaderPtr, FName, (*FName)+1 );
+	gVarContext = gCurrentDictionary->dic_HeaderPtr;
+	pfCopyMemory( (uint8_t *) gCurrentDictionary->dic_HeaderPtr, FName, (*FName)+1 );
 	gCurrentDictionary->dic_HeaderPtr += (*FName)+1;
 
 /* Set flags. */
@@ -117,7 +117,7 @@ const ForthString *NameToPrevious( const ForthString *NFA )
 /* DBUG(("\nNameToPrevious: RelNamePtr = 0x%x\n", (cell_t) RelNamePtr )); */
 	if( RelNamePtr )
 	{
-		return ( NAMEREL_TO_ABS( RelNamePtr ) );
+		return ( (ForthString *) NAMEREL_TO_ABS( RelNamePtr ) );
 	}
 	else
 	{
@@ -408,7 +408,7 @@ cell_t ffTokenToName( ExecToken XT, const ForthString **NFAPtr )
 	cell_t Result = 0;
 	ExecToken TempXT;
 	
-	NameField = gVarContext;
+	NameField = (ForthString *) gVarContext;
 DBUGX(("\ffCodeToName: gVarContext = 0x%x\n", gVarContext));
 
 	do
@@ -452,7 +452,7 @@ cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
 	WordLen = (uint8_t) ((ucell_t)*WordName & 0x1F);
 	WordChar = WordName+1;
 	
-	NameField = gVarContext;
+	NameField = (ForthString *) gVarContext;
 DBUG(("\nffFindNFA: WordLen = %d, WordName = %*s\n", WordLen, WordLen, WordChar ));
 DBUG(("\nffFindNFA: gVarContext = 0x%x\n", gVarContext));
 	do
@@ -600,7 +600,7 @@ static cell_t CheckRedefinition( const ForthStringPtr FName )
 	if ( flag && !gVarQuiet)
 	{
 		ioType( FName+1, (cell_t) *FName );
-		MSG( " redefined.\n" ); // FIXME - allow user to run off this warning.
+		MSG( " redefined.\n" ); /* FIXME - allow user to run off this warning. */
 	}
 	return flag;
 }

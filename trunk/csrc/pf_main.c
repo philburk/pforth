@@ -74,6 +74,7 @@ int main( int argc, char **argv )
 	argc = ccommand(&argv);
 #endif
 	
+	pfSetQuiet( FALSE );
 /* Parse command line. */
 	for( i=1; i<argc; i++ )
 	{
@@ -97,8 +98,8 @@ int main( int argc, char **argv )
 				
 			case 'd':
 				if( *s != '\0' ) DicName = s;
-				// Allow space after -d (Thanks Aleksej Saushev)
-				// Make sure there is another argument.
+				/* Allow space after -d (Thanks Aleksej Saushev) */
+				/* Make sure there is another argument. */
 				else if( (i+1) < argc )
 				{
 					DicName = argv[++i];
