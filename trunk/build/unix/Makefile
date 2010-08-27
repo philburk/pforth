@@ -5,23 +5,20 @@
 #
 # See "help" target below.
 
-.SUFFIXES: .c .o
+.POSIX:
 
 # Options include: PF_SUPPORT_FP PF_NO_MALLOC PF_NO_INIT PF_DEBUG
 # See "docs/pf_ref.htm" file for more info.
 
-COMPILER = gcc
-
-PFORTHDIR   := $(shell cd ../../; pwd)
+SRCDIR       = ../..
+PFORTHDIR    = $(SRCDIR)
 CSRCDIR      = $(PFORTHDIR)/csrc
 FTHDIR       = $(PFORTHDIR)/fth
 
-PFDICAPP     = $(FTHDIR)/pforth
-PFORTHDIC    = $(FTHDIR)/pforth.dic
-PFDICDAT     = ${CSRCDIR}/pfdicdat.h
-PFORTHAPP    = $(PFORTHDIR)/pforth_standalone
-OBJECTDIR    = $(PFORTHDIR)/objects
-TEMPOBJECTDIR = $(PFORTHDIR)/tempobjects
+PFDICAPP     = pforth
+PFORTHDIC    = pforth.dic
+PFDICDAT     = pfdicdat.h
+PFORTHAPP    = pforth_standalone
 
 # This is needed to get pForth to build on Snow Leopard and other 64 bit platforms.
 WIDTHOPT=
@@ -44,27 +41,41 @@ FULL_WARNINGS =  \
 DEBUGOPTS = -g
 CCOPTS = $(WIDTHOPT) -x c -DPF_SUPPORT_FP -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
-IO_SOURCE = ${CSRCDIR}/posix/pf_io_posix.c
-#IO_SOURCE = ${CSRCDIR}/stdio/pf_io_stdio.c
+IO_SOURCE = pf_io_posix.c
+#IO_SOURCE = pf_io_stdio.c
 
 EMBCCOPTS = -DPF_STATIC_DIC
 
 #######################################
-# Build file lists from wildcards.
-PFITEMP    = ${wildcard ${CSRCDIR}/*.h}
-PFINCLUDES = ${PFITEMP:${CSRCDIR}/pfdicdat.h=}
-PFSOURCE   = ${wildcard ${CSRCDIR}/*.c} ${IO_SOURCE}
-PFTEMP     = ${PFSOURCE:%.c=%.o}
-PFOBJS     = ${PFTEMP:${CSRCDIR}/%=${TEMPOBJECTDIR}/%}
-PFEMBOBJS  = ${PFTEMP:${CSRCDIR}/%=${OBJECTDIR}/%}
+PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
+	pf_guts.h pf_host.h pf_inc1.h pf_io.h pf_mem.h pf_save.h \
+	pf_text.h pf_types.h pf_win32.h pf_words.h pfcompfp.h \
+	pfcompil.h pfdicdat_arm.h pfinnrfp.h pforth.h
+PFBASESOURCE = pf_cglue.c pf_clib.c pf_core.c pf_inner.c \
+	pf_io.c pf_io_none.c pf_main.c pf_mem.c pf_save.c \
+	pf_text.c pf_words.c pfcompil.c pfcustom.c
+PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 
-COMPILE = $(COMPILER) $(CCOPTS) $(CDEFS)
+VPATH = .:../../csrc:../../csrc/posix:../../csrc/stdio
+VPATH = .:$(SRCDIR)/csrc:$(SRCDIR)/csrc/posix:$(SRCDIR)/csrc/stdio
 
-${TEMPOBJECTDIR}/%.o:  ${TEMPOBJECTDIR} $(PFINCLUDES)  ${CSRCDIR}/%.c
-	$(COMPILE) -O -o ${TEMPOBJECTDIR}/$*.o -c ${CSRCDIR}/$*.c
+XCFLAGS = $(CCOPTS)
+XCPPFLAGS = $(CDEFS) -I.
+XLDFLAGS = $(WIDTHOPT)
 
-${OBJECTDIR}/%.o:  ${OBJECTDIR} $(PFINCLUDES) ${CSRCDIR}/%.c ${CSRCDIR}/pfdicdat.h
-	$(COMPILE) -O -o ${OBJECTDIR}/$*.o -c ${CSRCDIR}/$*.c $(EMBCCOPTS)
+COMPILE = $(CC) $(XCFLAGS) $(CFLAGS) $(XCPPFLAGS) $(CPPFLAGS)
+LINK = $(CC) $(XLDFLAGS) $(LDFLAGS)
+
+.SUFFIXES: .c .o .eo
+
+PFOBJS     = $(PFSOURCE:.c=.o)
+PFEMBOBJS  = $(PFSOURCE:.c=.eo)
+
+.c.o: $(PFINCLUDES)
+	$(COMPILE) -c -o $@ $<
+
+.c.eo: $(PFINCLUDES) pfdicdat.h
+	$(COMPILE) $(EMBCCOPTS) -c -o $@ $<
 
 all: $(PFORTHAPP)
 
@@ -80,24 +91,18 @@ pffiles:
 	@echo "EMBEDDED OBJECT FILES ------------------"
 	@echo ${PFEMBOBJS}
 
-${TEMPOBJECTDIR}:
-	mkdir -p ${TEMPOBJECTDIR}/posix
-	mkdir -p ${TEMPOBJECTDIR}/stdio
-
-${OBJECTDIR}:
-	mkdir -p ${OBJECTDIR}/posix
-	mkdir -p ${OBJECTDIR}/stdio
-
 # Build pforth by compiling 'C' source.
 $(PFDICAPP): $(PFINCLUDES) $(PFOBJS)
-	$(COMPILER) $(PFOBJS) $(WIDTHOPT)  -lm -o $(PFDICAPP)
+	$(LINK) -o $@ $(PFOBJS) $(LDADD) -lm
 
 # Build basic dictionary image by running newly built pforth and including "system.fth".
 $(PFDICDAT): $(PFDICAPP)
-	cd $(FTHDIR); $(PFDICAPP) -i system.fth ; mv pfdicdat.h $(PFDICDAT)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFDICAPP) -i system.fth)
+	(cd $(FTHDIR); cat pforth.dic; rm -f pforth.dic) > pforth.dic
+	(cd $(FTHDIR); cat pfdicdat.h; rm -f pfdicdat.h) > $@
 
 $(PFORTHAPP): $(PFDICDAT) $(PFEMBOBJS)
-	$(COMPILER) $(PFEMBOBJS) $(WIDTHOPT) -lm -o $(PFORTHAPP)
+	$(LINK) -o $@ $(PFEMBOBJS) $(LDADD) -lm
 	@echo ""
 	@echo "Standalone pForth executable written to $(PFORTHAPP)"
 
@@ -120,17 +125,15 @@ help:
 	@echo "   It allows pForth to work as a standalone image that does not need to load a dictionary file."
 
 test: $(PFORTHAPP)
-	cd $(FTHDIR); ../pforth_standalone -q t_corex.fth
-	cd $(FTHDIR); ../pforth_standalone -q t_strings.fth
-	cd $(FTHDIR); ../pforth_standalone -q t_locals.fth
-	cd $(FTHDIR); ../pforth_standalone -q t_alloc.fth
-	cd $(FTHDIR); ../pforth_standalone -q t_floats.fth
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_corex.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_strings.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_locals.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_alloc.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_floats.fth)
 
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)
 	rm -f $(PFORTHAPP)
-	rm -f $(PFDICDAT)
-	rm -f $(PFORTHDIC)
+	rm -f $(PFDICDAT) $(FTHDIR)/$(PFDICDAT)
+	rm -f $(PFORTHDIC) $(FTHDIR)/$(PFORTHDIC)
 	rm -f $(PFDICAPP)
-	rm -rf $(OBJECTDIR) $(TEMPOBJECTDIR)
-
