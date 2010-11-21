@@ -97,7 +97,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 void CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags )
 {
 	ForthString FName[40];
-	CStringToForth( FName, CName );
+	CStringToForth( FName, CName, sizeof(FName) );
 	CreateDicEntry( XT, FName, Flags );
 }
 
@@ -513,7 +513,7 @@ DBUG(("ffFind: %8s at 0x%x\n", WordName+1, NFA)); /* WARNING, not NUL terminated
 cell_t ffFindC( const char *WordName, ExecToken *pXT )
 {
 DBUG(("ffFindC: %s\n", WordName ));
-	CStringToForth( gScratch, WordName );
+	CStringToForth( gScratch, WordName, sizeof(gScratch) );
 	return ffFind( gScratch, pXT );
 }
 
@@ -643,7 +643,7 @@ void ffStringDefer( const ForthStringPtr FName, ExecToken DefaultXT )
 static void CreateDeferredC( ExecToken DefaultXT, const char *CName )
 {
 	char FName[40];
-	CStringToForth( FName, CName );
+	CStringToForth( FName, CName, sizeof(FName) );
 	ffStringDefer( FName, DefaultXT );
 }
 #endif

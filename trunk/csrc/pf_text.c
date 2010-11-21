@@ -135,11 +135,16 @@ void pfReportThrow( ThrowCode code )
 ** Copy a Forth String to a 'C' string.
 */
 
-char *ForthStringToC( char *dst, const char *FString )
+char *ForthStringToC( char *dst, const char *FString, cell_t dstSize )
 {
 	cell_t Len;
 
 	Len = (cell_t) *FString;
+	/* Make sure the text + NUL can fit. */
+	if( Len >= dstSize )
+	{
+		Len = dstSize - 1;
+	}
 	pfCopyMemory( dst, FString+1, Len );
 	dst[Len] = '\0';
 
@@ -149,17 +154,20 @@ char *ForthStringToC( char *dst, const char *FString )
 /**************************************************************
 ** Copy a NUL terminated string to a Forth counted string.
 */
-char *CStringToForth( char *dst, const char *CString )
+char *CStringToForth( char *dst, const char *CString, cell_t dstSize )
 {
-	char *s;
 	cell_t i;
 
-	s = dst+1;
-	for( i=0; *CString; i++ )
+	/* Make sure the SIZE+text can fit. */
+	for( i=1; i<dstSize; i++ )
 	{
-		*s++ = *CString++;
+		if( *CString == 0 )
+		{
+			break;
+		}
+		dst[i] = *CString++;
 	}
-	*dst = (char ) i;
+	*dst = (char ) i-1;
 	return dst;
 }
 
@@ -335,3 +343,65 @@ void TypeName( const char *Name )
 }
 
 
+
+#ifdef PF_UNIT_TEST
+/* Unit test for string conversion routines. */
+#define ASSERT_PAD_IS( index, value, msg ) \
+	if( pad[index] != ((char)(value)) ) \
+	{ \
+		ERR(( "ERROR text test failed: " msg "\n")); \
+		numErrors += 1; \
+	} \
+
+cell_t pfUnitTestText( void )
+{
+	cell_t numErrors = 0;
+	char pad[16];
+	char fpad[8];
+
+	/* test CStringToForth */
+	pfSetMemory(pad,0xA5,sizeof(pad));
+	CStringToForth( pad, "frog", 6 );
+	ASSERT_PAD_IS( 0, 4, "CS len 6" );
+	ASSERT_PAD_IS( 4, 'g', "CS end 6" );
+	ASSERT_PAD_IS( 5, 0xA5, "CS past 6" );
+	
+	pfSetMemory(pad,0xA5,sizeof(pad));
+	CStringToForth( pad, "frog", 5 );
+	ASSERT_PAD_IS( 0, 4, "CS len 5" );
+	ASSERT_PAD_IS( 4, 'g', "CS end 5" );
+	ASSERT_PAD_IS( 5, 0xA5, "CS past 5" );
+	
+	pfSetMemory(pad,0xA5,sizeof(pad));
+	CStringxxxxxToForth( pad, "frog", 4 );
+	ASSERT_PAD_IS( 0, 3, "CS len 4" );
+	ASSERT_PAD_IS( 3, 'o', "CS end 4" );
+	ASSERT_PAD_IS( 4, 0xA5, "CS past 4" );
+	
+	/* Make a Forth string for testing ForthStringToC. */
+	CStringToForth( fpad, "frog", sizeof(fpad) );
+	
+	pfSetMemory(pad,0xA5,sizeof(pad));
+	ForthStringToC( pad, fpad, 6 );
+	ASSERT_PAD_IS( 0, 'f', "FS len 6" );
+	ASSERT_PAD_IS( 3, 'g', "FS end 6" );
+	ASSERT_PAD_IS( 4, 0, "FS nul 6" );
+	ASSERT_PAD_IS( 5, 0xA5, "FS past 6" );
+	
+	pfSetMemory(pad,0xA5,sizeof(pad));
+	ForthStringToC( pad, fpad, 5 );
+	ASSERT_PAD_IS( 0, 'f', "FS len 5" );
+	ASSERT_PAD_IS( 3, 'g', "FS end 5" );
+	ASSERT_PAD_IS( 4, 0, "FS nul 5" );
+	ASSERT_PAD_IS( 5, 0xA5, "FS past 5" );
+	
+	pfSetMemory(pad,0xA5,sizeof(pad));
+	ForthStringToC( pad, fpad, 4 );
+	ASSERT_PAD_IS( 0, 'f', "FS len 4" );
+	ASSERT_PAD_IS( 2, 'o', "FS end 4" );
+	ASSERT_PAD_IS( 3, 0, "FS nul 4" );
+	ASSERT_PAD_IS( 4, 0xA5, "FS past 4" );
+	
+	return numErrors;
+}
+#endif

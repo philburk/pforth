@@ -26,6 +26,8 @@
 **
 ***************************************************************/
 
+#include <sys/types.h>
+
 #include "pf_all.h"
 
 #ifdef WIN32
@@ -1544,7 +1546,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 				CodeSize = TOS;
 				NameSize = M_POP;
 				EntryPoint = M_POP;
-				ForthStringToC( gScratch, (char *) M_POP );
+				ForthStringToC( gScratch, (char *) M_POP, sizeof(gScratch) );
 				TOS =  ffSaveForth( gScratch, EntryPoint, NameSize, CodeSize );
 			}
 			endcase;

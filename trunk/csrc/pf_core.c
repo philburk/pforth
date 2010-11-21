@@ -572,3 +572,13 @@ error1:
 
 	return -1;
 }
+
+
+#ifdef PF_UNIT_TEST
+cell_t pfUnitTest( void )
+{
+	cell_t numErrors = 0;
+	numErrors += pfUnitTestText();
+	return numErrors;
+}
+#endif

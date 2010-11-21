@@ -129,6 +129,14 @@ int main( int argc, char **argv )
 	DicName = NULL;
 #endif
 
+#ifdef PF_UNIT_TEST
+	if( (Result = pfUnitTest()) != 0 )
+	{
+		ERR(("pForth stopping on unit test failure.\n"));
+		goto on_error;
+	}
+#endif
+	
 	Result = pfDoForth( DicName, SourceName, IfInit);
 
 on_error:

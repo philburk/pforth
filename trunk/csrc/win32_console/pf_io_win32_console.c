@@ -20,7 +20,7 @@
 
 #include "../pf_all.h"
 
-#if WIN32
+#if defined(WIN32) || defined(__NT__)
 
 #include <windows.h>
 
