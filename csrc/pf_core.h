@@ -27,7 +27,8 @@ void   pfInitGlobals( void );
 
 void   pfDebugMessage( const char *CString );
 void   pfDebugPrintDecimalNumber( int n );
-
+	
+cell_t pfUnitTestText( void );
 
 #ifdef __cplusplus
 }   

@@ -23,16 +23,24 @@
 #include <conio.h>
 
 /* Use console mode I/O so that KEY and ?TERMINAL will work. */
-#if WIN32
+#if defined(WIN32) || defined(__NT__)
 int  sdTerminalOut( char c )
 {
+#if defined(__WATCOMC__)
+	return putch((char)(c));
+#else
 	return _putch((char)(c));
+#endif
 }
 
 /* Needed cuz _getch() does not echo. */
 int  sdTerminalEcho( char c )
 {
+#if defined(__WATCOMC__)
+	return putch((char)(c));
+#else
 	return _putch((char)(c));
+#endif
 }
 
 int  sdTerminalIn( void )

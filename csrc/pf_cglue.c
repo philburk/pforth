@@ -85,7 +85,7 @@ Err CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t 
 	ucell_t Packed;
 	char FName[40];
 	
-	CStringToForth( FName, CName );
+	CStringToForth( FName, CName, sizeof(FName) );
 	Packed = (Index & 0xFFFF) | 0 | (NumParams << 24) |
 		(ReturnMode << 31);
 	DBUG(("Packed = 0x%8x\n", Packed));

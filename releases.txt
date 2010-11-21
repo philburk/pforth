@@ -10,8 +10,12 @@ V27
       http://code.google.com/p/pforth/issues/detail?id=4&can=1
     - Fixed scrambled HISTORY on 64-bit systems. Was using CELL+ but really needed 4 +.
     - Fixed floating point input. Now accepts "1E" as 1.0. Was Issue #2.
-    - Fixed lots of warning and made code compatible with C89 and ANSI with -pedantic.
+    - Fixed lots of warning and made code compatible with C89 and ANSI. Uses -pedantic.
     - Use fseek and ftell on WIN32 instead of fseeko and ftello.
+    - Makefile is now more standard. Builds in same dir as Makefile. Uses CFLAGS etc.
+    - Add support for console IO with _WATCOMC_
+    - Internal CStringToForth and ForthStringToC now take a destination size for safety.
+    - Run units tests for CStringToForth and ForthStringToC if PF_UNIT_TESTS is defined.
 
 V26  5/20/2010
     - 64-bit support for M* UM/MOD etc by Aleksej Saushev. Thanks Aleksej!
