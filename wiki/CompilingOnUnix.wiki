@@ -13,7 +13,7 @@ This is a complete build. It will create an executable image and associated "pfo
 
 It will also create a standalone executable image that includes the dictionary compiled inside. To run it enter: 
 
-  ../../pforth_standalone
+  ./pforth_standalone
 
 = Testing =
 
