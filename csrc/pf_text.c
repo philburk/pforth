@@ -373,7 +373,7 @@ cell_t pfUnitTestText( void )
 	ASSERT_PAD_IS( 5, 0xA5, "CS past 5" );
 	
 	pfSetMemory(pad,0xA5,sizeof(pad));
-	CStringxxxxxToForth( pad, "frog", 4 );
+	CStringToForth( pad, "frog", 4 );
 	ASSERT_PAD_IS( 0, 3, "CS len 4" );
 	ASSERT_PAD_IS( 3, 'o', "CS end 4" );
 	ASSERT_PAD_IS( 4, 0xA5, "CS past 4" );
