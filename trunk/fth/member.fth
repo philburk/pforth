@@ -34,7 +34,7 @@ decimal
 
 : FIND.BODY   ( -- , pfa true | $name false , look for word in dict. )
 \ Return address of parameter data.
-     32 word find
+     bl word find
      IF  >body true
      ELSE false
      THEN

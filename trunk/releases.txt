@@ -2,7 +2,10 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
-V27
+V28 - unreleased
+	- fixes for MinGW build
+
+V27 - 11/22/2010
     - Fixed REPOSITION-FILE FILE-SIZE and FILE-POSITION.
       They used to use single precision offset. Now use double as specified.
     - Delete object directories in Makefile clean.

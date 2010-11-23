@@ -30,7 +30,7 @@
 
 #include "pf_all.h"
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(__MINGW32__)
 #include <crtdbg.h>
 #endif
 

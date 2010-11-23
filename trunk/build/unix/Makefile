@@ -56,8 +56,7 @@ PFBASESOURCE = pf_cglue.c pf_clib.c pf_core.c pf_inner.c \
 	pf_text.c pf_words.c pfcompil.c pfcustom.c
 PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 
-VPATH = .:../../csrc:../../csrc/posix:../../csrc/stdio
-VPATH = .:$(SRCDIR)/csrc:$(SRCDIR)/csrc/posix:$(SRCDIR)/csrc/stdio
+VPATH = .:$(SRCDIR)/csrc:$(SRCDIR)/csrc/posix:$(SRCDIR)/csrc/stdio:$(SRCDIR)/csrc/win32_console:$(SRCDIR)/csrc/win32
 
 XCFLAGS = $(CCOPTS)
 XCPPFLAGS = $(CDEFS) -I.
