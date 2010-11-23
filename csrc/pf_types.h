@@ -27,8 +27,6 @@
 	typedef long Err;
 #endif
 
-typedef cell_t  *dicptr;
-
 typedef char  ForthString;
 typedef char *ForthStringPtr;
 

@@ -74,7 +74,7 @@ decimal
 
 : $ ( <number> -- N , convert next number as hex )
     base @ hex
-    32 lword number? num_type_single = not
+    bl lword number? num_type_single = not
     abort" Not a single number!"
     swap base !
     state @
