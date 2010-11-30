@@ -39,7 +39,7 @@ FULL_WARNINGS =  \
         -Wmissing-declarations
 
 DEBUGOPTS = -g
-CCOPTS = $(WIDTHOPT) -x c -DPF_SUPPORT_FP -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
+CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
 IO_SOURCE = pf_io_posix.c
 #IO_SOURCE = pf_io_stdio.c
@@ -56,14 +56,18 @@ PFBASESOURCE = pf_cglue.c pf_clib.c pf_core.c pf_inner.c \
 	pf_text.c pf_words.c pfcompil.c pfcustom.c
 PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 
-VPATH = .:$(SRCDIR)/csrc:$(SRCDIR)/csrc/posix:$(SRCDIR)/csrc/stdio:$(SRCDIR)/csrc/win32_console:$(SRCDIR)/csrc/win32
+VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32_console:$(CSRCDIR)/win32
 
 XCFLAGS = $(CCOPTS)
-XCPPFLAGS = $(CDEFS) -I.
+XCPPFLAGS = -DPF_SUPPORT_FP
 XLDFLAGS = $(WIDTHOPT)
 
-COMPILE = $(CC) $(XCFLAGS) $(CFLAGS) $(XCPPFLAGS) $(CPPFLAGS)
-LINK = $(CC) $(XLDFLAGS) $(LDFLAGS)
+CPPFLAGS = -I. $(XCPPFLAGS)
+CFLAGS = $(XCFLAGS)
+LDFLAGS = $(XLDFLAGS)
+
+COMPILE = $(CC) $(CFLAGS) $(CPPFLAGS)
+LINK = $(CC) $(LDFLAGS)
 
 .SUFFIXES: .c .o .eo
 
@@ -76,11 +80,12 @@ PFEMBOBJS  = $(PFSOURCE:.c=.eo)
 .c.eo: $(PFINCLUDES) pfdicdat.h
 	$(COMPILE) $(EMBCCOPTS) -c -o $@ $<
 
+.PHONY: all clean test
+.PHONY: help pffiles pfdicapp pfdicdat pforthapp
+
 all: $(PFORTHAPP)
 
 pffiles:
-	@echo "ITEMP FILES -----------------"
-	@echo ${PFITEMP}
 	@echo "INCLUDE FILES -----------------"
 	@echo ${PFINCLUDES}
 	@echo "'C' FILES ---------------------"
@@ -95,10 +100,12 @@ $(PFDICAPP): $(PFINCLUDES) $(PFOBJS)
 	$(LINK) -o $@ $(PFOBJS) $(LDADD) -lm
 
 # Build basic dictionary image by running newly built pforth and including "system.fth".
-$(PFDICDAT): $(PFDICAPP)
+$(PFORTHDIC): $(PFDICAPP)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFDICAPP) -i system.fth)
-	(cd $(FTHDIR); cat pforth.dic; rm -f pforth.dic) > pforth.dic
-	(cd $(FTHDIR); cat pfdicdat.h; rm -f pfdicdat.h) > $@
+	(cd $(FTHDIR); cat pforth.dic; rm -f pforth.dic) > $@
+
+$(PFDICDAT): $(PFORTHDIC) $(PFDICAPP)
+	echo 'include $(FTHDIR)/savedicd.fth SDAD BYE' | ./$(PFDICAPP) -d $(PFORTHDIC)
 
 $(PFORTHAPP): $(PFDICDAT) $(PFEMBOBJS)
 	$(LINK) -o $@ $(PFEMBOBJS) $(LDADD) -lm
@@ -124,11 +131,11 @@ help:
 	@echo "   It allows pForth to work as a standalone image that does not need to load a dictionary file."
 
 test: $(PFORTHAPP)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_corex.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_strings.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_locals.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_alloc.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/pforth_standalone -q t_floats.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_corex.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_strings.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_locals.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_alloc.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_floats.fth)
 
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)
