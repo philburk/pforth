@@ -41,6 +41,5 @@ include? words.like wordslik.fth
 include? trace   trace.fth
 include? ESC[    termio.fth
 include? HISTORY history.fth
-include? SDAD    savedicd.fth
 
 map

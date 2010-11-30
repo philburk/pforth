@@ -820,6 +820,3 @@ FREEZE    \ prevent forgetting below this point
 
 .( Dictionary compiled, save in "pforth.dic".) cr
 c" pforth.dic" save-forth
-
-\ Save the dictionary in "pfdicdat.h" file so pForth can be compiled for standalone mode.
-SDAD
