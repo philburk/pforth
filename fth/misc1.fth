@@ -36,7 +36,9 @@ decimal
 
 : (ABORT")  ( flag $message -- )
     swap
-    IF count type cr abort
+    IF
+    	count type cr
+    	err_abortq throw
     ELSE drop
     THEN
 ;
