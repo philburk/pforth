@@ -227,6 +227,7 @@
 
 \ Error codes defined in ANSI Exception word set.
 : ERR_ABORT         -1 ;   \ general abort
+: ERR_ABORTQ        -2 ;   \ for abort"
 : ERR_EXECUTING    -14 ;   \ compile time word while not compiling
 : ERR_PAIRS        -22 ;   \ mismatch in conditional
 : ERR_DEFER       -258 ;  \ not a deferred word
@@ -809,7 +810,8 @@ auto.init
 \ Now that we can load from files, load remainder of dictionary.
 
 trace-include on
-trace-stack on
+\ Turn this OFF if you do not want to see the contents of the stack after each entry.
+trace-stack off
 
 include loadp4th.fth
 
