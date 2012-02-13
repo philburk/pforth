@@ -1,4 +1,4 @@
-#summary Compiling pForth on Unix or Mac
+#summary How to Compile pForth on Unix or Mac
 #labels Phase-Deploy
 = Introduction =
 
@@ -9,7 +9,7 @@ We provide a simple Makefile for compiling.
  # CD to "build/unix"
  # Enter: make all
 
-This is a complete build. It will create an executable image and associated "pforth.dic" file in the "fth/" folder.
+This is a complete build. It will create an executable image and associated "pforth.dic" file in the "fth/" folder. You may need to remove the -C89 option from the Makefile if there are too many warnings.
 
 It will also create a standalone executable image that includes the dictionary compiled inside. To run it enter: 
 
