@@ -9,6 +9,6 @@ PForth is a portable Forth written in standard 'C'.
 
 [HowToCompile How to Compile pForth on various platforms]
 
-[ReleaseNotes Release Notes]
+[http://code.google.com/p/pforth/source/browse/trunk/releases.txt Release Notes are in the source.]
 
 The pForth website with tutorials and other documentation is at  http://www.softsynth.com/pforth/
