@@ -496,13 +496,19 @@ cell_t pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit
 			if( DicFileName )
 			{
 				pfDebugMessage("DicFileName = "); pfDebugMessage(DicFileName); pfDebugMessage("\n");
-				EMIT_CR;
+				if( !gVarQuiet )
+				{
+					EMIT_CR;
+				}
 				dic = pfLoadDictionary( DicFileName, &EntryPoint );
 			}
 			else
 			{
-				MSG(" (static)");
-				EMIT_CR;
+				if( !gVarQuiet )
+				{
+					MSG(" (static)");
+					EMIT_CR;
+				}
 				dic = pfLoadStaticDictionary();			
 			}
 		}
