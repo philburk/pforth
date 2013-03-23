@@ -51,7 +51,7 @@ purpose and their equivalents under the laws of any jurisdiction.
 
 See pForth reference manual at:
 
-  http://www.softsynth.com/pforth/pf_ref.htm
+  http://www.softsynth.com/pforth/pf_ref.php
   
 -- How to run pForth ------------------------------------
 
