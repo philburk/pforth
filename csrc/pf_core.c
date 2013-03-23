@@ -98,7 +98,7 @@ static void pfInit( void )
 /* non-zero */
 	gVarBase = 10;        /* Numeric Base. */
 	gDepthAtColon = DEPTH_AT_COLON_INVALID;
-	gVarTraceStack = 1;  
+	gVarTraceStack = 1;
 	
 	pfInitMemoryAllocator();
 	ioInit();
