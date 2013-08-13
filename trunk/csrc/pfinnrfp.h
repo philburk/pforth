@@ -23,7 +23,7 @@
 
 #ifdef PF_SUPPORT_FP
 
-#define FP_DHI1  (((PF_FLOAT)0x40000000)*4.0)
+#define FP_DHI1 (((PF_FLOAT)(1L<<(sizeof(cell_t)*8-2)))*4.0)
 
 	case ID_FP_D_TO_F: /* ( dlo dhi -- ) ( F: -- r ) */
 		PUSH_FP_TOS;
