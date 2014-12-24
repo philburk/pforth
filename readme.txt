@@ -6,7 +6,7 @@ Support for 64-bit cells by Aleksej Saushev.
 
 Last updated: December 23, 2014 V27
 
-Code for pForth is maintained on Google at:
+Code for pForth is maintained on GitHub at:
   https://github.com/philburk/pforth
  
 Documentation for pForth at:
