@@ -4,22 +4,17 @@ by Phil Burk
 with Larry Polansky, David Rosenboom and Darren Gibbs.
 Support for 64-bit cells by Aleksej Saushev.
 
-Last updated: May 20, 2010 V26
+Last updated: December 23, 2014 V27
 
 Code for pForth is maintained on Google at:
-   http://code.google.com/p/pforth/
-   
+  https://github.com/philburk/pforth
+ 
 Documentation for pForth at:
   http://www.softsynth.com/pforth/
 
 For technical support please use the pForth forum at:
   http://groups.google.com/group/pforthdev
   
-The author is available for customization of pForth, porting to new
-platforms, or developing pForth applications on a contractual basis.
-If interested, contact Phil Burk at:
-  http://www.softsynth.com/contacts.php
-
 -- LEGAL NOTICE -----------------------------------------
 
 The pForth software code is dedicated to the public domain,
