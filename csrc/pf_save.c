@@ -513,7 +513,7 @@ error:
 #ifndef PF_NO_FILEIO
 
 /***************************************************************/
-static uint32_t Read32FromFile( FileStream *fid, uint32_t *ValPtr )
+static int32_t Read32FromFile( FileStream *fid, uint32_t *ValPtr )
 {
 	int32_t numr;
 	uint8_t pad[4];
