@@ -24,7 +24,7 @@ PFORTHAPP    = pforth_standalone
 WIDTHOPT=
 
 FULL_WARNINGS =  \
-        -c89 \
+        --std=c89 \
         -fsigned-char \
         -fno-builtin \
         -fno-unroll-loops \
@@ -59,7 +59,7 @@ PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32_console:$(CSRCDIR)/win32
 
 XCFLAGS = $(CCOPTS)
-XCPPFLAGS = -DPF_SUPPORT_FP
+XCPPFLAGS = -DPF_SUPPORT_FP -D_DEFAULT_SOURCE
 XLDFLAGS = $(WIDTHOPT)
 
 CPPFLAGS = -I. $(XCPPFLAGS)
