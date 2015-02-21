@@ -10,15 +10,17 @@
 # Options include: PF_SUPPORT_FP PF_NO_MALLOC PF_NO_INIT PF_DEBUG
 # See "docs/pf_ref.htm" file for more info.
 
+CC           = x86_64-w64-mingw32-gcc
+WINE         = wineconsole
 SRCDIR       = ../..
 PFORTHDIR    = $(SRCDIR)
 CSRCDIR      = $(PFORTHDIR)/csrc
 FTHDIR       = $(PFORTHDIR)/fth
 
-PFDICAPP     = pforth
+PFDICAPP     = pforth.exe
 PFORTHDIC    = pforth.dic
 PFDICDAT     = pfdicdat.h
-PFORTHAPP    = pforth_standalone
+PFORTHAPP    = pforth_standalone.exe
 
 # This is needed to get pForth to build on Snow Leopard and other 64 bit platforms.
 WIDTHOPT=
@@ -41,8 +43,9 @@ FULL_WARNINGS =  \
 DEBUGOPTS = -g
 CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
-IO_SOURCE = pf_io_posix.c
+#IO_SOURCE = pf_io_posix.c
 #IO_SOURCE = pf_io_stdio.c
+IO_SOURCE = pf_io_win32_console.c
 
 EMBCCOPTS = -DPF_STATIC_DIC
 
@@ -59,7 +62,8 @@ PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32_console:$(CSRCDIR)/win32
 
 XCFLAGS = $(CCOPTS)
-XCPPFLAGS = -DPF_SUPPORT_FP -D_DEFAULT_SOURCE
+#XCPPFLAGS = -DPF_SUPPORT_FP -DWIN32
+XCPPFLAGS = -DWIN32
 XLDFLAGS = $(WIDTHOPT)
 
 CPPFLAGS = -I. $(XCPPFLAGS)
@@ -101,11 +105,11 @@ $(PFDICAPP): $(PFINCLUDES) $(PFOBJS)
 
 # Build basic dictionary image by running newly built pforth and including "system.fth".
 $(PFORTHDIC): $(PFDICAPP)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFDICAPP) -i system.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFDICAPP) -i system.fth)
 	(cd $(FTHDIR); cat pforth.dic; rm -f pforth.dic) > $@
 
 $(PFDICDAT): $(PFORTHDIC) $(PFDICAPP)
-	echo 'include $(FTHDIR)/savedicd.fth SDAD BYE' | ./$(PFDICAPP) -d $(PFORTHDIC)
+	echo 'include $(FTHDIR)/savedicd.fth SDAD BYE'>load-dict-tmp.fth&& $(WINE) ./$(PFDICAPP) -d $(PFORTHDIC) load-dict-tmp.fth; rm -f load-dict-tmp.fth
 
 $(PFORTHAPP): $(PFDICDAT) $(PFEMBOBJS)
 	$(LINK) -o $@ $(PFEMBOBJS) $(LDADD) -lm
@@ -131,11 +135,11 @@ help:
 	@echo "   It allows pForth to work as a standalone image that does not need to load a dictionary file."
 
 test: $(PFORTHAPP)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_corex.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_strings.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_locals.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_alloc.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_floats.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_corex.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_strings.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_locals.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_alloc.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_floats.fth)
 
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)

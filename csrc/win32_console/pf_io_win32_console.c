@@ -33,7 +33,7 @@ typedef enum ConsoleState_e
 {
 	SDCONSOLE_STATE_IDLE = 0,
 	SDCONSOLE_STATE_GOT_ESCAPE,
-	SDCONSOLE_STATE_GOT_BRACKET,
+	SDCONSOLE_STATE_GOT_BRACKET
 
 } ConsoleState;
 
@@ -44,8 +44,8 @@ static CONSOLE_SCREEN_BUFFER_INFO sScreenInfo;
 /******************************************************************/
 static void sdConsoleEmit( char c )
 {
-	// Write a WCHAR in case we have compiled with Unicode support.
-	// Otherwise we will see '?' printed.
+  /* Write a WCHAR in case we have compiled with Unicode support.
+   * Otherwise we will see '?' printed.*/
 	WCHAR  wc = (WCHAR) c;
 	DWORD count;
 	if( sIsConsoleValid )
@@ -54,7 +54,7 @@ static void sdConsoleEmit( char c )
 	}
 	else
 	{
-		// This will get called if we are redirecting to a file.
+          /* This will get called if we are redirecting to a file.*/
 		WriteFile(sConsoleHandle, &c, 1, &count, NULL );
 	}
 }
@@ -215,12 +215,12 @@ void sdTerminalInit( void )
 	sConsoleHandle = GetStdHandle( STD_OUTPUT_HANDLE );
 	if( GetConsoleMode( sConsoleHandle, &mode ) )
 	{
-		//printf("GetConsoleMode() mode is 0x%08X\n", mode );
+          /*printf("GetConsoleMode() mode is 0x%08X\n", mode );*/
 		sIsConsoleValid = TRUE;
 	}
 	else
 	{
-		//printf("GetConsoleMode() failed\n", mode );
+          /*printf("GetConsoleMode() failed\n", mode );*/
 		sIsConsoleValid = FALSE;
 	}
 }
