@@ -24,7 +24,10 @@ include? {       locals.fth
 include? fm/mod  math.fth
 include? task-misc2.fth misc2.fth
 include? [if]    condcomp.fth
-
+\ load search order if support is in kernel
+exists? (init-wordlists)
+  [IF] include? wordlists search.fth
+  [THEN]
 \ load floating point support if basic support is in kernel
 exists? F*
    [IF]  include? task-floats.fth floats.fth

@@ -367,6 +367,8 @@ enum cforth_primitive_ids
 #define THROW_EXECUTING       (-14)
 #define THROW_PAIRS           (-22)
 #define THROW_FLOAT_STACK_UNDERFLOW  ( -45)
+#define THROW_SEARCH_OVERFLOW (-49)
+#define THROW_SEARCH_UNDERFLOW       (-50)
 #define THROW_QUIT            (-56)
 
 /* THROW codes unique to pForth */

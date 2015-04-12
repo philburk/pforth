@@ -35,11 +35,11 @@
 void pfReportError( const char *FunctionName, Err ErrCode )
 {
 	const char *s;
-	
+
 	MSG("Error in ");
 	MSG(FunctionName);
 	MSG(" - ");
-	
+
 	switch(ErrCode & 0xFF)
 	{
 	case PF_ERR_NO_MEM & 0xFF:
@@ -107,6 +107,12 @@ void pfReportThrow( ThrowCode code )
 		s = "Executing a compile-only word!"; break;
 	case THROW_FLOAT_STACK_UNDERFLOW:
 		s = "Float Stack underflow!"; break;
+#ifdef PF_SUPPORT_WORDLIST
+        case THROW_SEARCH_OVERFLOW:
+                s = "Search order or wordlist owerflow!"; break;
+        case THROW_SEARCH_UNDERFLOW:
+                s = "Search order or wordlist underflow!"; break;
+#endif
 	case THROW_UNDEFINED_WORD:
 		s = "Undefined word!"; break;
 	case THROW_PAIRS:
@@ -121,7 +127,7 @@ void pfReportThrow( ThrowCode code )
 	default:
 		s = "Unrecognized throw code!"; break;
 	}
-	
+
 	if( s )
 	{
 		MSG_NUM_D("THROW code = ", code );
@@ -178,7 +184,7 @@ char *CStringToForth( char *dst, const char *CString, cell_t dstSize )
 cell_t ffCompareText( const char *s1, const char *s2, cell_t len )
 {
 	cell_t i, Result;
-	
+
 	Result = TRUE;
 	for( i=0; i<len; i++ )
 	{
@@ -201,7 +207,7 @@ cell_t ffCompareTextCaseN( const char *s1, const char *s2, cell_t len )
 {
 	cell_t i, Result;
 	char  c1,c2;
-	
+
 	Result = TRUE;
 	for( i=0; i<len; i++ )
 	{
@@ -225,7 +231,7 @@ DBUGX(("ffCompareText: return 0x%x\n", Result ));
 cell_t ffCompare( const char *s1, cell_t len1, const char *s2, int32_t len2 )
 {
 	cell_t i, result, n, diff;
-	
+
 	result = 0;
 	n = MIN(len1,len2);
 	for( i=0; i<n; i++ )
@@ -262,7 +268,7 @@ char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t Mi
 	char *p,c;
 	ucell_t NewNum, Rem, uNum;
 	cell_t i = 0;
-	
+
 	uNum = Num;
 	if( IfSigned )
 	{
@@ -273,11 +279,11 @@ char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t Mi
 			uNum = -Num;
 		}
 	}
-	
+
 /* Point past end of Pad */
 	p = cnttPad + CNTT_PAD_SIZE;
 	*(--p) = (char) 0; /* NUL terminate */
-	
+
 	while( (i++<MinChars) || (uNum != 0) )
 	{
 		NewNum = uNum / Base;
@@ -286,7 +292,7 @@ char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t Mi
 		*(--p) = c;
 		uNum = NewNum;
 	}
-	
+
 	if( IfSigned )
 	{
 		if( IfNegative ) *(--p) = '-';
@@ -307,7 +313,7 @@ void DumpMemory( void *addr, cell_t cnt)
 	ptr = (unsigned char *) addr;
 
 	EMIT_CR;
-	
+
 	for (ln=0; ln<nlines; ln++)
 	{
 		MSG( ConvertNumberToText( (cell_t) ptr, 16, FALSE, 8 ) );
@@ -335,10 +341,10 @@ void TypeName( const char *Name )
 {
 	const char *FirstChar;
 	cell_t Len;
-	
+
 	FirstChar = Name+1;
 	Len = *Name & 0x1F;
-	
+
 	ioType( FirstChar, Len );
 }
 
@@ -365,43 +371,43 @@ cell_t pfUnitTestText( void )
 	ASSERT_PAD_IS( 0, 4, "CS len 6" );
 	ASSERT_PAD_IS( 4, 'g', "CS end 6" );
 	ASSERT_PAD_IS( 5, 0xA5, "CS past 6" );
-	
+
 	pfSetMemory(pad,0xA5,sizeof(pad));
 	CStringToForth( pad, "frog", 5 );
 	ASSERT_PAD_IS( 0, 4, "CS len 5" );
 	ASSERT_PAD_IS( 4, 'g', "CS end 5" );
 	ASSERT_PAD_IS( 5, 0xA5, "CS past 5" );
-	
+
 	pfSetMemory(pad,0xA5,sizeof(pad));
 	CStringToForth( pad, "frog", 4 );
 	ASSERT_PAD_IS( 0, 3, "CS len 4" );
 	ASSERT_PAD_IS( 3, 'o', "CS end 4" );
 	ASSERT_PAD_IS( 4, 0xA5, "CS past 4" );
-	
+
 	/* Make a Forth string for testing ForthStringToC. */
 	CStringToForth( fpad, "frog", sizeof(fpad) );
-	
+
 	pfSetMemory(pad,0xA5,sizeof(pad));
 	ForthStringToC( pad, fpad, 6 );
 	ASSERT_PAD_IS( 0, 'f', "FS len 6" );
 	ASSERT_PAD_IS( 3, 'g', "FS end 6" );
 	ASSERT_PAD_IS( 4, 0, "FS nul 6" );
 	ASSERT_PAD_IS( 5, 0xA5, "FS past 6" );
-	
+
 	pfSetMemory(pad,0xA5,sizeof(pad));
 	ForthStringToC( pad, fpad, 5 );
 	ASSERT_PAD_IS( 0, 'f', "FS len 5" );
 	ASSERT_PAD_IS( 3, 'g', "FS end 5" );
 	ASSERT_PAD_IS( 4, 0, "FS nul 5" );
 	ASSERT_PAD_IS( 5, 0xA5, "FS past 5" );
-	
+
 	pfSetMemory(pad,0xA5,sizeof(pad));
 	ForthStringToC( pad, fpad, 4 );
 	ASSERT_PAD_IS( 0, 'f', "FS len 4" );
 	ASSERT_PAD_IS( 2, 'o', "FS end 4" );
 	ASSERT_PAD_IS( 3, 0, "FS nul 4" );
 	ASSERT_PAD_IS( 4, 0xA5, "FS past 4" );
-	
+
 	return numErrors;
 }
 #endif

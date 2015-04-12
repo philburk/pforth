@@ -1,0 +1,116 @@
+/* @(#) search.c 15/04/09 1.0 */
+/***************************************************************
+** search order for PForth based on 'C'
+**
+** Author: Hannu Vuolasaho
+** Copyright 2015 3DO, Phil Burk, Larry Polansky, David Rosenboom
+**
+** The pForth software code is dedicated to the public domain,
+** and any third party may reproduce, distribute and modify
+** the pForth software code or any derivative works thereof
+** without any compensation or license.  The pForth software
+** code is provided on an "as is" basis without any warranty
+** of any kind, including, without limitation, the implied
+** warranties of merchantability and fitness for a particular
+** purpose and their equivalents under the laws of any jurisdiction.
+**/
+#include "pf_all.h"
+#ifdef PF_SUPPORT_WORDLIST
+
+/* Search order and word list arrays */
+cell_t searchOrder;
+cell_t searchFirstIndex;
+cell_t wordLists;
+
+/* compilationIndex is wordLists[compilationIdnex], head of comp. list. */
+cell_t compilationIndex;
+
+/* Previous entry. Is the previous link.
+ * When new wordlist is created, it is zeroed. 
+ */
+cell_t previousEntry;
+
+/* (init-wordlists) ( search_addr search_index wl_addr comp_index -- ) */
+void ffInitWordLists( cell_t search_addr, cell_t search_index,
+                      cell_t wl_addr, cell_t comp_index )
+{
+        compilationIndex = comp_index;
+        wordLists = wl_addr;
+        searchFirstIndex = search_index;
+        searchOrder = search_addr;
+        MSG_NUM_D("comp ind ", compilationIndex);
+        MSG_NUM_D("comp ind * ", *(cell_t *)compilationIndex);
+        MSG_NUM_D("wl ", wordLists );
+        MSG_NUM_D("wl * ", *(cell_t *)wordLists );
+        MSG_NUM_D("first ", searchFirstIndex);
+        MSG_NUM_D("first * ", *(cell_t *) searchFirstIndex);
+        MSG_NUM_D("order ", searchOrder);
+        MSG_NUM_D("order * ", *(cell_t *)searchOrder);
+        MSG_NUM_D("order name * ",  NAMEREL_TO_ABS((*(cell_t *)searchOrder)));
+        MSG_NUM_D("order code * ",  CODEREL_TO_ABS((*(cell_t *)searchOrder)));
+        MSG_NUM_D("order code * * ",  *(cell_t *)(CODEREL_TO_ABS((*(cell_t *)searchOrder))));
+}
+cell_t getWordList( cell_t index )
+{
+        cell_t temp_addr;
+        if(wordLists)
+        {
+                /* Don't underflow search */
+                if( index < 0 ) return (cell_t) NULL;
+                /* Address to wordlist */
+                temp_addr = (CODEREL_TO_ABS(*(((cell_t *)searchOrder) + index)));
+                if(temp_addr)
+                {
+                        return *(cell_t *)temp_addr;
+                }
+                else
+                {
+                        /* Empty wordlist in search order */
+                        return (cell_t) NULL;
+                }
+        }
+        else
+        {
+                return gVarContext;
+        }
+}
+/* search-wordlist ( c-addr u wid -- 0 | xt 1 | xt -1 ) */
+cell_t ffSearchWordList( cell_t c_addr, cell_t u, cell_t wid)
+{
+        cell_t Searching = TRUE;
+        cell_t Result = 0;
+        uint8_t NameLen;
+        const char *NameField;
+        if( wid == 0 ) return 0;
+        /* wid is code relative address of wordlists */
+        /* referencing give content of gVarContext of compilation time of last word */
+        NameField = (ForthString *) *((cell_t *) (CODEREL_TO_ABS(wid)) );
+        do
+        {
+                NameLen = (uint8_t) ((ucell_t)(*NameField) & MASK_NAME_SIZE);
+                if( ((*NameField & FLAG_SMUDGE) == 0) &&
+                    (NameLen == u) &&
+                    ffCompareTextCaseN( NameField +1, (const char *) c_addr, u ) )
+                {
+                        PUSH_DATA_STACK(NameField); /* XT to stack */
+                        Result = ((*NameField) & FLAG_IMMEDIATE) ? 1 : -1;
+                        Searching = FALSE;
+                }
+                else
+                {
+                        NameField = NameToPrevious( NameField );
+			if( NameField == NULL )
+			{
+                                Searching = FALSE;
+                        }
+                }
+        }while(Searching);
+        return Result;
+}
+
+#endif
+
+
+
+
+

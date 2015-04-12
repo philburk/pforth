@@ -63,7 +63,29 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 /* Set link to previous header, if any. */
 	if( gVarContext )
 	{
+#ifdef PF_SUPPORT_WORDLIST
+                if( wordLists )
+                {
+                        if(*((cell_t*)(wordLists)+ *(cell_t*)(compilationIndex)))
+                        {
+                                WRITE_CELL_DIC( &cfnl->cfnl_PreviousName,
+                                                ABS_TO_NAMEREL( ( *((cell_t*)(wordLists)+
+                                                                    *(cell_t*)(compilationIndex)))));
+                        }
+                        else
+                        {
+                                /* Empty wordlist doesn't have previous yet. */
+                                cfnl->cfnl_PreviousName = 0;
+                        }
+                }
+                else
+                {
+                        /* Wordlists aren't set up yet.*/
+                        WRITE_CELL_DIC( &cfnl->cfnl_PreviousName, ABS_TO_NAMEREL( gVarContext ) );
+                }
+#else
 		WRITE_CELL_DIC( &cfnl->cfnl_PreviousName, ABS_TO_NAMEREL( gVarContext ) );
+#endif
 	}
 	else
 	{
@@ -407,9 +429,24 @@ cell_t ffTokenToName( ExecToken XT, const ForthString **NFAPtr )
 	cell_t Searching = TRUE;
 	cell_t Result = 0;
 	ExecToken TempXT;
-	
+#ifdef PF_SUPPORT_WORDLIST
+        cell_t iterator;
+        if( wordLists )
+        {
+                iterator = *(cell_t *) searchFirstIndex;
+                NameField = (ForthString *)getWordList(iterator);
+                --iterator;
+        }
+        else
+        {
+                /* Search order not yet initialized.*/
+                NameField = (ForthString *) gVarContext;
+                iterator = 0;
+        }
+#else
 	NameField = (ForthString *) gVarContext;
 DBUGX(("\ffCodeToName: gVarContext = 0x%x\n", gVarContext));
+#endif	
 
 	do
 	{
@@ -427,8 +464,20 @@ DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
 			NameField = NameToPrevious( NameField );
 			if( NameField == NULL )
 			{
-				*NFAPtr = 0;
+#ifdef PF_SUPPORT_WORDLIST
+                                if( wordLists && iterator >= 0)
+                                {
+                                        NameField = (ForthString *)getWordList(iterator);
+                                        --iterator;
+                                }
+                                else
+                                {
+#endif
+                                *NFAPtr = 0;
 				Searching = FALSE;
+#ifdef PF_SUPPORT_WORDLIST
+                                }
+#endif
 			}
 		}
 	} while ( Searching);
@@ -448,13 +497,36 @@ cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
 	int8_t NameLen;
 	cell_t Searching = TRUE;
 	cell_t Result = 0;
-	
+#ifdef PF_SUPPORT_WORDLIST
+        cell_t iterator;
+        if( wordLists )
+        {
+                iterator = *(cell_t *) searchFirstIndex;
+        }
+        else
+        {
+                /* Search order not yet initialized.*/
+                iterator = 0;
+        }
+#endif
 	WordLen = (uint8_t) ((ucell_t)*WordName & 0x1F);
 	WordChar = WordName+1;
-	
+#ifdef PF_SUPPORT_WORDLIST
+        if( wordLists )
+        {
+                
+                NameField = (ForthString *)getWordList(iterator);
+                --iterator;
+        }
+        else{
+                NameField = (ForthString *) gVarContext;
+        }
+       
+#else
 	NameField = (ForthString *) gVarContext;
 DBUG(("\nffFindNFA: WordLen = %d, WordName = %*s\n", WordLen, WordLen, WordChar ));
 DBUG(("\nffFindNFA: gVarContext = 0x%x\n", gVarContext));
+#endif
 	do
 	{
 		NameLen = (uint8_t) ((ucell_t)(*NameField) & MASK_NAME_SIZE);
@@ -474,8 +546,20 @@ DBUG(("ffFindNFA: found it at NFA = 0x%x\n", NameField));
 			NameField = NameToPrevious( NameField );
 			if( NameField == NULL )
 			{
-				*NFAPtr = WordName;
-				Searching = FALSE;
+#ifdef PF_SUPPORT_WORDLIST
+				if( wordLists && iterator >= 0)
+                                {
+                                        NameField = (ForthString *)getWordList(iterator);
+                                        --iterator;
+                                }
+                                else
+                                {
+#endif
+                                        *NFAPtr = WordName;
+                                        Searching = FALSE;
+#ifdef PF_SUPPORT_WORDLIST
+                                }
+#endif
 			}
 		}
 	} while ( Searching);
@@ -690,6 +774,13 @@ void ffFinishSecondary( void )
 {
 	CODE_COMMA( ID_EXIT );
 	ffUnSmudge();
+#ifdef PF_SUPPORT_WORDLIST
+        /* Copy context to word list when they are available. */
+        if( wordLists )
+        {
+                *((cell_t*)(wordLists)+*(cell_t*)(compilationIndex)) = gVarContext;
+        }
+#endif
 }
 
 /**************************************************************/
