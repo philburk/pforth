@@ -18,47 +18,46 @@
 #ifdef PF_SUPPORT_WORDLIST
 
 /* Search order and word list arrays */
-cell_t searchOrder;
-cell_t searchFirstIndex;
-cell_t wordLists;
+cell_t arrSearchOrder;
 
-/* compilationIndex is wordLists[compilationIdnex], head of comp. list. */
-cell_t compilationIndex;
+/* global search order start index. points wl.order.first on forth. */
+cell_t gVarWlOrderFirst;
+cell_t gVarWordLists;
+/* gVarWlCompileIndex is gVarWordLists[compilationIdnex], head of comp. list. */
+cell_t gVarWlCompileIndex;
 
-/* Previous entry. Is the previous link.
- * When new wordlist is created, it is zeroed. 
- */
-cell_t previousEntry;
+
 
 /* (init-wordlists) ( search_addr search_index wl_addr comp_index -- ) */
 void ffInitWordLists( cell_t search_addr, cell_t search_index,
                       cell_t wl_addr, cell_t comp_index )
 {
-        compilationIndex = comp_index;
-        wordLists = wl_addr;
-        searchFirstIndex = search_index;
-        searchOrder = search_addr;
-        MSG_NUM_D("comp ind ", compilationIndex);
-        MSG_NUM_D("comp ind * ", *(cell_t *)compilationIndex);
-        MSG_NUM_D("wl ", wordLists );
-        MSG_NUM_D("wl * ", *(cell_t *)wordLists );
-        MSG_NUM_D("first ", searchFirstIndex);
-        MSG_NUM_D("first * ", *(cell_t *) searchFirstIndex);
-        MSG_NUM_D("order ", searchOrder);
-        MSG_NUM_D("order * ", *(cell_t *)searchOrder);
-        MSG_NUM_D("order name * ",  NAMEREL_TO_ABS((*(cell_t *)searchOrder)));
-        MSG_NUM_D("order code * ",  CODEREL_TO_ABS((*(cell_t *)searchOrder)));
-        MSG_NUM_D("order code * * ",  *(cell_t *)(CODEREL_TO_ABS((*(cell_t *)searchOrder))));
+        gVarWlCompileIndex = comp_index;
+        gVarWordLists = wl_addr;
+        gVarWlOrderFirst = search_index;
+        arrSearchOrder = search_addr;
+        /* Debug Stuff. remove. */
+        MSG_NUM_D("comp ind ", gVarWlCompileIndex);
+        MSG_NUM_D("comp ind * ", *(cell_t *)gVarWlCompileIndex);
+        MSG_NUM_D("wl ", gVarWordLists );
+        MSG_NUM_D("wl * ", *(cell_t *)gVarWordLists );
+        MSG_NUM_D("first ", gVarWlOrderFirst);
+        MSG_NUM_D("first * ", *(cell_t *) gVarWlOrderFirst);
+        MSG_NUM_D("order ", arrSearchOrder);
+        MSG_NUM_D("order * ", *(cell_t *)arrSearchOrder);
+        MSG_NUM_D("order name * ",  NAMEREL_TO_ABS((*(cell_t *)arrSearchOrder)));
+        MSG_NUM_D("order code * ",  CODEREL_TO_ABS((*(cell_t *)arrSearchOrder)));
+        MSG_NUM_D("order code * * ",  *(cell_t *)(CODEREL_TO_ABS((*(cell_t *)arrSearchOrder))));
 }
 cell_t getWordList( cell_t index )
 {
         cell_t temp_addr;
-        if(wordLists)
+        if(gVarWordLists)
         {
                 /* Don't underflow search */
                 if( index < 0 ) return (cell_t) NULL;
                 /* Address to wordlist */
-                temp_addr = (CODEREL_TO_ABS(*(((cell_t *)searchOrder) + index)));
+                temp_addr = (CODEREL_TO_ABS(*(((cell_t *)arrSearchOrder) + index)));
                 if(temp_addr)
                 {
                         return *(cell_t *)temp_addr;
@@ -74,6 +73,8 @@ cell_t getWordList( cell_t index )
                 return gVarContext;
         }
 }
+
+/* This should be written in forth */
 /* search-wordlist ( c-addr u wid -- 0 | xt 1 | xt -1 ) */
 cell_t ffSearchWordList( cell_t c_addr, cell_t u, cell_t wid)
 {
@@ -82,8 +83,9 @@ cell_t ffSearchWordList( cell_t c_addr, cell_t u, cell_t wid)
         uint8_t NameLen;
         const char *NameField;
         if( wid == 0 ) return 0;
-        /* wid is code relative address of wordlists */
-        /* referencing give content of gVarContext of compilation time of last word */
+        /* wid is code relative address of wordlists
+         * referencing give content of gVarContext of
+         * compilation time of last word  in word list*/
         NameField = (ForthString *) *((cell_t *) (CODEREL_TO_ABS(wid)) );
         do
         {
@@ -109,8 +111,3 @@ cell_t ffSearchWordList( cell_t c_addr, cell_t u, cell_t wid)
 }
 
 #endif
-
-
-
-
-

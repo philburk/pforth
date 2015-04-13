@@ -22,11 +22,11 @@
 
 /* Search order and word list arrays */
 
-extern cell_t searchFirstIndex;
-extern cell_t wordLists;
+extern cell_t gVarWlOrderFirst;
+extern cell_t gVarWordLists;
 
-/* compilationIndex is wordLists[compilationIdnex], head of comp. list. */
-extern cell_t compilationIndex;
+/* compilationIndex is gVarWordLists[compilationIdnex], head of comp. list. */
+extern cell_t gVarWlCompileIndex;
 
 /* (init-wordlists) ( search_addr search_index wl_addr comp_index -- ) */
 void ffInitWordLists( cell_t search_addr, cell_t search_index,
@@ -34,7 +34,7 @@ void ffInitWordLists( cell_t search_addr, cell_t search_index,
 /* search-wordlist ( c-addr u wid -- 0 | xt 1 | xt -1 ) */
 cell_t ffSearchWordList( cell_t c_addr, cell_t u, cell_t wid);
 
-/* Helper function. 
+/* Helper function.
  * Get the head of wordlist in search order index 'index' */
 cell_t getWordList( cell_t index );
 

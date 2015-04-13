@@ -64,13 +64,13 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 	if( gVarContext )
 	{
 #ifdef PF_SUPPORT_WORDLIST
-                if( wordLists )
+                if( gVarWordLists )
                 {
-                        if(*((cell_t*)(wordLists)+ *(cell_t*)(compilationIndex)))
+                        if(*((cell_t*)(gVarWordLists)+ *(cell_t*)(gVarWlCompileIndex)))
                         {
                                 WRITE_CELL_DIC( &cfnl->cfnl_PreviousName,
-                                                ABS_TO_NAMEREL( ( *((cell_t*)(wordLists)+
-                                                                    *(cell_t*)(compilationIndex)))));
+                                                ABS_TO_NAMEREL( ( *((cell_t*)(gVarWordLists)+
+                                                                    *(cell_t*)(gVarWlCompileIndex)))));
                         }
                         else
                         {
@@ -431,9 +431,9 @@ cell_t ffTokenToName( ExecToken XT, const ForthString **NFAPtr )
 	ExecToken TempXT;
 #ifdef PF_SUPPORT_WORDLIST
         cell_t iterator;
-        if( wordLists )
+        if( gVarWordLists )
         {
-                iterator = *(cell_t *) searchFirstIndex;
+                iterator = *(cell_t *) gVarWlOrderFirst;
                 NameField = (ForthString *)getWordList(iterator);
                 --iterator;
         }
@@ -465,13 +465,15 @@ DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
 			if( NameField == NULL )
 			{
 #ifdef PF_SUPPORT_WORDLIST
-                                if( wordLists && iterator >= 0)
+                                if( gVarWordLists && iterator >= 0)
                                 {
                                         NameField = (ForthString *)getWordList(iterator);
                                         --iterator;
                                 }
                                 else
                                 {
+                                        /* Wordlists aren't loaded or all are searched
+                                         * and nothing found */
 #endif
                                 *NFAPtr = 0;
 				Searching = FALSE;
@@ -499,9 +501,9 @@ cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
 	cell_t Result = 0;
 #ifdef PF_SUPPORT_WORDLIST
         cell_t iterator;
-        if( wordLists )
+        if( gVarWordLists )
         {
-                iterator = *(cell_t *) searchFirstIndex;
+                iterator = *(cell_t *) gVarWlOrderFirst;
         }
         else
         {
@@ -512,7 +514,7 @@ cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
 	WordLen = (uint8_t) ((ucell_t)*WordName & 0x1F);
 	WordChar = WordName+1;
 #ifdef PF_SUPPORT_WORDLIST
-        if( wordLists )
+        if( gVarWordLists )
         {
                 
                 NameField = (ForthString *)getWordList(iterator);
@@ -547,7 +549,7 @@ DBUG(("ffFindNFA: found it at NFA = 0x%x\n", NameField));
 			if( NameField == NULL )
 			{
 #ifdef PF_SUPPORT_WORDLIST
-				if( wordLists && iterator >= 0)
+				if( gVarWordLists && iterator >= 0)
                                 {
                                         NameField = (ForthString *)getWordList(iterator);
                                         --iterator;
@@ -776,9 +778,9 @@ void ffFinishSecondary( void )
 	ffUnSmudge();
 #ifdef PF_SUPPORT_WORDLIST
         /* Copy context to word list when they are available. */
-        if( wordLists )
+        if( gVarWordLists )
         {
-                *((cell_t*)(wordLists)+*(cell_t*)(compilationIndex)) = gVarContext;
+                *((cell_t*)(gVarWordLists)+*(cell_t*)(gVarWlCompileIndex)) = gVarContext;
         }
 #endif
 }

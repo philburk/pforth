@@ -25,36 +25,31 @@ anew task-search.fth
 -49 constant ERR_SEARCH_OVERFLOW
 -50 constant ERR_SEARCH_UNDERFLOW
 
-create forth-wordlist WORDLISTS cells allot
+\ Arrays for word lists and search order
+\ Also available on C side.
+create [wordlists] WORDLISTS cells allot
 create [searchorder] WORDLISTS cells allot
-variable wl.compile.index
-variable wl.order.first
+variable wl.compile.index \ [wordlists] index which is compilation list
+variable wl.order.first \ Start index of [searchorder] search is decending.
+
+\ Keep track which wordlists are already given.
 variable wl.used
 
-    
-\ works
-    
 : wl.check ( index -- , throw if out of bounds )
     dup WORDLISTS >= ERR_SEARCH_OVERFLOW and throw
     0< ERR_SEARCH_UNDERFLOW and throw
 ;
 
-\ works
-
 : wl.check.wid ( wid -- throw if out of bounds )
-    forth-wordlist if.use->rel dup wl.used @
+    [wordlists] if.use->rel dup wl.used @
     cells + ( wid min max )
     >r over ( wid min wid ) > ERR_SEARCH_UNDERFLOW and throw
     r> > ERR_SEARCH_OVERFLOW and throw
 ;
 
-\ works
-
 : get-current ( -- wid , compilation word list )
-    wl.compile.index @ cells forth-wordlist + if.use->rel
+    wl.compile.index @ cells [wordlists] + if.use->rel
 ;
-
-\ works
 
 : get-order ( -- widn ... wid1 n )
     wl.order.first @ 1+ 0
@@ -65,14 +60,13 @@ variable wl.used
     wl.order.first @ 1+
 ;
 
-\ works
 : set-current ( wid -- , compilation word list to wid )
     \ check wid
     dup wl.check.wid
 
     \ make index and put it under
-    forth-wordlist use->rel -
-    cell / ( wid index-to-forth-wordlist )
+    [wordlists] use->rel -
+    cell / ( wid index-to-[wordlists] )
 
     wl.compile.index !
 ;
@@ -84,13 +78,11 @@ variable wl.used
     set-current
 ;
 
-\ works
-
 : set-order ( widn ... wid1 n -- , Set the search order )
     dup -1 =
     if
-        drop forth-wordlist if.use->rel [searchorder] !
-        0 
+        drop [wordlists] if.use->rel [searchorder] !
+        0
     else
         dup wl.check
         dup 0=
@@ -107,11 +99,9 @@ variable wl.used
     wl.order.first !
 ;
 
-\ works
-
 : wordlist ( -- wid , Create a new empty word list )
     wl.used @ 1+ dup wl.check dup wl.used ! ( index , incerment and store )
-    cells forth-wordlist + dup 0 swap ! ( addr , zero the wordlist )
+    cells [wordlists] + dup 0 swap ! ( addr , zero the wordlist )
     if.use->rel ( wid )
 ;
 
@@ -119,33 +109,31 @@ variable wl.used
     get-order over swap 1+ set-order
 ;
 
-: forth ( -- , Remove first wordlist and put forth-wordlist as first )
-    get-order nip forth-wordlist if.use->rel swap set-order
+: forth ( -- , Remove first wordlist and put [wordlists] as first )
+    get-order nip [wordlists] if.use->rel swap set-order
 ;
 
-: only ( -- , Set search order to forth-wordlist )
+: only ( -- , Set search order to [wordlists] )
     -1 set-order
 ;
 
-\ works
 : order ( -- , print search order wordlist )
     get-order 0 ?do
         i . ." 0x" .hex cr
     loop
 ;
 
-\ works
 : previous ( -- ) get-order nip 1- set-order ;
 
-: init-wordlists ( -- , put forth context to forth-wordlist )
+: init-wordlists ( -- , put forth context to [wordlists] )
     WORDLISTS 1 do
-        0 i cells forth-wordlist + !
+        0 i cells [wordlists] + !
         0 i cells [searchorder] + !
     loop
-    context @ forth-wordlist !
-    forth-wordlist if.use->rel [searchorder] !
+    context @ [wordlists] !
+    [wordlists] if.use->rel [searchorder] !
     \ send variables to C
-    [searchorder] wl.order.first forth-wordlist  wl.compile.index
+    [searchorder] wl.order.first [wordlists]  wl.compile.index
     (init-wordlists)
 ;
 : auto.init
@@ -161,13 +149,20 @@ variable wl.used
 \ : find  ( c-addr -- c-addr 0 | xt 1 | xt -1 )
     \ Find named definitions from all word lists
 \ ;
+: forth-wordlist ( -- wid , Convert variable [wordlists] to wid )
+    [wordlists] if.use->rel
+;
 
+\ debugiging words
+\ Wordlists could be included earlier. misc2.fth provides
+\ .hex which is limiting word inside wordlists?.
+true [if]
 : wordlists? ( -- )
-    cr ." wordlists:" forth-wordlist dup use->rel .hex .hex cr
+    cr ." wordlists:" [wordlists] dup use->rel .hex .hex cr
     WORDLISTS 0
     do
-        forth-wordlist i cells + use->rel .hex i wl.used @ > if ." wl not in use: " then
-        i dup . cells forth-wordlist + @ .hex cr
+        [wordlists] i cells + use->rel .hex i wl.used @ > if ." wl not in use: " then
+        i dup . cells [wordlists] + @ .hex cr
     loop
     ." search order:" [searchorder] dup use->rel .hex .hex cr
     WORDLISTS 1+ 1 ?do
@@ -177,3 +172,4 @@ variable wl.used
         WORDLISTS i - . .hex cr
     loop
 ;
+[then]
