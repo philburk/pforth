@@ -1,4 +1,4 @@
-\ @(#) case.fth 15/04/10 0.1
+\ @(#) search.fth 15/05/20 0.2
 \ Search-Order wordset
 \
 \
@@ -54,8 +54,7 @@ variable wl.used
 : get-order ( -- widn ... wid1 n )
     wl.order.first @ 1+ 0
     ?do
-        wl.order.first @ i - cells
-        [searchorder] + @
+        i cells [searchorder] + @
     loop
     wl.order.first @ 1+
 ;
@@ -89,11 +88,12 @@ variable wl.used
         if
             drop -1
         else
-            dup >r 0 do
-                i cells
-                [searchorder] + !
+            dup 1- swap
+            0 do
+                dup i - cells ( wid1 ... widn n offset )
+                [searchorder] + ( wid1 ... widn n addr )
+                rot swap !
             loop
-            r> 1-
         then
     then
     wl.order.first !
@@ -113,7 +113,7 @@ variable wl.used
     get-order nip [wordlists] if.use->rel swap set-order
 ;
 
-: only ( -- , Set search order to [wordlists] )
+: only ( -- , Set search order to forth-wordlist )
     -1 set-order
 ;
 
@@ -126,7 +126,7 @@ variable wl.used
 : previous ( -- ) get-order nip 1- set-order ;
 
 : init-wordlists ( -- , put forth context to [wordlists] )
-    WORDLISTS 1 do
+    WORDLISTS 0 do
         0 i cells [wordlists] + !
         0 i cells [searchorder] + !
     loop
@@ -153,23 +153,38 @@ variable wl.used
     [wordlists] if.use->rel
 ;
 
+: seal ( -- , Make the top of the search order only word list in search order )
+    get-order over >r 0 do drop loop r> 1 set-current
+;
+
 \ debugiging words
 \ Wordlists could be included earlier. misc2.fth provides
 \ .hex which is limiting word inside wordlists?.
 true [if]
 : wordlists? ( -- )
-    cr ." wordlists:" [wordlists] dup use->rel .hex .hex cr
+    cr ." wordlists:"cr
     WORDLISTS 0
     do
-        [wordlists] i cells + use->rel .hex i wl.used @ > if ." wl not in use: " then
-        i dup . cells [wordlists] + @ .hex cr
+        i ." index: " . [wordlists] i cells +
+        dup ." use: " .hex
+        dup ." rel: " use->rel .hex
+        @ ." val: " .hex
+        i wl.used @ > if ." wl not in use. " then
+        cr
     loop
-    ." search order:" [searchorder] dup use->rel .hex .hex cr
-    WORDLISTS 1+ 1 ?do
-        WORDLISTS i - cells
-        [searchorder] + dup .hex @
-        wl.order.first @  WORDLISTS i - < if ." order not in use: " then
-        WORDLISTS i - . .hex cr
+    cr ." compilation list index: "  wl.compile.index @ .
+    ." and list: " get-current .hex cr
+    ." search order:" cr
+    WORDLISTS 1+ 1
+    ?do
+        WORDLISTS i -
+        dup ." index: " .
+        cells [searchorder] +
+        dup ." use: " .hex
+        dup ." rel: " use->rel .hex
+        @ ." val: " .hex wl.order.first @  WORDLISTS i - < if ." order not in use. " then
+        cr
     loop
 ;
+
 [then]

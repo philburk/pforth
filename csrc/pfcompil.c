@@ -105,7 +105,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 
 /* Set flags. */
 	*(char*)gVarContext |= (char) Flags;
-	
+
 /* Align to quad byte boundaries with zeroes. */
 	while( gCurrentDictionary->dic_HeaderPtr & UINT32_MASK )
 	{
@@ -169,7 +169,7 @@ cell_t FindSpecialXTs( void )
 	if( ffFindC( "ACCEPT", &gAcceptP_XT ) == 0) goto nofind;
 DBUG(("gNumberQ_XT = 0x%x\n", (unsigned int)gNumberQ_XT ));
 	return 0;
-	
+
 nofind:
 	ERR("FindSpecialXTs failed!\n");
 	return -1;
@@ -187,7 +187,7 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
 	if( !dic ) goto nomem;
 
 	pfDebugMessage("pfBuildDictionary: Start adding dictionary entries.\n");
-	
+
 	gCurrentDictionary = dic;
 	gNumPrimitives = NUM_PRIMITIVES;
 
@@ -395,12 +395,12 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
 	CreateDicEntryC( ID_WORD_STORE, "W!", 0 );
 	CreateDicEntryC( ID_XOR, "XOR", 0 );
 	CreateDicEntryC( ID_ZERO_BRANCH, "0BRANCH", 0 );
-	
+
 	pfDebugMessage("pfBuildDictionary: FindSpecialXTs\n");
 	if( FindSpecialXTs() < 0 ) goto error;
-	
+
 	if( CompileCustomFunctions() < 0 ) goto error; /* Call custom 'C' call builder. */
-	
+
 #ifdef PF_DEBUG
 	DumpMemory( dic->dic_HeaderBase, 256 );
 	DumpMemory( dic->dic_CodeBase, 256 );
@@ -408,12 +408,12 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
 
 	pfDebugMessage("pfBuildDictionary: Finished adding dictionary entries.\n");
 	return (PForthDictionary) dic;
-	
+
 error:
 	pfDebugMessage("pfBuildDictionary: Error adding dictionary entries.\n");
 	pfDeleteDictionary( dic );
 	return NULL;
-	
+
 nomem:
 	return NULL;
 }
@@ -446,12 +446,12 @@ cell_t ffTokenToName( ExecToken XT, const ForthString **NFAPtr )
 #else
 	NameField = (ForthString *) gVarContext;
 DBUGX(("\ffCodeToName: gVarContext = 0x%x\n", gVarContext));
-#endif	
+#endif
 
 	do
 	{
 		TempXT = NameToToken( NameField );
-		
+
 		if( TempXT == XT )
 		{
 DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
@@ -469,6 +469,12 @@ DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
                                 {
                                         NameField = (ForthString *)getWordList(iterator);
                                         --iterator;
+                                        /* Ugly. */
+                                        if( NameField == NULL)
+                                        {
+                                                *NFAPtr = 0;
+                                                Searching = FALSE;
+                                        }
                                 }
                                 else
                                 {
@@ -483,7 +489,7 @@ DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
 			}
 		}
 	} while ( Searching);
-	
+
 	return Result;
 }
 
@@ -516,14 +522,24 @@ cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
 #ifdef PF_SUPPORT_WORDLIST
         if( gVarWordLists )
         {
-                
-                NameField = (ForthString *)getWordList(iterator);
-                --iterator;
+                NameField = NULL;
+                /* Skip empty lists from begin. */
+                while( NameField == NULL && iterator >= 0)
+                {
+                        NameField = (ForthString *)getWordList(iterator);
+                        --iterator;
+                }
+                if( NameField == NULL && iterator < 0 )
+                {
+                        /* Nothing found! */
+                        *NFAPtr = WordName;
+                        return Result;
+                }
         }
         else{
                 NameField = (ForthString *) gVarContext;
         }
-       
+
 #else
 	NameField = (ForthString *) gVarContext;
 DBUG(("\nffFindNFA: WordLen = %d, WordName = %*s\n", WordLen, WordLen, WordChar ));
@@ -551,8 +567,17 @@ DBUG(("ffFindNFA: found it at NFA = 0x%x\n", NameField));
 #ifdef PF_SUPPORT_WORDLIST
 				if( gVarWordLists && iterator >= 0)
                                 {
-                                        NameField = (ForthString *)getWordList(iterator);
-                                        --iterator;
+                                        do
+                                        {
+                                                /* Skip empty lists middle */
+                                                NameField = (ForthString *)getWordList(iterator);
+                                                --iterator;
+                                        }while( NameField == NULL && iterator >= 0 );
+                                        if( NameField == NULL)
+                                        {
+                                                *NFAPtr = WordName;
+                                                Searching = FALSE;
+                                        }
                                 }
                                 else
                                 {
@@ -578,7 +603,7 @@ cell_t ffFind( const ForthString *WordName, ExecToken *pXT )
 {
 	const ForthString *NFA;
 	cell_t Result;
-	
+
 	Result = ffFindNFA( WordName, &NFA );
 DBUG(("ffFind: %8s at 0x%x\n", WordName+1, NFA)); /* WARNING, not NUL terminated. %Q */
 	if( Result )
@@ -610,7 +635,7 @@ DBUG(("ffFindC: %s\n", WordName ));
 #define DIC_SAFETY_MARGIN  (400)
 
 /*************************************************************
-**  Check for dictionary overflow. 
+**  Check for dictionary overflow.
 */
 static cell_t ffCheckDicRoom( void )
 {
@@ -634,7 +659,7 @@ static cell_t ffCheckDicRoom( void )
 }
 
 /*************************************************************
-**  Create a dictionary entry given a string name. 
+**  Create a dictionary entry given a string name.
 */
 void ffCreateSecondaryHeader( const ForthStringPtr FName)
 {
@@ -664,9 +689,9 @@ static void ffStringColon( const ForthStringPtr FName)
 void ffColon( void )
 {
 	char *FName;
-	
+
  	gDepthAtColon = DATA_STACK_DEPTH;
-	
+
 	FName = ffWord( BLANK );
 	if( *FName > 0 )
 	{
@@ -681,7 +706,7 @@ static cell_t CheckRedefinition( const ForthStringPtr FName )
 {
 	cell_t flag;
 	ExecToken XT;
-	
+
 	flag = ffFind( FName, &XT);
 	if ( flag && !gVarQuiet)
 	{
@@ -694,18 +719,18 @@ static cell_t CheckRedefinition( const ForthStringPtr FName )
 void ffStringCreate( char *FName)
 {
 	ffCreateSecondaryHeader( FName );
-	
+
 	CODE_COMMA( ID_CREATE_P );
 	CODE_COMMA( ID_EXIT );
 	ffFinishSecondary();
-	
+
 }
 
 /* Read the next ExecToken from the Source and create a word. */
 void ffCreate( void )
 {
 	char *FName;
-	
+
 	FName = ffWord( BLANK );
 	if( *FName > 0 )
 	{
@@ -717,12 +742,12 @@ void ffStringDefer( const ForthStringPtr FName, ExecToken DefaultXT )
 {
 	pfDebugMessage("ffStringDefer()\n");
 	ffCreateSecondaryHeader( FName );
-	
+
 	CODE_COMMA( ID_DEFER_P );
 	CODE_COMMA( DefaultXT );
-	
+
 	ffFinishSecondary();
-	
+
 }
 #ifndef PF_NO_INIT
 /* Convert name then create deferred dictionary entry. */
@@ -738,7 +763,7 @@ static void CreateDeferredC( ExecToken DefaultXT, const char *CName )
 void ffDefer( void )
 {
 	char *FName;
-	
+
 	FName = ffWord( BLANK );
 	if( *FName > 0 )
 	{
@@ -757,7 +782,7 @@ ThrowCode ffSemiColon( void )
 {
 	ThrowCode exception = 0;
 	gVarState = 0;
-	
+
 	if( (gDepthAtColon != DATA_STACK_DEPTH) &&
 	    (gDepthAtColon != DEPTH_AT_COLON_INVALID) ) /* Ignore if no ':' */
 	{
@@ -807,8 +832,8 @@ void ffLiteral( cell_t Num )
 #ifdef PF_SUPPORT_FP
 void ffFPLiteral( PF_FLOAT fnum )
 {
-	/* Hack for Metrowerks complier which won't compile the 
-	 * original expression. 
+	/* Hack for Metrowerks complier which won't compile the
+	 * original expression.
 	 */
 	PF_FLOAT  *temp;
 	cell_t    *dicPtr;
@@ -836,7 +861,7 @@ ThrowCode FindAndCompile( const char *theWord )
 	ExecToken XT;
 	cell_t Num;
 	ThrowCode exception = 0;
-	
+
 	Flag = ffFind( theWord, &XT);
 DBUG(("FindAndCompile: theWord = %8s, XT = 0x%x, Flag = %d\n", theWord, XT, Flag ));
 
@@ -861,12 +886,12 @@ DBUG(("FindAndCompile: IMMEDIATE, theWord = 0x%x\n", theWord ));
 	{
 /* Call deferred NUMBER? */
 		cell_t NumResult;
-		
+
 DBUG(("FindAndCompile: not found, try number?\n" ));
 		PUSH_DATA_STACK( theWord );   /* Push text of number */
 		exception = pfCatch( gNumberQ_XT );
 		if( exception ) goto error;
-		
+
 DBUG(("FindAndCompile: after number?\n" ));
 		NumResult = POP_DATA_STACK;  /* Success? */
 		switch( NumResult )
@@ -878,7 +903,7 @@ DBUG(("FindAndCompile: after number?\n" ));
 				ffLiteral( Num );
 			}
 			break;
-			
+
 		case NUM_TYPE_DOUBLE:
 			if( gVarState )  /* compiling? */
 			{
@@ -902,7 +927,7 @@ DBUG(("FindAndCompile: after number?\n" ));
 			MSG( "  ? - unrecognized word!\n" );
 			exception = THROW_UNDEFINED_WORD;
 			break;
-		
+
 		}
 	}
 error:
@@ -918,15 +943,15 @@ ThrowCode ffInterpret( void )
 	cell_t flag;
 	char *theWord;
 	ThrowCode exception = 0;
-	
+
 /* Is there any text left in Source ? */
 	while( gCurrentTask->td_IN < (gCurrentTask->td_SourceNum) )
 	{
-	
+
 		pfDebugMessage("ffInterpret: calling ffWord(()\n");
 		theWord = ffWord( BLANK );
 		DBUG(("ffInterpret: theWord = 0x%x, Len = %d\n", theWord, *theWord ));
-		
+
 		if( *theWord > 0 )
 		{
 			flag = 0;
@@ -950,7 +975,7 @@ ThrowCode ffInterpret( void )
 error:
 	return exception;
 }
-		
+
 /**************************************************************/
 ThrowCode ffOK( void )
 {
@@ -990,7 +1015,7 @@ ThrowCode ffOK( void )
 void pfHandleIncludeError( void )
 {
 	FileStream *cur;
-	
+
 	while( (cur = ffPopInputStream()) != PF_STDIN)
 	{
 		DBUG(("ffCleanIncludeStack: closing 0x%x\n", cur ));
@@ -1026,7 +1051,7 @@ ThrowCode ffOuterInterpreterLoop( void )
 ThrowCode ffIncludeFile( FileStream *InputFile )
 {
 	ThrowCode exception;
-	
+
 /* Push file stream. */
 	exception = ffPushInputStream( InputFile );
 	if( exception < 0 ) return exception;
@@ -1034,13 +1059,13 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
 /* Run outer interpreter for stream. */
 	exception = ffOuterInterpreterLoop();
 	if( exception )
-	{	
+	{
 		int i;
 /* Report line number and nesting level. */
 		MSG("INCLUDE error on line #"); ffDot(gCurrentTask->td_LineNumber);
 		MSG(", level = ");  ffDot(gIncludeIndex );
 		EMIT_CR
-	
+
 /* Dump line of error and show offset in line for >IN */
 		for( i=0; i<gCurrentTask->td_SourceNum; i++ )
 		{
@@ -1055,7 +1080,7 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
 
 /* Pop file stream. */
 	ffPopInputStream();
-	
+
 /* ANSI spec specifies that this should also close the file. */
 	sdCloseFile(InputFile);
 
@@ -1071,7 +1096,7 @@ Err ffPushInputStream( FileStream *InputFile )
 {
 	cell_t Result = 0;
 	IncludeFrame *inf;
-	
+
 /* Push current input state onto special include stack. */
 	if( gIncludeIndex < MAX_INCLUDE_DEPTH )
 	{
@@ -1096,8 +1121,8 @@ Err ffPushInputStream( FileStream *InputFile )
 		ERR("ffPushInputStream: max depth exceeded.\n");
 		return -1;
 	}
-	
-	
+
+
 	return Result;
 }
 
@@ -1109,10 +1134,10 @@ FileStream *ffPopInputStream( void )
 {
 	IncludeFrame *inf;
 	FileStream *Result;
-	
+
 DBUG(("ffPopInputStream: gIncludeIndex = %d\n", gIncludeIndex));
 	Result = gCurrentTask->td_InputStream;
-	
+
 /* Restore input state. */
 	if( gIncludeIndex > 0 )
 	{
@@ -1161,7 +1186,7 @@ cell_t ffConvertStreamToSourceID( FileStream *Stream )
 FileStream * ffConvertSourceIDToStream( cell_t id )
 {
 	FileStream *stream;
-	
+
 	if( id == 0 )
 	{
 		stream = PF_STDIN;
@@ -1170,7 +1195,7 @@ FileStream * ffConvertSourceIDToStream( cell_t id )
 	{
 		stream = NULL;
 	}
-	else 
+	else
 	{
 		stream = (FileStream *) id;
 	}
@@ -1203,17 +1228,17 @@ DBUGX(("readLineFromStream(0x%x, 0x%x, 0x%x)\n", buffer, len, stream ));
 				done = 1;
 				if( len <= 0 ) len = -1;
 				break;
-				
+
 			case '\n':
 				DBUGX(("EOL=\\n\n"));
 				if( lastChar != '\r' ) done = 1;
 				break;
-				
+
 			case '\r':
 				DBUGX(("EOL=\\r\n"));
 				done = 1;
 				break;
-				
+
 			default:
 				*p++ = (char) c;
 				len++;
@@ -1224,7 +1249,7 @@ DBUGX(("readLineFromStream(0x%x, 0x%x, 0x%x)\n", buffer, len, stream ));
 
 /* NUL terminate line to simplify printing when debugging. */
 	if( (len >= 0) && (len < maxChars) ) p[len] = '\0';
-		
+
 	return len;
 }
 
@@ -1267,14 +1292,14 @@ cell_t ffRefill( void )
 
 	gCurrentTask->td_SourceNum = Num;
 	gCurrentTask->td_LineNumber++;  /* Bump for include. */
-	
+
 /* echo input if requested */
 	if( gVarEcho && ( Num > 0))
 	{
 		ioType( gCurrentTask->td_SourcePtr, gCurrentTask->td_SourceNum );
 		EMIT_CR;
 	}
-	
+
 error:
 	return Result;
 }

@@ -41,6 +41,8 @@ void ffInitWordLists( cell_t search_addr, cell_t search_index,
         MSG_NUM_D("comp ind * ", *(cell_t *)gVarWlCompileIndex);
         MSG_NUM_D("wl ", gVarWordLists );
         MSG_NUM_D("wl * ", *(cell_t *)gVarWordLists );
+        MSG_NUM_D("wl * * ",  *(cell_t *)(*(cell_t *)gVarWordLists));
+        MSG_NUM_D("wl+1 * * ",  *(cell_t *)(*(cell_t *)gVarWordLists+1));
         MSG_NUM_D("first ", gVarWlOrderFirst);
         MSG_NUM_D("first * ", *(cell_t *) gVarWlOrderFirst);
         MSG_NUM_D("order ", arrSearchOrder);
@@ -51,15 +53,17 @@ void ffInitWordLists( cell_t search_addr, cell_t search_index,
 }
 cell_t getWordList( cell_t index )
 {
-        cell_t temp_addr;
+  cell_t temp_addr, *tmp_arr;
         if(gVarWordLists)
         {
                 /* Don't underflow search */
                 if( index < 0 ) return (cell_t) NULL;
                 /* Address to wordlist */
-                temp_addr = (CODEREL_TO_ABS(*(((cell_t *)arrSearchOrder) + index)));
+                tmp_arr = (cell_t *) arrSearchOrder;
+                temp_addr = tmp_arr[index];
                 if(temp_addr)
                 {
+                        temp_addr = CODEREL_TO_ABS(temp_addr);
                         return *(cell_t *)temp_addr;
                 }
                 else
@@ -82,7 +86,8 @@ cell_t ffSearchWordList( cell_t c_addr, cell_t u, cell_t wid)
         cell_t Result = 0;
         uint8_t NameLen;
         const char *NameField;
-        if( wid == 0 ) return 0;
+
+        if( wid == 0 || !(*((cell_t *) (CODEREL_TO_ABS(wid))) )) return 0;
         /* wid is code relative address of wordlists
          * referencing give content of gVarContext of
          * compilation time of last word  in word list*/
@@ -94,7 +99,7 @@ cell_t ffSearchWordList( cell_t c_addr, cell_t u, cell_t wid)
                     (NameLen == u) &&
                     ffCompareTextCaseN( NameField +1, (const char *) c_addr, u ) )
                 {
-                        PUSH_DATA_STACK(NameField); /* XT to stack */
+                        PUSH_DATA_STACK(NameToToken(NameField)); /* XT to stack */
                         Result = ((*NameField) & FLAG_IMMEDIATE) ? 1 : -1;
                         Searching = FALSE;
                 }
