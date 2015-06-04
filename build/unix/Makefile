@@ -134,11 +134,12 @@ help:
 	@echo "   It allows pForth to work as a standalone image that does not need to load a dictionary file."
 
 test: $(PFORTHAPP)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_corex.fth)
+#	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_corex.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_strings.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_locals.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_alloc.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_floats.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_wordlist.fth)
 
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)
