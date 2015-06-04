@@ -186,11 +186,37 @@ init-wordlists
     namebase wl.offset ! save-forth
 ;
 
-\ Now there yoy go. Use the wordlist
+\ Now there you go. Use the wordlist.
 init-wordlists
+
+\ Words which are defined before and we want to work differently.
+\ 15.6.1.2465
+\ WORDS
+: WORDS  ( -- )
+    0
+    \ This part is different
+    wl.order.first @ cells [searchorder] + @ rel->use @
+    \ end modification
+    BEGIN  dup 0<>
+    WHILE  dup id. tab cr? ?pause
+            prevname
+            swap 1+ swap
+    REPEAT drop
+    cr . ."  words" cr
+;
+
+\ 15.6.2.1580
+\ FORGET
+\    If the Search-Order word set is present, FORGET searches the compilation word list.
+\ An ambiguous condition exists if the compilation word list is deleted.
+: [FORGET] ( <name> -- , forget then exec forgotten words )
+    wl.compile.index @ cells [wordlists] + @ .hex
+    context @ .hex [FORGET]  context @ dup .hex wl.compile.index @ cells [wordlists] + !
+;
+
 \ debugiging words
 \ Wordlists could be included earlier. misc2.fth provides
-\ .hex which is limiting word inside wordlists?.
+\ .hex which is limiting word inside wordlists?. [if] is in condcomp.fth
 
  true [if]
 \ false [if]
