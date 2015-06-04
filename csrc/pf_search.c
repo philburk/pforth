@@ -36,7 +36,7 @@ void ffInitWordLists( cell_t search_addr, cell_t search_index,
         gVarWordLists = wl_addr;
         gVarWlOrderFirst = search_index;
         arrSearchOrder = search_addr;
-        /* Debug Stuff. remove. */
+        /* Debug Stuff. remove.
         MSG_NUM_D("comp ind ", gVarWlCompileIndex);
         MSG_NUM_D("comp ind * ", *(cell_t *)gVarWlCompileIndex);
         MSG_NUM_D("wl ", gVarWordLists );
@@ -50,6 +50,7 @@ void ffInitWordLists( cell_t search_addr, cell_t search_index,
         MSG_NUM_D("order name * ",  NAMEREL_TO_ABS((*(cell_t *)arrSearchOrder)));
         MSG_NUM_D("order code * ",  CODEREL_TO_ABS((*(cell_t *)arrSearchOrder)));
         MSG_NUM_D("order code * * ",  *(cell_t *)(CODEREL_TO_ABS((*(cell_t *)arrSearchOrder))));
+        */
 }
 cell_t getWordList( cell_t index )
 {

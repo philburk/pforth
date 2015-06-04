@@ -1,4 +1,4 @@
-\ @(#) search.fth 15/05/20 0.2
+\ @(#) search.fth 5/06/20 0.3
 \ Search-Order wordset
 \
 \
@@ -17,8 +17,9 @@
 
 anew task-search.fth
 
-\ This constant defines how many wordlist you get. Increase it
-\ if more lists needed.
+\ This constant defines how many wordlist you get. Increase it if more
+\ lists needed.
+
 16 constant WORDLISTS
 
 \ Exeption codes
@@ -34,7 +35,7 @@ variable wl.order.first \ Start index of [searchorder] search is decending.
 
 \ Keep track which wordlists are already given.
 variable wl.used
-
+\ Namebase during dictionary file build
 variable wl.offset
 
 : wl.check ( index -- , throw if out of bounds )
@@ -120,6 +121,8 @@ variable wl.offset
 ;
 
 : order ( -- , print search order wordlist )
+    get-current ." Compile to: 0x" .hex cr
+    ." search from:" cr
     get-order 0 ?do
         i . ." 0x" .hex cr
     loop
@@ -138,11 +141,10 @@ variable wl.offset
 
 init-wordlists
 
-: init-wordlists ( -- , put forth context to [wordlists] and send to C )
-    context @ [wordlists] !
-    [wordlists] if.use->rel [searchorder] !
+: init-wordlists ( -- , Relocate [wordlists] )
+   
     \ Fix dictionaries.
-    WORDLISTS 1 do
+    WORDLISTS 0 do
         i cells [wordlists] + dup @ dup 0<> ( addr val flag )
         if
             wl.offset @ - namebase + swap ! ( )
@@ -150,6 +152,7 @@ init-wordlists
             2drop
         then
     loop
+    context @ wl.compile.index @ cells [wordlists] + !
     [searchorder] wl.order.first [wordlists]  wl.compile.index
     (init-wordlists)
 ;
@@ -175,23 +178,29 @@ init-wordlists
     get-order over >r 0 do drop loop r> 1 set-order
 ;
 
-\ As values are in [wordlists] in usable format, save namebase to wl.offset
-\ so next time it is possible to use them.
+\ As values are in [wordlists] in usable format, save namebase to
+\ wl.offset so next time it is possible to use them.
 
 \ This works as this file is included by loadp4th.fth
 \ later than save-forth in system.fth
+
+
+\ Now there you go. Use the wordlist.
+init-wordlists
+
+\ Words which are defined before and we want to work differently.
 
 \ redefine save-forth
 : save-forth ( $name -- )
     namebase wl.offset ! save-forth
 ;
 
-\ Now there you go. Use the wordlist.
-init-wordlists
 
-\ Words which are defined before and we want to work differently.
 \ 15.6.1.2465
 \ WORDS
+
+\ List the definition names in the first word list of the search
+\ order. The format of the display is implementation-dependent.
 : WORDS  ( -- )
     0
     \ This part is different
@@ -207,19 +216,76 @@ init-wordlists
 
 \ 15.6.2.1580
 \ FORGET
-\    If the Search-Order word set is present, FORGET searches the compilation word list.
-\ An ambiguous condition exists if the compilation word list is deleted.
+
+\ If the Search-Order word set is present, FORGET searches the
+\ compilation word list.  An ambiguous condition exists if the
+\ compilation word list is deleted.
+
 : [FORGET] ( <name> -- , forget then exec forgotten words )
-    wl.compile.index @ cells [wordlists] + @ .hex
-    context @ .hex [FORGET]  context @ dup .hex wl.compile.index @ cells [wordlists] + !
+    [FORGET]  context @ wl.compile.index @ cells [wordlists] + !
 ;
+
+
+\ 6.2.1850
+\ MARKER
+
+\ Restore all dictionary allocation and search order
+\ pointers to the state they had just prior to the definition of
+\ name. Remove the definition of name and all subsequent
+\ definitions. Restoration of any structures still existing that could
+\ refer to deleted definitions or deallocated data space is not
+\ necessarily provided. No other contextual information such as
+\ numeric base is affected.
+
+: MARKER  ( <name> -- , define a word that forgets itself when executed, ANS )
+    latest
+    CREATE
+    \ save the previous word
+    ,
+    \ Save dictionary and word list status
+    [wordlists] WORDLISTS 0
+    do
+        dup i cells + @
+        namebase -  \ convert to relocatable
+        ,           \ save for DOES>
+    loop
+    drop \ drop [wordlists]
+    \ Save search order
+    [searchorder] WORDLISTS 0
+    do
+        dup i cells  + @ , \ already relocatable
+    loop
+    drop
+    wl.compile.index @ ,
+    wl.order.first @ , 
+    wl.used @ ,
+  DOES>  ( -- body )
+    dup @ context ! cell+
+    \ restore wordlists
+    WORDLISTS 0
+    do
+        dup @ namebase +       \ convert back to NFA
+        i cells [wordlists] + !
+        cell+
+    loop
+    
+    WORDLISTS 0
+    do
+        dup @ i cells [searchorder] + ! cell+
+    loop
+    dup @ wl.compile.index ! cell+
+    dup @ wl.order.first ! cell+
+    @ wl.used !
+    context @ wl.compile.index @ cells [wordlists] + !
+;
+
 
 \ debugiging words
 \ Wordlists could be included earlier. misc2.fth provides
 \ .hex which is limiting word inside wordlists?. [if] is in condcomp.fth
 
- true [if]
-\ false [if]
+
+false [if]
 : wordlists? ( -- )
     cr ." wordlists:"cr
     WORDLISTS 0
@@ -233,6 +299,7 @@ init-wordlists
     loop
     cr ." compilation list index: "  wl.compile.index @ .
     ." and list: " get-current .hex cr
+    ." with latest: " latest .hex cr
     ." search order:" cr
     WORDLISTS 1+ 1
     ?do
@@ -245,7 +312,6 @@ init-wordlists
         cr
     loop
 ;
-
 
 VARIABLE wid1
 wordlist wid1 !
