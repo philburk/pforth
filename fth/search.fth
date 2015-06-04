@@ -35,6 +35,8 @@ variable wl.order.first \ Start index of [searchorder] search is decending.
 \ Keep track which wordlists are already given.
 variable wl.used
 
+variable wl.offset
+
 : wl.check ( index -- , throw if out of bounds )
     dup WORDLISTS >= ERR_SEARCH_OVERFLOW and throw
     0< ERR_SEARCH_UNDERFLOW and throw
@@ -132,10 +134,26 @@ variable wl.used
     loop
     context @ [wordlists] !
     [wordlists] if.use->rel [searchorder] !
-    \ send variables to C
+;
+
+init-wordlists
+
+: init-wordlists ( -- , put forth context to [wordlists] and send to C )
+    context @ [wordlists] !
+    [wordlists] if.use->rel [searchorder] !
+    \ Fix dictionaries.
+    WORDLISTS 1 do
+        i cells [wordlists] + dup @ dup 0<> ( addr val flag )
+        if
+            wl.offset @ - namebase + swap ! ( )
+        else
+            2drop
+        then
+    loop
     [searchorder] wl.order.first [wordlists]  wl.compile.index
     (init-wordlists)
 ;
+
 : auto.init
     auto.init init-wordlists
 ;
@@ -154,13 +172,28 @@ variable wl.used
 ;
 
 : seal ( -- , Make the top of the search order only word list in search order )
-    get-order over >r 0 do drop loop r> 1 set-current
+    get-order over >r 0 do drop loop r> 1 set-order
 ;
 
+\ As values are in [wordlists] in usable format, save namebase to wl.offset
+\ so next time it is possible to use them.
+
+\ This works as this file is included by loadp4th.fth
+\ later than save-forth in system.fth
+
+\ redefine save-forth
+: save-forth ( $name -- )
+    namebase wl.offset ! save-forth
+;
+
+\ Now there yoy go. Use the wordlist
+init-wordlists
 \ debugiging words
 \ Wordlists could be included earlier. misc2.fth provides
 \ .hex which is limiting word inside wordlists?.
-true [if]
+
+ true [if]
+\ false [if]
 : wordlists? ( -- )
     cr ." wordlists:"cr
     WORDLISTS 0
@@ -186,5 +219,15 @@ true [if]
         cr
     loop
 ;
+
+
+VARIABLE wid1
+wordlist wid1 !
+
+wid1 @ set-current
+: hello ." Hello wid1" cr ;
+
+forth-wordlist set-current
+: hello ." Hello forth" cr ;
 
 [then]
