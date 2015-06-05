@@ -7,7 +7,8 @@
 \
 \ Copied and modified from
 \ http://www.forth200x.org/documents/html3/testsuite.html#section.F.19
-
+exists? (init-wordlists)
+[if]
 include? }T{  t_tools.fth
 
 test{
@@ -133,3 +134,6 @@ T{ ONLY FORTH DEFINITIONS ORDER }T{ }T
 CR .( Plus another unnamed wordlist at head of search order) CR
 T{ alsowid2 DEFINITIONS ORDER }T{ }T
 }test
+[else]
+." This compilation doesn't support word lists or SEARCH-ORDER word set" cr
+[then]
