@@ -63,12 +63,18 @@ static void CTest1( cell_t Val1, cell_t Val2 )
 ** It is called by the pForth kernel.
 */
 #define NUM_CUSTOM_FUNCTIONS  (2)
-CFunc0 CustomFunctionTable[NUM_CUSTOM_FUNCTIONS];
+CFunc0 CustomFunctionTable[NUM_CUSTOM_FUNCTIONS + PF_WORDLIST_EXPORT_FUNCTIONS];
 
 Err LoadCustomFunctionTable( void )
 {
 	CustomFunctionTable[0] = CTest0;
 	CustomFunctionTable[1] = CTest1;
+        /* Insert your functions here. */
+        
+#ifdef PF_SUPPORT_WORDLIST
+        CustomFunctionTable[NUM_CUSTOM_FUNCTIONS + 0] = ffInitWordLists;
+        CustomFunctionTable[NUM_CUSTOM_FUNCTIONS + 1] = ffSearchWordList;
+#endif
 	return 0;
 }
 
@@ -81,6 +87,11 @@ CFunc0 CustomFunctionTable[] =
 {
 	(CFunc0) CTest0,
 	(CFunc0) CTest1
+#ifdef PF_SUPPORT_WORDLIST
+        ,
+        (CFunc0) ffInitWordLists,
+        (CFunc0) ffSearchWordList
+#endif
 };	
 #endif
 
@@ -103,7 +114,12 @@ Err CompileCustomFunctions( void )
 	if( err < 0 ) return err;
 	err = CreateGlueToC( "CTEST1", i++, C_RETURNS_VOID, 2 );
 	if( err < 0 ) return err;
-	
+#ifdef PF_SUPPORT_WORDLIST
+	err = CreateGlueToC( "(INIT-WORDLISTS)", i++, C_RETURNS_VOID, 4 );
+	if( err < 0 ) return err;
+        err = CreateGlueToC( "SEARCH-WORDLIST", i++, C_RETURNS_VALUE, 3 );
+	if( err < 0 ) return err;
+#endif
 	return 0;
 }
 #else

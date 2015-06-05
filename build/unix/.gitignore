@@ -1,0 +1,6 @@
+*.eo
+*.o
+pfdicdat.h
+pforth
+pforth.dic
+pforth_standalone
