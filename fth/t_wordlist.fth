@@ -133,7 +133,36 @@ T{ ONLY FORTH DEFINITIONS ORDER }T{ }T
 
 CR .( Plus another unnamed wordlist at head of search order) CR
 T{ alsowid2 DEFINITIONS ORDER }T{ }T
+
+\ Marker tests
+ONLY FORTH DEFINITIONS
+wid2 @ set-current
+create thisstays
+marker mymark
+create thisleaves
+ONLY FORTH DEFINITIONS
+create thisleavestoo
+get-order wid2 @ swap 1+ set-order
+\ Is search order and compilation lists returned?
+T{ mymark get-order get-current }T{ forth-wordlist 1 wid2 @ }T
+\ Are right words gone?
+T{ exists? thisstays exists? thisleaves exists? thisleavestoo }T{ false false false }T
+get-order wid2 @ swap 1+ set-order
+T{ exists? thisstays exists? thisleaves exists? thisleavestoo }T{ true false false }T
+
+\ Forget testing Put something to wid2
+wid2 @ set-current
+create thisleaves
+
+\ and forth-wordlist
+forth-wordlist set-current
+create thisstaystoo
+wid2 @ set-current
+forget thisleaves
+\ Only thisleaves should be gone.
+T{ exists? thisstays exists? thisleaves exists? thisstaystoo }T{ true false true }T
+
 }test
 [else]
-." This compilation doesn't support word lists or SEARCH-ORDER word set" cr
+.( This compilation doesn't support word lists or SEARCH-ORDER word set) cr
 [then]
