@@ -28,7 +28,6 @@ FULL_WARNINGS =  \
         -fsigned-char \
         -fno-builtin \
         -fno-unroll-loops \
-        -fpeephole \
         -fno-keep-inline-functions \
         -pedantic \
         -Wcast-qual \
