@@ -502,7 +502,7 @@ variable KH-INSIDE        ( true if we are scrolling inside the history buffer )
 ;
 : AUTO.TERM
 	history.off
-	auto.init
+	auto.term
 ;
 
 if.forgotten history.off
