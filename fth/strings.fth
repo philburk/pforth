@@ -19,7 +19,7 @@ ANEW TASK-STRINGS.FTH
 
 \ Structure of string table
 : $ARRAY  (  )
-    CREATE  ( #strings #chars_max --  ) 
+    CREATE  ( #strings #chars_max --  )
         dup ,
         2+ * even-up allot
     DOES>    ( index -- $addr )
@@ -42,7 +42,7 @@ ANEW TASK-STRINGS.FTH
 : TEXT=  ( addr1 addr2 count -- flag )
     >r -1 -rot
 	r> 0
-    DO  dup c@ tolower
+    ?DO  dup c@ tolower
         2 pick c@ tolower -
         IF rot drop 0 -rot LEAVE
         THEN
@@ -80,7 +80,7 @@ ANEW TASK-STRINGS.FTH
 : ($ROM)  ( index address -- $string )
     ( -- index address )
     swap 0
-    DO dup c@ 1+ + aligned
+    ?DO dup c@ 1+ + aligned
     LOOP
 ;
 
