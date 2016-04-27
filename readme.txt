@@ -28,19 +28,19 @@ purpose and their equivalents under the laws of any jurisdiction.
 
 -- Contents of SDK --------------------------------------
 
-	build - tools for building pForth on various platforms
-	build/win32/vs2005 - Visual Studio 2005 Project and Solution
-	build/unix - Makefile for unix
-	
-	csrc - pForth kernel in ANSI 'C'
-	csrc/pf_main.c - main() application for a standalone Forth
-	csrc/stdio - I/O code using basic stdio for generic platforms
-	csrc/posix - I/O code for Posix platform
-	csrc/win32 - I/O code for basic WIN32 platform
-	csrc/win32_console - I/O code for WIN32 console that supports command line history
-	
-	fth - Forth code
-	fth/util - utility functions
+    build - tools for building pForth on various platforms
+    build/win32/vs2005 - Visual Studio 2005 Project and Solution
+    build/unix - Makefile for unix
+    
+    csrc - pForth kernel in ANSI 'C'
+    csrc/pf_main.c - main() application for a standalone Forth
+    csrc/stdio - I/O code using basic stdio for generic platforms
+    csrc/posix - I/O code for Posix platform
+    csrc/win32 - I/O code for basic WIN32 platform
+    csrc/win32_console - I/O code for WIN32 console that supports command line history
+    
+    fth - Forth code
+    fth/util - utility functions
 
 -- How to build pForth ------------------------------------
 
@@ -56,14 +56,14 @@ Once you have compiled and built the dictionary, just enter:
 To compile source code files use:    INCLUDE filename
 
 To create a custom dictionary enter in pForth:
-	c" newfilename.dic" SAVE-FORTH
+    c" newfilename.dic" SAVE-FORTH
 The name must end in ".dic".
 
 To run PForth with the new dictionary enter in the shell:
-	pforth -dnewfilename.dic
+    pforth -dnewfilename.dic
 
 To run PForth and automatically include a forth file:
-	pforth myprogram.fth
+    pforth myprogram.fth
 
 -- How to Test PForth ------------------------------------
 
@@ -84,9 +84,9 @@ Enter:  include coretest.fth
 
 To run the other tests, enter:
 
-	pforth t_corex.fth
-	pforth t_strings.fth
-	pforth t_locals.fth
-	pforth t_alloc.fth
-	
+    pforth t_corex.fth
+    pforth t_strings.fth
+    pforth t_locals.fth
+    pforth t_alloc.fth
+    
 They will report the number of tests that pass or fail.

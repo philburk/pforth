@@ -22,29 +22,29 @@ variable SMIF-XT    \ execution token for conditional code
 variable SMIF-DEPTH \ depth of nested conditionals
 
 : SMIF{   ( -- , if executing, start compiling, setup depth )
-	state @ 0=
-	IF
-		:noname smif-xt !
-		1 smif-depth !
-	ELSE
-		1 smif-depth +!
-	THEN
+    state @ 0=
+    IF
+        :noname smif-xt !
+        1 smif-depth !
+    ELSE
+        1 smif-depth +!
+    THEN
 ;
 
 : }SMIF  ( -- , unnest, stop compiling, execute code and forget )
-	smif-xt @
-	IF
-		-1 smif-depth +!
-		smif-depth @ 0 <=
-		IF
-			postpone ;             \ stop compiling
-			smif-xt @ execute      \ execute conditional code
-			smif-xt @ >code dp !   \ forget conditional code
-			0 smif-xt !   \ clear so we don't mess up later
-		THEN
-	THEN
+    smif-xt @
+    IF
+        -1 smif-depth +!
+        smif-depth @ 0 <=
+        IF
+            postpone ;             \ stop compiling
+            smif-xt @ execute      \ execute conditional code
+            smif-xt @ >code dp !   \ forget conditional code
+            0 smif-xt !   \ clear so we don't mess up later
+        THEN
+    THEN
 ;
-		
+
 \ redefine conditionals to use smart mode
 : IF      smif{   postpone if     ; immediate
 : DO      smif{   postpone do     ; immediate

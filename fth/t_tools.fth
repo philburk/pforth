@@ -28,7 +28,7 @@ variable TEST-FAILED
 ;
 
 
-VARIABLE actual-depth 		\ stack record
+VARIABLE actual-depth       \ stack record
 CREATE actual-results 20 CELLS ALLOT
 
 : empty-stack \ ( ... -- ) Empty stack.
@@ -39,45 +39,45 @@ CREATE actual-results 20 CELLS ALLOT
 
 CREATE the-test 128 CHARS ALLOT
 
-: ERROR 	\ ( c-addr u -- ) Display an error message followed by
-		\ the line that had the error.
+: ERROR     \ ( c-addr u -- ) Display an error message followed by
+        \ the line that had the error.
    TYPE the-test COUNT TYPE CR \ display line corresponding to error
-   empty-stack 			\ throw away every thing else
+   empty-stack          \ throw away every thing else
 ;
 
 
 : T{
-	source the-test place
-	empty-stack
+    source the-test place
+    empty-stack
 ;
 
-: }T{ 	\ ( ... -- ) Record depth and content of stack.
-	DEPTH actual-depth ! 	\ record depth
-	DEPTH 0
-	?DO
-		actual-results I CELLS + !
-	LOOP \ save them
+: }T{   \ ( ... -- ) Record depth and content of stack.
+    DEPTH actual-depth !    \ record depth
+    DEPTH 0
+    ?DO
+        actual-results I CELLS + !
+    LOOP \ save them
 ;
 
-: }T 	\ ( ... -- ) Compare stack (expected) contents with saved
-		\ (actual) contents.
-	DEPTH
-	actual-depth @ =
-	IF 	\ if depths match
-		1 test-passed +!  \ assume will pass
-		DEPTH 0
-		?DO 			\ for each stack item
-			actual-results I CELLS + @ \ compare actual with expected
-			<>
-			IF
-				-1 test-passed +!
-				1 test-failed +!
-				S" INCORRECT RESULT: " error
-				LEAVE
-			THEN
-		LOOP
-	ELSE 				\ depth mismatch
-		1 test-failed +!
-		S" WRONG NUMBER OF RESULTS: " error
-	THEN
+: }T    \ ( ... -- ) Compare stack (expected) contents with saved
+        \ (actual) contents.
+    DEPTH
+    actual-depth @ =
+    IF  \ if depths match
+        1 test-passed +!  \ assume will pass
+        DEPTH 0
+        ?DO             \ for each stack item
+            actual-results I CELLS + @ \ compare actual with expected
+            <>
+            IF
+                -1 test-passed +!
+                1 test-failed +!
+                S" INCORRECT RESULT: " error
+                LEAVE
+            THEN
+        LOOP
+    ELSE                \ depth mismatch
+        1 test-failed +!
+        S" WRONG NUMBER OF RESULTS: " error
+    THEN
 ;

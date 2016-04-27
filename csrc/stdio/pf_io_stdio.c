@@ -23,28 +23,28 @@
 /* Default portable terminal I/O. */
 int  sdTerminalOut( char c )
 {
-	return putchar(c);
+    return putchar(c);
 }
 /* We don't need to echo because getchar() echos. */
 int  sdTerminalEcho( char c )
 {
-	return 0;
+    return 0;
 }
 int  sdTerminalIn( void )
 {
-	return getchar();
+    return getchar();
 }
 int  sdQueryTerminal( void )
 {
-	return 0;
+    return 0;
 }
 
 int  sdTerminalFlush( void )
 {
 #ifdef PF_NO_FILEIO
-	return -1;
+    return -1;
 #else
-	return fflush(PF_STDOUT);
+    return fflush(PF_STDOUT);
 #endif
 }
 

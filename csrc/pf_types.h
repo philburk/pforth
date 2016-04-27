@@ -24,7 +24,7 @@
 ***************************************************************/
 
 #ifndef Err
-	typedef long Err;
+    typedef long Err;
 #endif
 
 typedef char  ForthString;

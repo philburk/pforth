@@ -17,7 +17,7 @@
 ** warranties of merchantability and fitness for a particular
 ** purpose and their equivalents under the laws of any jurisdiction.
 **
-**	941031	rdg		fix redefinition of MAKE_ID and EVENUP to be conditional
+**  941031  rdg     fix redefinition of MAKE_ID and EVENUP to be conditional
 **
 ***************************************************************/
 
@@ -28,19 +28,19 @@ typedef struct DictionaryInfoChunk
  * All fields must be the same size for easy endian conversion.
  * All fields must be 32 bit for file compatibility with older versions.
  */
-	int32_t  sd_Version;
-	int32_t  sd_RelContext;      /* relative ptr to Dictionary Context */
-	int32_t  sd_RelHeaderPtr;    /* relative ptr to Dictionary Header Ptr */
-	int32_t  sd_RelCodePtr;      /* relative ptr to Dictionary Header Ptr */
-	int32_t  sd_EntryPoint;  /* relative ptr to entry point or NULL */
-	int32_t  sd_UserStackSize;   /* in bytes */
-	int32_t  sd_ReturnStackSize; /* in bytes */
-	int32_t  sd_NameSize;        /* in bytes */
-	int32_t  sd_CodeSize;        /* in bytes */
-	int32_t  sd_NumPrimitives;   /* To distinguish between primitive and secondary. */
-	uint32_t sd_Flags;
-	int32_t  sd_FloatSize;       /* In bytes. Must match code. 0 means no floats. */
-	int32_t  sd_CellSize;        /* In bytes. Must match code. */
+    int32_t  sd_Version;
+    int32_t  sd_RelContext;      /* relative ptr to Dictionary Context */
+    int32_t  sd_RelHeaderPtr;    /* relative ptr to Dictionary Header Ptr */
+    int32_t  sd_RelCodePtr;      /* relative ptr to Dictionary Header Ptr */
+    int32_t  sd_EntryPoint;  /* relative ptr to entry point or NULL */
+    int32_t  sd_UserStackSize;   /* in bytes */
+    int32_t  sd_ReturnStackSize; /* in bytes */
+    int32_t  sd_NameSize;        /* in bytes */
+    int32_t  sd_CodeSize;        /* in bytes */
+    int32_t  sd_NumPrimitives;   /* To distinguish between primitive and secondary. */
+    uint32_t sd_Flags;
+    int32_t  sd_FloatSize;       /* In bytes. Must match code. 0 means no floats. */
+    int32_t  sd_CellSize;        /* In bytes. Must match code. */
 } DictionaryInfoChunk;
 
 /* Bits in sd_Flags */
@@ -69,19 +69,19 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 
 /* Endian-ness tools. */
 int    IsHostLittleEndian( void );
-	
+
 ucell_t ReadCellBigEndian( const uint8_t *addr );
 uint32_t Read32BigEndian( const uint8_t *addr );
 uint16_t Read16BigEndian( const uint8_t *addr );
-	
+
 ucell_t ReadCellLittleEndian( const uint8_t *addr );
 uint32_t Read32LittleEndian( const uint8_t *addr );
 uint16_t Read16LittleEndian( const uint8_t *addr );
-	
+
 void WriteCellBigEndian( uint8_t *addr, ucell_t data );
 void Write32BigEndian( uint8_t *addr, uint32_t data );
 void Write16BigEndian( uint8_t *addr, uint16_t data );
-	
+
 void WriteCellLittleEndian( uint8_t *addr, ucell_t data );
 void Write32LittleEndian( uint8_t *addr, uint32_t data );
 void Write16LittleEndian( uint8_t *addr, uint16_t data );
@@ -94,7 +94,7 @@ PF_FLOAT ReadFloatLittleEndian( const PF_FLOAT *addr );
 #endif
 
 #ifdef __cplusplus
-}   
+}
 #endif
 
 #endif /* _pforth_save_h */

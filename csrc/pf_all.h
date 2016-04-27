@@ -23,26 +23,26 @@
 ***************************************************************/
 
 #ifdef PF_EMBEDDED
-	#define PF_NO_INIT
-	#define PF_NO_STDIO
-	#define PF_NO_MALLOC
-	#define PF_NO_CLIB
-	#define PF_NO_FILEIO
+    #define PF_NO_INIT
+    #define PF_NO_STDIO
+    #define PF_NO_MALLOC
+    #define PF_NO_CLIB
+    #define PF_NO_FILEIO
 #endif
 
 /* I don't see any way to pass compiler flags to the Mac Code Warrior compiler! */
 #ifdef __MWERKS__
-	#define PF_SUPPORT_FP    (1)
+    #define PF_SUPPORT_FP    (1)
 #endif
 
 #ifdef WIN32
-	#define PF_USER_INC2     "pf_win32.h"
+    #define PF_USER_INC2     "pf_win32.h"
 #endif
 
 #if defined(PF_USER_INC1)
-	#include PF_USER_INC1
+    #include PF_USER_INC1
 #else
-	#include "pf_inc1.h"
+    #include "pf_inc1.h"
 #endif
 
 #include "pforth.h"
@@ -60,7 +60,7 @@
 
 #ifdef PF_USER_INC2
 /* This could be used to undef and redefine macros. */
-	#include PF_USER_INC2
+    #include PF_USER_INC2
 #endif
 
 #endif /* _pf_all_h */

@@ -20,78 +20,78 @@
 variable RFENCE    \ relocatable value below which we won't forget
 
 : FREEZE  ( -- , protect below here )
-	here rfence a!
+    here rfence a!
 ;
 
 : FORGET.NFA  ( nfa -- , set DP etc. )
-	dup name> >code dp !
-	prevname ( dup current ! ) dup context ! n>nextlink headers-ptr !
+    dup name> >code dp !
+    prevname ( dup current ! ) dup context ! n>nextlink headers-ptr !
 ;
 
 : VERIFY.FORGET  ( nfa -- , ask for verification if below fence )
-	dup name> >code rfence a@ u<  \ 19970701
-	IF
-		>newline dup id. ."  is below fence!!" cr
-		drop
-	ELSE forget.nfa
-	THEN
+    dup name> >code rfence a@ u<  \ 19970701
+    IF
+        >newline dup id. ."  is below fence!!" cr
+        drop
+    ELSE forget.nfa
+    THEN
 ;
 
 : (FORGET)  ( <name> -- )
-	BL word findnfa
-	IF	verify.forget
-	ELSE ." FORGET - couldn't find " count type cr abort
-	THEN
+    BL word findnfa
+    IF  verify.forget
+    ELSE ." FORGET - couldn't find " count type cr abort
+    THEN
 ;
 
 variable LAST-FORGET   \ contains address of last if.forgotten frame
 0 last-forget !
 
 : IF.FORGOTTEN  ( <name> -- , place links in dictionary without header )
-	bl word find
-	IF	( xt )
-		here                \ start of frame
-		last-forget a@ a,   \ Cell[0] = rel address of previous frame
-		last-forget a!      \ point to this frame
-		compile,            \ Cell[1] = xt for this frame
-	ELSE ." IF.FORGOTTEN - couldn't find " dup 9 dump cr count type cr abort
-	THEN
+    bl word find
+    IF  ( xt )
+        here                \ start of frame
+        last-forget a@ a,   \ Cell[0] = rel address of previous frame
+        last-forget a!      \ point to this frame
+        compile,            \ Cell[1] = xt for this frame
+    ELSE ." IF.FORGOTTEN - couldn't find " dup 9 dump cr count type cr abort
+    THEN
 ;
 if.forgotten noop
 
 : [FORGET]  ( <name> -- , forget then exec forgotten words )
-	(forget)
-	last-forget
-	BEGIN a@ dup 0<>   \ 19970701
-		IF dup here u>   \ 19970701
-			IF dup cell+ x@ execute false
-			ELSE dup last-forget a! true
-			THEN
-		ELSE true
-		THEN
-	UNTIL drop
+    (forget)
+    last-forget
+    BEGIN a@ dup 0<>   \ 19970701
+        IF dup here u>   \ 19970701
+            IF dup cell+ x@ execute false
+            ELSE dup last-forget a! true
+            THEN
+        ELSE true
+        THEN
+    UNTIL drop
 ;
 
 : FORGET ( <name> -- , execute latest [FORGET] )
-	" [FORGET]" find
-	IF  execute
-	ELSE ." FORGET - couldn't find " count type cr abort
-	THEN
+    " [FORGET]" find
+    IF  execute
+    ELSE ." FORGET - couldn't find " count type cr abort
+    THEN
 ;
 
 : ANEW ( -- , forget if defined then redefine )
-	>in @
-	bl word find
-	IF over >in ! forget
-	THEN drop
-	>in ! variable
+    >in @
+    bl word find
+    IF over >in ! forget
+    THEN drop
+    >in ! variable
 ;
 
 : MARKER  ( <name> -- , define a word that forgets itself when executed, ANS )
-	CREATE
-		latest namebase -  \ convert to relocatable
-		,                  \ save for DOES>
-	DOES>  ( -- body )
-		@ namebase +       \ convert back to NFA
-		verify.forget
+    CREATE
+        latest namebase -  \ convert to relocatable
+        ,                  \ save for DOES>
+    DOES>  ( -- body )
+        @ namebase +       \ convert back to NFA
+        verify.forget
 ;

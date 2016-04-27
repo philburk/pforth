@@ -22,23 +22,23 @@ decimal
 
 
 : PARTIAL.MATCH.NAME  ( $str1 nfa  -- flag , is $str1 in nfa ??? )
-	count $ 1F and
-	rot count
-	search
-	>r 2drop r>
+    count $ 1F and
+    rot count
+    search
+    >r 2drop r>
 ;
 
 : WORDS.LIKE  ( <name> -- , print all words containing substring )
-	BL word latest
-	>newline
-	BEGIN
-		prevname dup 0<> \ get previous name in dictionary
-	WHILE
-		2dup partial.match.name
-		IF
-			dup id. tab
-			cr?
-		THEN
-	REPEAT 2drop
-	>newline
+    BL word latest
+    >newline
+    BEGIN
+        prevname dup 0<> \ get previous name in dictionary
+    WHILE
+        2dup partial.match.name
+        IF
+            dup id. tab
+            cr?
+        THEN
+    REPEAT 2drop
+    >newline
 ;

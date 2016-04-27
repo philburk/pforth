@@ -24,25 +24,25 @@ variable private-stop
 $ 20 constant FLAG_SMUDGE
 
 : PRIVATE{
-	latest private-start !
-	0 private-stop !
+    latest private-start !
+    0 private-stop !
 ;
 : }PRIVATE
-	private-stop @ 0= not abort" Extra }PRIVATE"
-	latest private-stop !
+    private-stop @ 0= not abort" Extra }PRIVATE"
+    latest private-stop !
 ;
 : PRIVATIZE  ( -- , smudge all words between PRIVATE{ and }PRIVATE )
-	private-start @ 0= abort" Missing PRIVATE{"
-	private-stop @ 0= abort" Missing }PRIVATE"
-	private-stop @
-	BEGIN
-		dup private-start @ u>    \ 19970701
-	WHILE
-\		." Smudge " dup id. cr
-		dup c@ flag_smudge or over c!
-		prevname
-	REPEAT
-	drop
-	0 private-start !
-	0 private-stop !
+    private-start @ 0= abort" Missing PRIVATE{"
+    private-stop @ 0= abort" Missing }PRIVATE"
+    private-stop @
+    BEGIN
+        dup private-start @ u>    \ 19970701
+    WHILE
+\       ." Smudge " dup id. cr
+        dup c@ flag_smudge or over c!
+        prevname
+    REPEAT
+    drop
+    0 private-start !
+    0 private-stop !
 ;

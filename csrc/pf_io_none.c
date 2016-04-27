@@ -24,21 +24,21 @@
 #ifdef PF_NO_CHARIO
 int  sdTerminalOut( char c )
 {
-	TOUCH(c);
-	return 0;
+    TOUCH(c);
+    return 0;
 }
 int  sdTerminalEcho( char c )
 {
-	TOUCH(c);
-	return 0;
+    TOUCH(c);
+    return 0;
 }
 int  sdTerminalIn( void )
 {
-	return -1;
+    return -1;
 }
 int  sdTerminalFlush( void )
 {
-	return -1;
+    return -1;
 }
 void sdTerminalInit( void )
 {

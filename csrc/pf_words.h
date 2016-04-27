@@ -30,7 +30,7 @@ cell_t ffSkip( char *AddrIn, cell_t Cnt, char c, char **AddrOut );
 cell_t ffScan( char *AddrIn, cell_t Cnt, char c, char **AddrOut );
 
 #ifdef __cplusplus
-}   
+}
 #endif
 
 #endif /* _pforth_words_h */

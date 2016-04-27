@@ -36,9 +36,9 @@ anew task-condcomp.fth
 ;  IMMEDIATE
 
 : [IF]  ( flag -- )
-	0=
-	IF POSTPONE [ELSE]
-	THEN
+    0=
+    IF POSTPONE [ELSE]
+    THEN
 ;  IMMEDIATE
 
 : [THEN]  ( -- )

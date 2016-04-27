@@ -17,9 +17,9 @@ include? task-c_struct c_struct.fth
 ANEW TASK-DUMP_STRUCT
 
 : EMIT-TO-COLUMN ( char col -- )
-	out @ - 0 max 80 min 0
-	DO  dup emit
-	LOOP drop
+    out @ - 0 max 80 min 0
+    DO  dup emit
+    LOOP drop
 ;
 
 VARIABLE SN-FENCE
@@ -37,18 +37,18 @@ VARIABLE SN-FENCE
 ;
 
 : DST.DUMP.TYPE  ( +-size -- , dump data type, 941109)
-	dup abs 4 =
-	IF
-		0<
-		IF ." RP"
-		ELSE ." U4"
-		THEN
-	ELSE
-		dup 0<
-        	IF ascii U
-        	ELSE ascii S
-        	THEN emit abs 1 .r
-	THEN
+    dup abs 4 =
+    IF
+        0<
+        IF ." RP"
+        ELSE ." U4"
+        THEN
+    ELSE
+        dup 0<
+            IF ascii U
+            ELSE ascii S
+            THEN emit abs 1 .r
+    THEN
 ;
 
 : DUMP.MEMBER ( addr member-pfa -- , dump member of structure)
@@ -65,8 +65,8 @@ VARIABLE DS-ADDR
 : DUMP.STRUCT ( addr-data addr-structure -- )
     >newline swap >r  ( -- as , save addr-data for dumping )
 \    dup cell+ @ over +  \ JForth
-	dup code> >name swap cell+ @ over +   \ HForth
-	stack.nfas   ( fill stack with nfas of members )
+    dup code> >name swap cell+ @ over +   \ HForth
+    stack.nfas   ( fill stack with nfas of members )
     BEGIN
         dup
     WHILE   ( continue until non-zero )

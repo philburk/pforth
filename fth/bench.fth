@@ -77,95 +77,95 @@ create #do 2000000   ,
 \ BENCH1 - sum data ---------------------------------------
 create data1 23 , 45 , 67 , 89 , 111 , 222 , 333 , 444 ,
 : sum.cells ( addr num -- sum )
-	0 swap \ sum
-	0 DO
-		over \ get address
-		i cells + @ +
-	LOOP
-	swap drop
+    0 swap \ sum
+    0 DO
+        over \ get address
+        i cells + @ +
+    LOOP
+    swap drop
 ;
 
 : bench1 ( -- )
-	200000 0
-	DO
-		data1 8 sum.cells drop
-	LOOP
+    200000 0
+    DO
+        data1 8 sum.cells drop
+    LOOP
 ;
 
 \ BENCH2 - recursive factorial --------------------------
 : factorial ( n -- n! )
-	dup 1 >
-	IF
-		dup 1- recurse *
-	ELSE
-		drop 1
-	THEN
+    dup 1 >
+    IF
+        dup 1- recurse *
+    ELSE
+        drop 1
+    THEN
 ;
 
 : bench2 ( -- )
-	200000 0
-	DO
-		10 factorial drop
-	LOOP
+    200000 0
+    DO
+        10 factorial drop
+    LOOP
 ;
 
 \ BENCH3 - DEFER ----------------------------------
 defer calc.answer
 : answer ( n -- m )
-	dup +
-	$ a5a5 xor
-	1000 max
+    dup +
+    $ a5a5 xor
+    1000 max
 ;
 ' answer is calc.answer
 : bench3
-	1500000 0
-	DO
-		i calc.answer drop
-	LOOP
+    1500000 0
+    DO
+        i calc.answer drop
+    LOOP
 ;
-	
+
 \ BENCH4 - locals ---------------------------------
 : use.locals { x1 x2 | aa bb -- result }
-	x1 2* -> aa
-	x2 2/ -> bb
-	x1 aa *
-	x2 bb * +
+    x1 2* -> aa
+    x2 2/ -> bb
+    x1 aa *
+    x2 bb * +
 ;
 
 : bench4
-	400000 0
-	DO
-		234 567 use.locals drop
-	LOOP
+    400000 0
+    DO
+        234 567 use.locals drop
+    LOOP
 ;
 
 \ BENCH5 - string compare -------------------------------
 : match.strings { $s1 $s2 | adr1 len1 adr2 len2 -- flag }
-	$s1 count -> len1 -> adr1
-	$s2 count -> len2 -> adr2
-	len1 len2 -
-	IF
-		FALSE
-	ELSE
-		TRUE
-		len1 0
-		DO
-			adr1 i + c@
-			adr2 i + c@ -
-			IF
-				drop FALSE
-				leave
-			THEN
-		LOOP
-	THEN
+    $s1 count -> len1 -> adr1
+    $s2 count -> len2 -> adr2
+    len1 len2 -
+    IF
+        FALSE
+    ELSE
+        TRUE
+        len1 0
+        DO
+            adr1 i + c@
+            adr2 i + c@ -
+            IF
+                drop FALSE
+                leave
+            THEN
+        LOOP
+    THEN
 ;
 
 : bench5 ( -- )
-	60000 0
-	DO
-		" This is a string. X foo"
-		" This is a string. Y foo" match.strings drop
-	LOOP
+    60000 0
+    DO
+        " This is a string. X foo"
+        " This is a string. Y foo" match.strings drop
+    LOOP
 ;
 
 \ SIEVE OF ERATOSTHENES from BYTE magazine -----------------------
@@ -184,12 +184,12 @@ VARIABLE FLAGS TSIZE ALLOT
       THEN
  LOOP       ;
 
-: SIEVE  ." 10 iterations " CR  0   10 0 
-  DO     <SIEVE> swap drop 
+: SIEVE  ." 10 iterations " CR  0   10 0
+  DO     <SIEVE> swap drop
   LOOP   . ." primes " CR ;
 
-: SIEVE50  ." 50 iterations " CR  0   50 0 
-  DO     <SIEVE> swap drop 
+: SIEVE50  ." 50 iterations " CR  0   50 0
+  DO     <SIEVE> swap drop
   LOOP   . ." primes " CR ;
 
 \ 10 iterations

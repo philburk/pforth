@@ -79,7 +79,7 @@ ThrowCode pfQuit( void );
 
 /* Execute a single execution token in the current task and return 0 or an error code. */
 int pfCatch( ExecToken XT );
- 
+
 /* Include the given pForth source code file. */
 ThrowCode pfIncludeFile( const char *FileName );
 
@@ -87,7 +87,7 @@ ThrowCode pfIncludeFile( const char *FileName );
 ThrowCode  pfExecIfDefined( const char *CString );
 
 #ifdef __cplusplus
-}   
+}
 #endif
 
 #endif  /* _pforth_h */

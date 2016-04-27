@@ -26,53 +26,53 @@ variable CASE-DEPTH
 variable OF-DEPTH
 
 : CASE  ( n -- , start case statement ) ( -c- case-depth )
-	?comp
-	of-depth @   0 of-depth !   \ 11/2/99
-	case-depth @ 0 case-depth !  ( allow nesting )
+    ?comp
+    of-depth @   0 of-depth !   \ 11/2/99
+    case-depth @ 0 case-depth !  ( allow nesting )
 ; IMMEDIATE
 
 : ?OF  ( n flag -- | n , doit if true ) ( -c- addr )
-	[compile] IF
-	compile drop
-	1 case-depth +!
-	1 of-depth +!
+    [compile] IF
+    compile drop
+    1 case-depth +!
+    1 of-depth +!
 ; IMMEDIATE
 
 : OF  ( n t -- | n , doit if match ) ( -c- addr )
-	?comp
-	compile over compile =
-	[compile] ?OF
+    ?comp
+    compile over compile =
+    [compile] ?OF
 ; IMMEDIATE
 
 : (RANGEOF?)  ( n lo hi -- | n  flag )
-	>r over ( n lo n ) <=
-	IF
-		dup r> ( n n hi ) <=
-	ELSE
-		rdrop false
-	THEN
+    >r over ( n lo n ) <=
+    IF
+        dup r> ( n n hi ) <=
+    ELSE
+        rdrop false
+    THEN
 ;
 
 : RANGEOF  ( n lo hi -- | n , doit if within ) ( -c- addr )
-	compile (rangeof?)
-	[compile] ?OF
+    compile (rangeof?)
+    [compile] ?OF
 ; IMMEDIATE
 
 : ENDOF  ( -- ) ( addr -c- addr' )
-	[compile] ELSE
-	-1 of-depth +!
+    [compile] ELSE
+    -1 of-depth +!
 ; IMMEDIATE
 
 : ENDCASE ( n -- )  ( old-case-depth addr' addr' ??? -- )
-	of-depth @
-	IF >newline ." Missing ENDOF in CASE!" cr abort
-	THEN
+    of-depth @
+    IF >newline ." Missing ENDOF in CASE!" cr abort
+    THEN
 \
-	compile drop
-	case-depth @ 0
-	?DO [compile] THEN
-	LOOP
-	case-depth !
-	of-depth !
+    compile drop
+    case-depth @ 0
+    ?DO [compile] THEN
+    LOOP
+    case-depth !
+    of-depth !
 ; IMMEDIATE
 

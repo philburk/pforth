@@ -20,25 +20,25 @@
 ***************************************************************/
 
 #ifndef PF_NO_CLIB
-	#include <string.h>    /* Needed for strlen(), memcpy(), and memset(). */
-	#include <stdlib.h>    /* Needed for exit(). */
+    #include <string.h>    /* Needed for strlen(), memcpy(), and memset(). */
+    #include <stdlib.h>    /* Needed for exit(). */
 #endif
 
 #ifdef PF_NO_STDIO
-	#define NULL  ((void *) 0)
-	#define EOF   (-1)
+    #define NULL  ((void *) 0)
+    #define EOF   (-1)
 #else
-	#include <stdio.h>
+    #include <stdio.h>
 #endif
 
 #ifdef PF_SUPPORT_FP
-	#include <math.h>
+    #include <math.h>
 
-	#ifndef PF_USER_FP
-		#include "pf_float.h"
-	#else
-		#include PF_USER_FP
-	#endif
+    #ifndef PF_USER_FP
+        #include "pf_float.h"
+    #else
+        #include PF_USER_FP
+    #endif
 #endif
 
 #endif /* _pf_embedded_h */

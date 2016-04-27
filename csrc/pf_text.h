@@ -61,11 +61,11 @@ cell_t ffCompareTextCaseN( const char *s1, const char *s2, cell_t len );
 void  DumpMemory( void *addr, cell_t cnt);
 char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t MinChars );
 void  TypeName( const char *Name );
-	
+
 cell_t pfUnitTestText( void );
-	
+
 #ifdef __cplusplus
-}   
+}
 #endif
 
 #endif /* _pforth_text_h */

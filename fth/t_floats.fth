@@ -38,25 +38,25 @@ T{ 500.0 510.0 -0.002 f~ }T{  false }T
 
 \ convert number to text representation and then back to float
 : T_F. ( -- ok? ) ( r ftol -f- )
-	fover (f.) >float fswap f~
-	AND
+    fover (f.) >float fswap f~
+    AND
 ;
 : T_FS. ( -- ok? ) ( r ftol -f- )
-	fover (fs.) >float fswap f~
-	AND
+    fover (fs.) >float fswap f~
+    AND
 ;
 : T_FE. ( -- ok? ) ( r ftol -f- )
-	fover (fe.) >float fswap f~
-	AND
+    fover (fe.) >float fswap f~
+    AND
 ;
 
 : T_FG. ( -- ok? ) ( r ftol -f- )
-	fover (f.) >float fswap f~
-	AND
+    fover (f.) >float fswap f~
+    AND
 ;
 
 : T_F>D ( -- ok? ) ( r ftol -f- )
-	fover f>d d>f fswap f~
+    fover f>d d>f fswap f~
 ;
 
 T{ 0.0  0.00001 T_F.  }T{  true  }T
@@ -75,21 +75,21 @@ T{ 2345 S>F  79 S>F  F/  -0.0001 T_F.  }T{  true  }T
 T{ 511 S>F  -294 S>F  F/  -0.0001 T_F.  }T{  true  }T
 
 : T.SERIES { N matchCFA | flag -- ok? } (  fstart fmult -f- )
-	fswap  ( -- fmult fstart )
-	true -> flag
-	N 0
-	?DO
-		fdup -0.0001 matchCFA execute not
-		IF
-			false -> flag
-			." T_F_SERIES failed for " i . fdup f. cr
-			leave
-		THEN
-\		i . fdup f. cr
-		fover f*
-	LOOP
-	matchCFA >name id. ."  T.SERIES final = " fs. cr
-	flag
+    fswap  ( -- fmult fstart )
+    true -> flag
+    N 0
+    ?DO
+        fdup -0.0001 matchCFA execute not
+        IF
+            false -> flag
+            ." T_F_SERIES failed for " i . fdup f. cr
+            leave
+        THEN
+\       i . fdup f. cr
+        fover f*
+    LOOP
+    matchCFA >name id. ."  T.SERIES final = " fs. cr
+    flag
 ;
 
 : T.SERIES_F.    ['] t_f.  t.series ;

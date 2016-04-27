@@ -67,7 +67,7 @@ void ffFPLiteral( PF_FLOAT fnum );
 #endif
 
 #ifdef __cplusplus
-}   
+}
 #endif
 
 #endif /* _pforth_compile_h */

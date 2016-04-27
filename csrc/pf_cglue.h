@@ -36,7 +36,7 @@ Err   LoadCustomFunctionTable( void );
 cell_t CallUserFunction( cell_t Index, int32_t ReturnMode, int32_t NumParams );
 
 #ifdef __cplusplus
-}   
+}
 #endif
 
 #define C_RETURNS_VOID (0)
