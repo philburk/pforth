@@ -486,7 +486,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
     if( WriteChunkToFile( fid, ID_P4CD, (char *) CODE_BASE,
         CodeChunkSize ) < 0 ) goto error;
 
-    FormSize = sdTellFile( fid ) - 8;
+    FormSize = (uint32_t) sdTellFile( fid ) - 8;
     sdSeekFile( fid, 4, PF_SEEK_SET );
     if( Write32ToFile( fid, FormSize ) < 0 ) goto error;
 

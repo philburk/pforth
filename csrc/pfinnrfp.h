@@ -206,7 +206,9 @@
         break;
 
     case ID_FP_FROUND:
-        ERR("\nID_FP_FROUND -  Not Yet!! FIXME\n");
+        PUSH_TOS;
+        TOS = fp_round(FP_TOS);
+        M_FP_DROP;
         break;
 
     case ID_FP_FSWAP: /* ( -- ) ( F: r1 r2 -- r2 r1 ) */

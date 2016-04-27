@@ -39,5 +39,6 @@ typedef double PF_FLOAT;
 #define fp_sqrt   sqrt
 #define fp_tan    tan
 #define fp_tanh   tanh
+#define fp_round  round
 
 #endif
