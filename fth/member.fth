@@ -56,23 +56,23 @@ decimal
 
 ( Members are associated with an offset from the base of a structure. )
 : OB.MAKE.MEMBER ( +-bytes -- , make room in an object at compile time)
-	dup >r  ( -- +-b , save #bytes )
-	ABS     ( -- |+-b| )
-	ob-current-class @ ( -- b addr-space)
-	tuck @          ( as #b c , current space needed )
-	over 3 and 0=        ( multiple of four? )
-	IF
-		aligned
-	ELSE
-		over 1 and 0=   ( multiple of two? )
-		IF
-			even-up
-		THEN
-	THEN
-	swap over + rot !    ( update space needed )
+    dup >r  ( -- +-b , save #bytes )
+    ABS     ( -- |+-b| )
+    ob-current-class @ ( -- b addr-space)
+    tuck @          ( as #b c , current space needed )
+    over 3 and 0=        ( multiple of four? )
+    IF
+        aligned
+    ELSE
+        over 1 and 0=   ( multiple of two? )
+        IF
+            even-up
+        THEN
+    THEN
+    swap over + rot !    ( update space needed )
 \ Save data in member definition. %M
-	ob.offset,    ( save old offset for ivar )
-	r> ob.size,   ( store size in bytes for ..! and ..@ )
+    ob.offset,    ( save old offset for ivar )
+    r> ob.size,   ( store size in bytes for ..! and ..@ )
 ;
 
 \ Unions allow one to address the same memory as different members.

@@ -27,9 +27,9 @@
 int  sdTerminalOut( char c )
 {
 #if defined(__WATCOMC__)
-	return putch((char)(c));
+    return putch((char)(c));
 #else
-	return _putch((char)(c));
+    return _putch((char)(c));
 #endif
 }
 
@@ -37,28 +37,28 @@ int  sdTerminalOut( char c )
 int  sdTerminalEcho( char c )
 {
 #if defined(__WATCOMC__)
-	return putch((char)(c));
+    return putch((char)(c));
 #else
-	return _putch((char)(c));
+    return _putch((char)(c));
 #endif
 }
 
 int  sdTerminalIn( void )
 {
-	return _getch();
+    return _getch();
 }
 
 int  sdQueryTerminal( void )
 {
-	return _kbhit();
+    return _kbhit();
 }
 
 int  sdTerminalFlush( void )
 {
 #ifdef PF_NO_FILEIO
-	return -1;
+    return -1;
 #else
-	return fflush(PF_STDOUT);
+    return fflush(PF_STDOUT);
 #endif
 }
 

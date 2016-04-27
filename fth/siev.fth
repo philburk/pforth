@@ -8,10 +8,10 @@ variable eflag
 
 \ use secondary fill like pForth   !!!
 : FILL { caddr num charval -- }
-	num 0
-	?DO
-		charval caddr i + c!
-	LOOP
+    num 0
+    ?DO
+        charval caddr i + c!
+    LOOP
 ;
 
 : PRIMES  ( -- n )  FLAGS 8190 1 FILL  0 3  EFLAG @ FLAGS
@@ -23,9 +23,9 @@ variable eflag
            THEN  2 +
        LOOP  DROP ;
 
-: BENCHMARK  0 100 0 DO  PRIMES NIP  LOOP ;			  \ !!! ONLY 100
+: BENCHMARK  0 100 0 DO  PRIMES NIP  LOOP ;           \ !!! ONLY 100
 \ SECS BENCHMARK . SECS SWAP - CR . .( secs)
-: main 
-	flags 8190 + eflag !
-	benchmark ( . ) drop
+: main
+    flags 8190 + eflag !
+    benchmark ( . ) drop
 ;

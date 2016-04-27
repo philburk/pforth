@@ -32,15 +32,15 @@ T{ -1000 0<> }T{ TRUE }T
 
 \  ----------------------------------------------------- 2>R 2R> 2R@
 : T2>R  ( -- .... )
-	17
-	20 5 2>R
-	19
-	2R@
-	37
-	2R>
+    17
+    20 5 2>R
+    19
+    2R@
+    37
+    2R>
 \ 2>R should be the equivalent of SWAP >R >R so this next construct
 \ should reduce to a SWAP.
-	88 77 2>R R> R>
+    88 77 2>R R> R>
 ;
 T{ T2>R }T{ 17 19 20 5 37 20 5 77 88 }T
 
@@ -58,17 +58,17 @@ T{ 4 T?DO }T{ 10 }T
 
 \  ----------------------------------------------------- AGAIN
 : T.AGAIN  ( n --  )
-	BEGIN
-		DUP .
-		DUP 6 < IF EXIT THEN
-		1-
-	AGAIN
+    BEGIN
+        DUP .
+        DUP 6 < IF EXIT THEN
+        1-
+    AGAIN
 ;
 T{ 10 T.AGAIN CR }T{ 5 }T
 
 \  ----------------------------------------------------- C"
 : T.C"  ( -- $STRING )
-	C" x5&"
+    C" x5&"
 ;
 T{ T.C"  C@  }T{ 3 }T
 T{ T.C"  COUNT DROP C@  }T{ CHAR x }T
@@ -77,11 +77,11 @@ T{ T.C"  COUNT DROP 2 CHARS + C@  }T{ CHAR & }T
 
 \  ----------------------------------------------------- CASE
 : T.CASE  ( N -- )
-	CASE
-		1 OF 101 ENDOF
-		27 OF 892 ENDOF
-		941 SWAP \ default
-	ENDCASE
+    CASE
+        1 OF 101 ENDOF
+        27 OF 892 ENDOF
+        941 SWAP \ default
+    ENDCASE
 ;
 T{ 1 T.CASE }T{ 101 }T
 T{ 27 T.CASE }T{ 892 }T
@@ -90,22 +90,22 @@ T{ 49 T.CASE }T{ 941 }T
 \  ----------------------------------------------------- COMPILE,
 : COMPILE.SWAP    ['] SWAP COMPILE, ; IMMEDIATE
 : T.COMPILE,
-	19 20 27 COMPILE.SWAP 39
+    19 20 27 COMPILE.SWAP 39
 ;
 T{ T.COMPILE, }T{ 19 27 20 39 }T
 
 \  ----------------------------------------------------- CONVERT
 : T.CONVERT
-	0 S>D  S" 1234xyz" DROP CONVERT
-	>R
-	D>S
-	R> C@
+    0 S>D  S" 1234xyz" DROP CONVERT
+    >R
+    D>S
+    R> C@
 ;
 T{ T.CONVERT }T{ 1234 CHAR x }T
 
 \  ----------------------------------------------------- ERASE
 : T.COMMA.SEQ  ( n -- , lay down N sequential bytes )
-	0 ?DO I C, LOOP
+    0 ?DO I C, LOOP
 ;
 CREATE T-ERASE-DATA   64 T.COMMA.SEQ
 T{ T-ERASE-DATA 8 + C@ }T{ 8 }T
@@ -124,8 +124,8 @@ T{ HEX 10 DECIMAL }T{ 16 }T
 
 \  ----------------------------------------------------- MARKER
 : INDIC?  ( <name> -- ifInDic , is the following word defined? )
-	bl word find
-	swap drop 0= 0=
+    bl word find
+    swap drop 0= 0=
 ;
 create FOOBAR
 MARKER MYMARK  \ create word that forgets itself
@@ -138,10 +138,10 @@ T{ 33 44 55 NIP  }T{ 33 55 }T
 
 \  ----------------------------------------------------- PARSE
 : T.PARSE  ( char <string>char -- addr num )
-	PARSE
-	>R  \ save length
-	PAD R@ CMOVE  \ move string to pad
-	PAD R>
+    PARSE
+    >R  \ save length
+    PAD R@ CMOVE  \ move string to pad
+    PAD R>
 ;
 T{ CHAR % T.PARSE wxyz% SWAP C@ }T{  4  CHAR w }T
 
@@ -176,9 +176,9 @@ T{ ' SPAN 0<>  }T{ TRUE }T
 T{ MY-VALUE }T{ 333 }T
 T{ 1000 TO MY-VALUE   MY-VALUE }T{ 1000 }T
 : TEST.VALUE  ( -- 19 100 )
-	100 TO MY-VALUE
-	19
-	MY-VALUE
+    100 TO MY-VALUE
+    19
+    MY-VALUE
 ;
 T{ TEST.VALUE }T{ 19 100 }T
 

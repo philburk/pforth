@@ -46,66 +46,66 @@ variable LV-#NAMES   \ number of names currently defined
 ;
 
 : LV.COMPILE.FETCH  ( index -- )
-	1+  \ adjust for optimised (local@), LocalsPtr points above vars
-	CASE
-	1 OF compile (1_local@) ENDOF
-	2 OF compile (2_local@) ENDOF
-	3 OF compile (3_local@) ENDOF
-	4 OF compile (4_local@) ENDOF
-	5 OF compile (5_local@) ENDOF
-	6 OF compile (6_local@) ENDOF
-	7 OF compile (7_local@) ENDOF
-	8 OF compile (8_local@) ENDOF
-	dup [compile] literal compile (local@)
-	ENDCASE
+    1+  \ adjust for optimised (local@), LocalsPtr points above vars
+    CASE
+    1 OF compile (1_local@) ENDOF
+    2 OF compile (2_local@) ENDOF
+    3 OF compile (3_local@) ENDOF
+    4 OF compile (4_local@) ENDOF
+    5 OF compile (5_local@) ENDOF
+    6 OF compile (6_local@) ENDOF
+    7 OF compile (7_local@) ENDOF
+    8 OF compile (8_local@) ENDOF
+    dup [compile] literal compile (local@)
+    ENDCASE
 ;
 
 : LV.COMPILE.STORE  ( index -- )
-	1+  \ adjust for optimised (local!), LocalsPtr points above vars
-	CASE
-	1 OF compile (1_local!) ENDOF
-	2 OF compile (2_local!) ENDOF
-	3 OF compile (3_local!) ENDOF
-	4 OF compile (4_local!) ENDOF
-	5 OF compile (5_local!) ENDOF
-	6 OF compile (6_local!) ENDOF
-	7 OF compile (7_local!) ENDOF
-	8 OF compile (8_local!) ENDOF
-	dup [compile] literal compile (local!)
-	ENDCASE
+    1+  \ adjust for optimised (local!), LocalsPtr points above vars
+    CASE
+    1 OF compile (1_local!) ENDOF
+    2 OF compile (2_local!) ENDOF
+    3 OF compile (3_local!) ENDOF
+    4 OF compile (4_local!) ENDOF
+    5 OF compile (5_local!) ENDOF
+    6 OF compile (6_local!) ENDOF
+    7 OF compile (7_local!) ENDOF
+    8 OF compile (8_local!) ENDOF
+    dup [compile] literal compile (local!)
+    ENDCASE
 ;
 
 : LV.COMPILE.LOCAL  ( $name -- handled? , check for matching locals name )
 \ ." LV.COMPILER.LOCAL name = " dup count type cr
-	lv.match
-	IF ( index )
-		lv.compile.fetch
-		true
-	ELSE
-		drop false
-	THEN
+    lv.match
+    IF ( index )
+        lv.compile.fetch
+        true
+    ELSE
+        drop false
+    THEN
 ;
 
 : LV.CLEANUP ( -- , restore stack frame on exit from colon def )
-	lv-#names @
-	IF
-		compile (local.exit)
-	THEN
+    lv-#names @
+    IF
+        compile (local.exit)
+    THEN
 ;
 : LV.FINISH ( -- , restore stack frame on exit from colon def )
-	lv.cleanup
-	lv-#names off
-	local-compiler off
+    lv.cleanup
+    lv-#names off
+    local-compiler off
 ;
 
 : LV.SETUP ( -- )
-	0 lv-#names !
+    0 lv-#names !
 ;
 
 : LV.TERM
-	." Locals turned off" cr
-	lv-#names off
-	local-compiler off
+    ." Locals turned off" cr
+    lv-#names off
+    local-compiler off
 ;
 
 if.forgotten lv.term
@@ -113,86 +113,86 @@ if.forgotten lv.term
 }private
 
 : (LOCAL)  ( adr len -- , ANSI local primitive )
-	dup
-	IF
-		lv-#names @ lv_max_vars >= abort" Too many local variables!"
-		lv-#names @  lv-names place
+    dup
+    IF
+        lv-#names @ lv_max_vars >= abort" Too many local variables!"
+        lv-#names @  lv-names place
 \ Warn programmer if local variable matches an existing dictionary name.
-		lv-#names @  lv-names find nip
-		IF
-			." (LOCAL) - Note: "
-			lv-#names @  lv-names count type
-			."  redefined as a local variable in "
-			latest id. cr
-		THEN
-		1 lv-#names +!
-	ELSE
+        lv-#names @  lv-names find nip
+        IF
+            ." (LOCAL) - Note: "
+            lv-#names @  lv-names count type
+            ."  redefined as a local variable in "
+            latest id. cr
+        THEN
+        1 lv-#names +!
+    ELSE
 \ Last local. Finish building local stack frame.
-		2drop
-		lv-#names @ dup 0=  \ fixed 10/27/99, Thanks to John Providenza
-		IF
-			drop ." (LOCAL) - Warning: no locals defined!" cr
-		ELSE
-			[compile] literal   compile (local.entry)
-			['] lv.compile.local local-compiler !
-		THEN
-	THEN
+        2drop
+        lv-#names @ dup 0=  \ fixed 10/27/99, Thanks to John Providenza
+        IF
+            drop ." (LOCAL) - Warning: no locals defined!" cr
+        ELSE
+            [compile] literal   compile (local.entry)
+            ['] lv.compile.local local-compiler !
+        THEN
+    THEN
 ;
 
 
 : VALUE
-	CREATE ( n <name> )
-		,
-		immediate
-	DOES>
-		state @
-		IF
-			[compile] aliteral
-			compile @
-		ELSE
-			@
-		THEN
+    CREATE ( n <name> )
+        ,
+        immediate
+    DOES>
+        state @
+        IF
+            [compile] aliteral
+            compile @
+        ELSE
+            @
+        THEN
 ;
 
 : TO  ( val <name> -- )
-	bl word
-	lv.match
-	IF  ( -- index )
-		lv.compile.store
-	ELSE
-		find 
-		1 = 0= abort" TO or -> before non-local or non-value"
-		>body  \ point to data
-		state @
-		IF  \ compiling  ( -- pfa )
-			[compile] aliteral
-			compile !
-		ELSE \ executing  ( -- val pfa )
-			!
-		THEN
-	THEN
+    bl word
+    lv.match
+    IF  ( -- index )
+        lv.compile.store
+    ELSE
+        find
+        1 = 0= abort" TO or -> before non-local or non-value"
+        >body  \ point to data
+        state @
+        IF  \ compiling  ( -- pfa )
+            [compile] aliteral
+            compile !
+        ELSE \ executing  ( -- val pfa )
+            !
+        THEN
+    THEN
 ; immediate
 
 : ->  ( -- )  [compile] to  ; immediate
 
 : +->  ( val <name> -- )
-	bl word
-	lv.match
-	IF  ( -- index )
-		1+  \ adjust for optimised (local!), LocalsPtr points above vars
-		[compile] literal compile (local+!)
-	ELSE
-		find 
-		1 = 0= abort" +-> before non-local or non-value"
-		>body  \ point to data
-		state @
-		IF  \ compiling  ( -- pfa )
-			[compile] aliteral
-			compile +!
-		ELSE \ executing  ( -- val pfa )
-			+!
-		THEN
-	THEN
+    bl word
+    lv.match
+    IF  ( -- index )
+        1+  \ adjust for optimised (local!), LocalsPtr points above vars
+        [compile] literal compile (local+!)
+    ELSE
+        find
+        1 = 0= abort" +-> before non-local or non-value"
+        >body  \ point to data
+        state @
+        IF  \ compiling  ( -- pfa )
+            [compile] aliteral
+            compile +!
+        ELSE \ executing  ( -- val pfa )
+            +!
+        THEN
+    THEN
 ; immediate
 
 : :      lv.setup   : ;

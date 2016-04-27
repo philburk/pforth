@@ -32,7 +32,7 @@ T{ STR2  6  /STRING  }T{ STR2 DROP 6 CHARS +   STR2 NIP 6 -  }T
 
 \  ----------------------------------------------------- BLANK
 : T.COMMA.SEQ  ( n -- , lay down N sequential bytes )
-	0 ?DO I C, LOOP
+    0 ?DO I C, LOOP
 ;
 CREATE T-BLANK-DATA   64 T.COMMA.SEQ
 T{ T-BLANK-DATA 8 + C@ }T{ 8 }T
@@ -46,7 +46,7 @@ FORGET T.COMMA.SEQ
 
 \  ----------------------------------------------------- CMOVE
 : T.COMMA.SEQ  ( n -- , lay down N sequential bytes )
-	0 ?DO I C, LOOP
+    0 ?DO I C, LOOP
 ;
 CREATE T-BLANK-DATA   64 T.COMMA.SEQ
 T-BLANK-DATA 7 + T-BLANK-DATA 6 + 3 CMOVE
@@ -59,7 +59,7 @@ FORGET T.COMMA.SEQ
 
 \  ----------------------------------------------------- CMOVE>
 : T.COMMA.SEQ  ( n -- , lay down N sequential bytes )
-	0 ?DO I C, LOOP
+    0 ?DO I C, LOOP
 ;
 CREATE T-BLANK-DATA   64 T.COMMA.SEQ
 T{ T-BLANK-DATA 6 + T-BLANK-DATA 7 + 3 CMOVE>
@@ -85,22 +85,22 @@ FORGET T.COMPARE.1
 : STR-SEARCH S" ABCDefghIJKL" ;
 T{ : T.SEARCH.1 STR-SEARCH S" ABCD" SEARCH ; T.SEARCH.1 }T{ STR-SEARCH TRUE }T
 T{ : T.SEARCH.2 STR-SEARCH S" efg"  SEARCH ; T.SEARCH.2 }T{
-	 STR-SEARCH 4 - SWAP 4 CHARS + SWAP TRUE }T
+     STR-SEARCH 4 - SWAP 4 CHARS + SWAP TRUE }T
 T{ : T.SEARCH.3 STR-SEARCH S" IJKL" SEARCH ; T.SEARCH.3 }T{
-	 STR-SEARCH DROP 8 CHARS + 4 TRUE }T
+     STR-SEARCH DROP 8 CHARS + 4 TRUE }T
 T{ : T.SEARCH.4 STR-SEARCH STR-SEARCH SEARCH ; T.SEARCH.4 }T{
-	 STR-SEARCH  TRUE }T
+     STR-SEARCH  TRUE }T
 
 T{ : T.SEARCH.5 STR-SEARCH S" CDex" SEARCH ; T.SEARCH.5 }T{
-	 STR-SEARCH  FALSE }T
+     STR-SEARCH  FALSE }T
 T{ : T.SEARCH.6 STR-SEARCH S" KLM" SEARCH ; T.SEARCH.6 }T{
-	 STR-SEARCH  FALSE }T
+     STR-SEARCH  FALSE }T
 FORGET STR-SEARCH
 
 \  ----------------------------------------------------- SLITERAL
-CREATE FAKE-STRING  CHAR H C,   CHAR e C,  CHAR l C, CHAR l C, CHAR o C, 
+CREATE FAKE-STRING  CHAR H C,   CHAR e C,  CHAR l C, CHAR l C, CHAR o C,
 ALIGN
 T{ : T.SLITERAL.1  [ FAKE-STRING 5 ] SLITERAL ; T.SLITERAL.1   FAKE-STRING 5 COMPARE
-	 }T{ 0 }T
-	
+     }T{ 0 }T
+
 }test

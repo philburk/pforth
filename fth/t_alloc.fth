@@ -49,7 +49,7 @@ NUM_TAF_SLOTS array TAF-SIZES
 : TAF.ALLOC.SLOT { slotnum | addr size -- }
 \ allocate some RAM
         taf-max-slot @ 8 -
-        choose 8 + 
+        choose 8 +
         dup allocate abort" Allocation failed!"
         -> addr
         -> size
@@ -97,7 +97,7 @@ NUM_TAF_SLOTS array TAF-SIZES
         taf.max.alloc? dup ." Final    MAX = " . cr
         ." Original MAX = " taf-max-alloc @ dup . cr
         = IF ." Test PASSED." ELSE ." Test FAILED!" THEN cr
-        
+
 ;
 
 : TAF.TEST ( NumTests -- )

@@ -209,11 +209,11 @@
 : (COMPILE) ( xt -- , postpone compilation of token )
         [compile] literal       ( compile a call to literal )
         ( store xt of word to be compiled )
-        
+
         [ ' compile, ] literal   \ compile call to compile,
         compile,
 ;
-        
+
 : COMPILE  ( <name> -- , save xt and compile later )
     ' (compile)
 ; IMMEDIATE
@@ -233,7 +233,7 @@
 : ERR_DEFER       -258 ;  \ not a deferred word
 
 : ABORT ( i*x -- )
-	ERR_ABORT throw
+    ERR_ABORT throw
 ;
 
 \ Conditionals in '83 form -----------------------------------------
@@ -260,7 +260,7 @@
 
 \ conditionals built from primitives
 : ELSE   ( f orig1 -- f orig2 )
-	[compile] AHEAD  2swap [compile] THEN  ; immediate
+    [compile] AHEAD  2swap [compile] THEN  ; immediate
 : WHILE  ( f dest -- f orig f dest )  [compile]  if   2swap ; immediate
 : REPEAT ( -- f orig f dest ) [compile] again  [compile] then  ; immediate
 
@@ -274,7 +274,7 @@
 \    : con create , does> @ ;
 \    345 con pi
 \    pi
-\ 
+\
 : (DOES>)  ( xt -- , modify previous definition to execute code at xt )
         latest name> >code \ get address of code for new word
         cell + \ offset to second cell in create word
@@ -285,9 +285,9 @@
         0 [compile] literal \ dummy literal to hold xt
         here cell-          \ address of zero in literal
         compile (does>)     \ call (DOES>) from new creation word
-		>r                  \ move addrz to return stack so ; doesn't see stack garbage
+        >r                  \ move addrz to return stack so ; doesn't see stack garbage
         [compile] ;         \ terminate part of code before does>
-		r>
+        r>
         :noname       ( addrz xt )
         swap !              \ save execution token in literal
 ; immediate
@@ -355,7 +355,7 @@
 ;
 
 : D2*  ( d -- d*2 )
-        2* over 
+        2* over
         cell 8 * 1- rshift or  swap
         2* swap
 ;
@@ -410,16 +410,16 @@
 ;
 
 : STACK@ ( stack -- n , copy )
-        dup @ cell- + @ 
+        dup @ cell- + @
 ;
 
 : STACK.PICK ( index stack -- n , grab Nth from top of stack )
         dup @ cell- +
         swap cells -   \ offset for index
-        @ 
+        @
 ;
 : STACKP ( stack -- ptr , to next empty location on stack )
-	dup @ +
+    dup @ +
 ;
 
 : 0STACKP  ( stack -- , clear stack)
@@ -500,7 +500,7 @@ ustack 0stackp
    compile  (+loop)
    loop-forward loop-back
 ; immediate
-        
+
 : UNLOOP ( loop-sys -r- )
         r> \ save return pointer
         rdrop rdrop
@@ -542,7 +542,7 @@ ustack 0stackp
 
 : IS  ( xt <name> -- , act like normal IS )
         '  \ xt
-        dup check.defer 
+        dup check.defer
         state @
         IF [compile] literal compile (is)
         ELSE (is)
@@ -623,7 +623,7 @@ ustack 0stackp
 ;
 
 : .(  ( <string> -- , type string delimited by parentheses )
-	[CHAR] ) PARSE TYPE
+    [CHAR] ) PARSE TYPE
 ; IMMEDIATE
 
 : ."   ( <string> -- , type string )
@@ -664,7 +664,7 @@ ustack 0stackp
 
 : ""  ( <string> -- addr )
         state @
-        IF 
+        IF
                 compile (C")
                 bl parse-word  ",
         ELSE
@@ -673,8 +673,8 @@ ustack 0stackp
 ; immediate
 
 : SLITERAL ( addr cnt -- , compile string )
-	compile (S")
-	",
+    compile (S")
+    ",
 ; IMMEDIATE
 
 : $APPEND ( addr count $1 -- , append text to $1 )
@@ -690,40 +690,40 @@ ustack 0stackp
 
 \ ANSI word to replace [COMPILE] and COMPILE ----------------
 : POSTPONE  ( <name> -- )
-	bl word find
-	dup 0=
-	IF
-		." Postpone could not find " count type cr abort
-	ELSE
-		0>
-		IF compile,  \ immediate
-		ELSE (compile)  \ normal
-		THEN
-	THEN
+    bl word find
+    dup 0=
+    IF
+        ." Postpone could not find " count type cr abort
+    ELSE
+        0>
+        IF compile,  \ immediate
+        ELSE (compile)  \ normal
+        THEN
+    THEN
 ; immediate
 
 \ -----------------------------------------------------------------
 \ Auto Initialization
 : AUTO.INIT  ( -- )
 \ Kernel finds AUTO.INIT and executes it after loading dictionary.
-\	." Begin AUTO.INIT ------" cr
+\   ." Begin AUTO.INIT ------" cr
 ;
 : AUTO.TERM  ( -- )
 \ Kernel finds AUTO.TERM and executes it on bye.
-\	." End AUTO.TERM ------" cr
+\   ." End AUTO.TERM ------" cr
 ;
 
 \ -------------- INCLUDE ------------------------------------------
 variable TRACE-INCLUDE
 
 : INCLUDE.MARK.START  ( $filename -- , mark start of include for FILE?)
-	" ::::"  pad $MOVE
-	count pad $APPEND
-	pad ['] noop (:)
+    " ::::"  pad $MOVE
+    count pad $APPEND
+    pad ['] noop (:)
 ;
 
 : INCLUDE.MARK.END  ( -- , mark end of include )
-	" ;;;;" ['] noop (:)
+    " ;;;;" ['] noop (:)
 ;
 
 : $INCLUDE ( $filename -- )
@@ -734,7 +734,7 @@ variable TRACE-INCLUDE
         THEN
         here >r
         dup
-        count r/o open-file 
+        count r/o open-file
         IF  ( -- $filename bad-fid )
                 drop ." Could not find file " $type cr abort
         ELSE ( -- $filename good-fid )
@@ -776,13 +776,13 @@ create INCLUDE-SAVE-NAME 128 allot
 ;
 
 \ desired sizes for dictionary loaded after SAVE-FORTH
-variable HEADERS-SIZE  
+variable HEADERS-SIZE
 variable CODE-SIZE
 
 : AUTO.INIT
-	auto.init
-	codelimit codebase - code-size !
-	namelimit namebase - headers-size !
+    auto.init
+    codelimit codebase - code-size !
+    namelimit namebase - headers-size !
 ;
 auto.init
 
@@ -794,7 +794,7 @@ auto.init
     code-size @ MAX
     (save-forth)
     IF
-		." SAVE-FORTH failed!" cr abort
+        ." SAVE-FORTH failed!" cr abort
     THEN
 ;
 
@@ -803,7 +803,7 @@ auto.init
     here codebase - 131072 +             \ CodeSize, remember that base is HEX
     (save-forth)
     IF
-		." TURNKEY failed!" cr abort
+        ." TURNKEY failed!" cr abort
     THEN
 ;
 

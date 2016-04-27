@@ -18,72 +18,72 @@ anew task-math.fth
 decimal
 
 : FM/MOD { dl dh nn | dlp dhp nnp rem quo -- rem quo , floored }
-	dl dh dabs -> dhp -> dlp
-	nn abs -> nnp
-	dlp dhp nnp um/mod -> quo -> rem
-	dh 0<  
-	IF  \ negative dividend
-		nn 0< 
-		IF   \ negative divisor
-			rem negate -> rem
-		ELSE  \ positive divisor
-			rem 0=
-			IF
-				quo negate -> quo
-			ELSE
-				quo 1+ negate -> quo
-				nnp rem - -> rem
-			THEN
-		THEN
-	ELSE  \ positive dividend
-		nn 0<  
-		IF  \ negative divisor
-			rem 0=
-			IF
-				quo negate -> quo
-			ELSE
-				nnp rem - negate -> rem
-				quo 1+ negate -> quo
-			THEN
-		THEN
-	THEN
-	rem quo
+    dl dh dabs -> dhp -> dlp
+    nn abs -> nnp
+    dlp dhp nnp um/mod -> quo -> rem
+    dh 0<
+    IF  \ negative dividend
+        nn 0<
+        IF   \ negative divisor
+            rem negate -> rem
+        ELSE  \ positive divisor
+            rem 0=
+            IF
+                quo negate -> quo
+            ELSE
+                quo 1+ negate -> quo
+                nnp rem - -> rem
+            THEN
+        THEN
+    ELSE  \ positive dividend
+        nn 0<
+        IF  \ negative divisor
+            rem 0=
+            IF
+                quo negate -> quo
+            ELSE
+                nnp rem - negate -> rem
+                quo 1+ negate -> quo
+            THEN
+        THEN
+    THEN
+    rem quo
 ;
 
 : SM/REM { dl dh nn | dlp dhp nnp rem quo -- rem quo , symmetric }
-	dl dh dabs -> dhp -> dlp
-	nn abs -> nnp
-	dlp dhp nnp um/mod -> quo -> rem
-	dh 0<  
-	IF  \ negative dividend
-		rem negate -> rem
-		nn 0> 
-		IF   \ positive divisor
-			quo negate -> quo
-		THEN
-	ELSE  \ positive dividend
-		nn 0<  
-		IF  \ negative divisor
-			quo negate -> quo
-		THEN
-	THEN
-	rem quo
+    dl dh dabs -> dhp -> dlp
+    nn abs -> nnp
+    dlp dhp nnp um/mod -> quo -> rem
+    dh 0<
+    IF  \ negative dividend
+        rem negate -> rem
+        nn 0>
+        IF   \ positive divisor
+            quo negate -> quo
+        THEN
+    ELSE  \ positive dividend
+        nn 0<
+        IF  \ negative divisor
+            quo negate -> quo
+        THEN
+    THEN
+    rem quo
 ;
 
 
 : /MOD ( a b -- rem quo )
-	>r s>d r> sm/rem
+    >r s>d r> sm/rem
 ;
 
 : MOD ( a b -- rem )
-	/mod drop
+    /mod drop
 ;
 
 : */MOD ( a b c -- rem a*b/c , use double precision intermediate value )
-	>r m*
-	r> sm/rem
+    >r m*
+    r> sm/rem
 ;
 : */ ( a b c -- a*b/c , use double precision intermediate value )
-	*/mod
-	nip
+    */mod
+    nip
 ;

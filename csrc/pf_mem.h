@@ -17,31 +17,31 @@
 
 #ifdef PF_NO_MALLOC
 
-	#ifdef __cplusplus
-	extern "C" {
-	#endif
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
-	void  pfInitMemoryAllocator( void );
-	char *pfAllocMem( cell_t NumBytes );
-	void  pfFreeMem( void *Mem );
+    void  pfInitMemoryAllocator( void );
+    char *pfAllocMem( cell_t NumBytes );
+    void  pfFreeMem( void *Mem );
 
-	#ifdef __cplusplus
-	}   
-	#endif
+    #ifdef __cplusplus
+    }
+    #endif
 
 #else
 
-	#ifdef PF_USER_MALLOC
+    #ifdef PF_USER_MALLOC
 /* Get user prototypes or macros from include file.
 ** API must match that defined above for the stubs.
 */
-		#include PF_USER_MALLOC
-	#else
-		#define pfInitMemoryAllocator()
-		#define pfAllocMem malloc
-		#define pfFreeMem free
-	#endif
-	
+        #include PF_USER_MALLOC
+    #else
+        #define pfInitMemoryAllocator()
+        #define pfAllocMem malloc
+        #define pfFreeMem free
+    #endif
+
 #endif /* PF_NO_MALLOC */
 
 #endif /* _pf_mem_h */

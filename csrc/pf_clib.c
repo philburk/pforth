@@ -29,36 +29,36 @@
 #define  NUL  ((char) 0)
 cell_t pfCStringLength( const char *s )
 {
-	cell_t len = 0;
-	while( *s++ != NUL ) len++;
-	return len;
+    cell_t len = 0;
+    while( *s++ != NUL ) len++;
+    return len;
 }
- 
+
 /*    void *memset (void *s, cell_t c, size_t n); */
 void *pfSetMemory( void *s, cell_t c, cell_t n )
 {
-	uint8_t *p = s, byt = (uint8_t) c;
-	while( (n--) > 0) *p++ = byt;
-	return s;
+    uint8_t *p = s, byt = (uint8_t) c;
+    while( (n--) > 0) *p++ = byt;
+    return s;
 }
 
 /*  void *memccpy (void *s1, const void *s2, cell_t c, size_t n); */
 void *pfCopyMemory( void *s1, const void *s2, cell_t n)
 {
-	uint8_t *p1 = s1;
-	const uint8_t *p2 = s2;
-	while( (n--) > 0) *p1++ = *p2++;
-	return s1;
+    uint8_t *p1 = s1;
+    const uint8_t *p2 = s2;
+    while( (n--) > 0) *p1++ = *p2++;
+    return s1;
 }
 
 #endif  /* PF_NO_CLIB */
 
 char pfCharToUpper( char c )
 {
-	return (char) ( ((c>='a') && (c<='z')) ? (c - ('a' - 'A')) : c );
+    return (char) ( ((c>='a') && (c<='z')) ? (c - ('a' - 'A')) : c );
 }
 
 char pfCharToLower( char c )
 {
-	return (char) ( ((c>='A') && (c<='Z')) ? (c + ('a' - 'A')) : c );
+    return (char) ( ((c>='A') && (c<='Z')) ? (c + ('a' - 'A')) : c );
 }

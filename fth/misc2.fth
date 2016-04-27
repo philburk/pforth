@@ -19,24 +19,24 @@
 anew task-misc2.fth
 
 : 'N  ( <name> -- , make 'n state smart )
-	bl word find
-	IF
-		state @
-		IF	namebase - ( make nfa relocatable )
-			[compile] literal	( store nfa of word to be compiled )
-			compile namebase+
-		THEN
-	THEN
+    bl word find
+    IF
+        state @
+        IF  namebase - ( make nfa relocatable )
+            [compile] literal   ( store nfa of word to be compiled )
+            compile namebase+
+        THEN
+    THEN
 ; IMMEDIATE
 
 : ?LITERAL  ( n -- , do literal if compiling )
- 	state @
- 	IF [compile] literal
- 	THEN
+    state @
+    IF [compile] literal
+    THEN
 ;
 
 : 'c ( <name> -- xt , state sensitive ' )
-	' ?literal
+    ' ?literal
 ; immediate
 
 variable if-debug
@@ -54,17 +54,17 @@ defer msec
 ' (msec) is msec
 
 : SHIFT ( val n -- val<<n )
-	dup 0<
-	IF negate arshift
-	ELSE lshift
-	THEN
+    dup 0<
+    IF negate arshift
+    ELSE lshift
+    THEN
 ;
 
 
 variable rand-seed here rand-seed !
 : random ( -- random_number )
     rand-seed @
-    31421 * 6927 + 
+    31421 * 6927 +
     65535 and dup rand-seed !
 ;
 : choose  ( range -- random_number , in range )
@@ -116,58 +116,58 @@ variable rand-seed here rand-seed !
 ;
 
 : B->S ( c -- c' , sign extend byte )
-	dup $ 80 and 
-	IF
-		$ FFFFFF00 or
-	ELSE
-		$ 000000FF and
-	THEN
+    dup $ 80 and
+    IF
+        $ FFFFFF00 or
+    ELSE
+        $ 000000FF and
+    THEN
 ;
 : W->S ( 16bit-signed -- 32bit-signed )
-	dup $ 8000 and
-	if
-		$ FFFF0000 or
-	ELSE
-		$ 0000FFFF and
-	then
+    dup $ 8000 and
+    if
+        $ FFFF0000 or
+    ELSE
+        $ 0000FFFF and
+    then
 ;
 
 : WITHIN { n1 n2 n3 -- flag }
-	n2 n3 <=
-	IF
-		n2 n1 <=
-		n1 n3 <  AND
-	ELSE
-		n2 n1 <=
-		n1 n3 <  OR
-	THEN
+    n2 n3 <=
+    IF
+        n2 n1 <=
+        n1 n3 <  AND
+    ELSE
+        n2 n1 <=
+        n1 n3 <  OR
+    THEN
 ;
 
 : MOVE ( src dst num -- )
-	>r 2dup - 0<
-	IF
-		r> CMOVE>
-	ELSE
-		r> CMOVE
-	THEN
+    >r 2dup - 0<
+    IF
+        r> CMOVE>
+    ELSE
+        r> CMOVE
+    THEN
 ;
 
 : ERASE ( caddr num -- )
-	dup 0>
-	IF
-		0 fill
-	ELSE
-		2drop
-	THEN
+    dup 0>
+    IF
+        0 fill
+    ELSE
+        2drop
+    THEN
 ;
 
 : BLANK ( addr u -- , set memory to blank )
-	DUP 0>
-	IF
-		BL FILL 
-	ELSE 
-		2DROP 
-	THEN 
+    DUP 0>
+    IF
+        BL FILL
+    ELSE
+        2DROP
+    THEN
 ;
 
 \ Obsolete but included for CORE EXT word set.
@@ -178,26 +178,26 @@ VARIABLE SPAN
 
 
 : UNUSED ( -- unused , dictionary space )
-	CODELIMIT HERE -
+    CODELIMIT HERE -
 ;
 
 : MAP  ( -- , dump interesting dictionary info )
-	." Code Segment" cr
-	."    CODEBASE           = " codebase .hex cr
-	."    HERE               = " here .hex cr
-	."    CODELIMIT          = " codelimit .hex cr
-	."    Compiled Code Size = " here codebase - . cr
-	."    CODE-SIZE          = " code-size @ . cr
-	."    Code Room UNUSED   = " UNUSED . cr
-	." Name Segment" cr
-	."    NAMEBASE           = " namebase .hex cr
-	."    HEADERS-PTR @      = " headers-ptr @ .hex cr
-	."    NAMELIMIT          = " namelimit .hex cr
-	."    CONTEXT @          = " context @ .hex cr
-	."    LATEST             = " latest .hex  ."  = " latest id. cr
-	."    Compiled Name size = " headers-ptr @ namebase - . cr
-	."    HEADERS-SIZE       = " headers-size @ . cr
-	."    Name Room Left     = " namelimit headers-ptr @ - . cr
+    ." Code Segment" cr
+    ."    CODEBASE           = " codebase .hex cr
+    ."    HERE               = " here .hex cr
+    ."    CODELIMIT          = " codelimit .hex cr
+    ."    Compiled Code Size = " here codebase - . cr
+    ."    CODE-SIZE          = " code-size @ . cr
+    ."    Code Room UNUSED   = " UNUSED . cr
+    ." Name Segment" cr
+    ."    NAMEBASE           = " namebase .hex cr
+    ."    HEADERS-PTR @      = " headers-ptr @ .hex cr
+    ."    NAMELIMIT          = " namelimit .hex cr
+    ."    CONTEXT @          = " context @ .hex cr
+    ."    LATEST             = " latest .hex  ."  = " latest id. cr
+    ."    Compiled Name size = " headers-ptr @ namebase - . cr
+    ."    HEADERS-SIZE       = " headers-size @ . cr
+    ."    Name Room Left     = " namelimit headers-ptr @ - . cr
 ;
 
 
@@ -205,31 +205,31 @@ VARIABLE SPAN
 : SEARCH { addr1 cnt1 addr2 cnt2 | addr3 cnt3 flag --  addr3 cnt3 flag }
 \ ." Search for " addr2 cnt2 type  ."  in "  addr1 cnt1 type cr
 \ if true, s1 contains s2 at addr3 with cnt3 chars remaining
-\ if false, s3 = s1	
-	addr1 -> addr3
-	cnt1 -> cnt3
-	cnt1 cnt2 < not
-	IF
-	    cnt1 cnt2 - 1+ 0
-		DO
-			true -> flag
-			cnt2 0
-			?DO
-				addr2 i chars + c@
-				addr1 i j + chars + c@ <> \ mismatch?
-				IF
-					false -> flag
-					LEAVE
-				THEN
-			LOOP
-			flag
-			IF
-				addr1 i chars + -> addr3
-				cnt1 i - -> cnt3
-				LEAVE
-			THEN
-		LOOP
-	THEN
-	addr3 cnt3 flag
+\ if false, s3 = s1
+    addr1 -> addr3
+    cnt1 -> cnt3
+    cnt1 cnt2 < not
+    IF
+        cnt1 cnt2 - 1+ 0
+        DO
+            true -> flag
+            cnt2 0
+            ?DO
+                addr2 i chars + c@
+                addr1 i j + chars + c@ <> \ mismatch?
+                IF
+                    false -> flag
+                    LEAVE
+                THEN
+            LOOP
+            flag
+            IF
+                addr1 i chars + -> addr3
+                cnt1 i - -> cnt3
+                LEAVE
+            THEN
+        LOOP
+    THEN
+    addr3 cnt3 flag
 ;
 

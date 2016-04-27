@@ -15,21 +15,21 @@ T{ 333 value  my-value   my-value }T{  333 }T
 T{ 1000 -> my-value   my-value }T{ 1000 }T
 T{ 35 +-> my-value   my-value }T{ 1035 }T
 : test.value  ( -- ok )
-	100 -> my-value
-	my-value 100 =
-	47 +-> my-value
-	my-value 147 = AND
+    100 -> my-value
+    my-value 100 =
+    47 +-> my-value
+    my-value 147 = AND
 ;
 T{ test.value }T{ TRUE }T
 
 \ test locals in a word
 : test.locs  { aa bb | cc -- ok }
-	cc 0=
-	aa bb + -> cc
-	aa bb +   cc = AND
-	aa -> cc
-	bb +->  cc
-	aa bb +   cc = AND
+    cc 0=
+    aa bb + -> cc
+    aa bb +   cc = AND
+    aa -> cc
+    bb +->  cc
+    aa bb +   cc = AND
 ;
 
 T{ 200 59 test.locs }T{  TRUE }T
@@ -40,10 +40,10 @@ T{ loc.nonames }T{ 1234 }T
 
 \ try to put EOLs and comments in variable list
 : calc.area {
-	width    \ horizontal dimension
-	height   \ vertical dimension
-	-- area , calculate area of a rectangle }
-	width height *
+    width    \ horizontal dimension
+    height   \ vertical dimension
+    -- area , calculate area of a rectangle }
+    width height *
 ;
 
 T{ 5 20 calc.area }T{ 100 }T
