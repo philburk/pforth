@@ -26,7 +26,11 @@
 **
 ***************************************************************/
 
+#ifndef AMIGA
 #include <sys/types.h>
+#else
+typedef long off_t;
+#endif
 
 #include "pf_all.h"
 

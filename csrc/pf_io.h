@@ -118,7 +118,7 @@ void ioTerm( void );
         #define sdFlushFile     fflush
         #define sdReadFile      fread
         #define sdWriteFile     fwrite
-        #if defined(WIN32) || defined(__NT__)
+        #if defined(WIN32) || defined(__NT__) || defined(AMIGA)
             /* TODO To support 64-bit file offset we probably need fseeki64(). */
             #define sdSeekFile      fseek
             #define sdTellFile      ftell
