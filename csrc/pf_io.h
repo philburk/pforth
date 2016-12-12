@@ -132,9 +132,9 @@ void ioTerm( void );
         #define PF_STDIN  ((FileStream *) stdin)
         #define PF_STDOUT ((FileStream *) stdout)
 
-        #define  PF_SEEK_SET   (0)
-        #define  PF_SEEK_CUR   (1)
-        #define  PF_SEEK_END   (2)
+        #define  PF_SEEK_SET   (SEEK_SET)
+        #define  PF_SEEK_CUR   (SEEK_CUR)
+        #define  PF_SEEK_END   (SEEK_END)
 
         /*
         ** printf() is only used for debugging purposes.
