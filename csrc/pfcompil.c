@@ -661,7 +661,7 @@ void ffDefer( void )
 }
 
 /* Unsmudge the word to make it visible. */
-void ffUnSmudge( void )
+static void ffUnSmudge( void )
 {
     *(char*)gVarContext &= ~FLAG_SMUDGE;
 }
@@ -737,7 +737,7 @@ void ffFPLiteral( PF_FLOAT fnum )
 #endif /* PF_SUPPORT_FP */
 
 /**************************************************************/
-ThrowCode FindAndCompile( const char *theWord )
+static ThrowCode FindAndCompile( const char *theWord )
 {
     cell_t Flag;
     ExecToken XT;
