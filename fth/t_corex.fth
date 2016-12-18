@@ -222,5 +222,65 @@ T{ 10  -5 10 WITHIN }T{ 0 }T
 T{ T.[COMPILE] }T{ TRUE }T
 
 \  ----------------------------------------------------- \
+
+\ .( TESTING DO +LOOP with large and small increments )
+
+\ Contributed by Andrew Haley
+0 invert CONSTANT MAX-UINT
+0 INVERT 1 RSHIFT CONSTANT MAX-INT
+0 INVERT 1 RSHIFT INVERT    CONSTANT MIN-INT
+MAX-UINT 8 RSHIFT 1+ CONSTANT USTEP
+USTEP NEGATE CONSTANT -USTEP
+MAX-INT 7 RSHIFT 1+ CONSTANT STEP
+STEP NEGATE CONSTANT -STEP
+
+VARIABLE BUMP
+
+T{ : GD8 BUMP ! DO 1+ BUMP @ +LOOP ; }T{ }T
+
+T{ 0 MAX-UINT 0 USTEP GD8 }T{ 256 }T
+T{ 0 0 MAX-UINT -USTEP GD8 }T{ 256 }T
+
+T{ 0 MAX-INT MIN-INT STEP GD8 }T{ 256 }T
+T{ 0 MIN-INT MAX-INT -STEP GD8 }T{ 256 }T
+
+\ Two's complement arithmetic, wraps around modulo wordsize
+\ Only tested if the Forth system does wrap around, use of conditional
+\ compilation deliberately avoided
+
+MAX-INT 1+ MIN-INT = CONSTANT +WRAP?
+MIN-INT 1- MAX-INT = CONSTANT -WRAP?
+MAX-UINT 1+ 0=       CONSTANT +UWRAP?
+0 1- MAX-UINT =      CONSTANT -UWRAP?
+
+: GD9  ( n limit start step f result -- )
+   >R IF GD8 ELSE 2DROP 2DROP R@ THEN }T{ R> }T
+;
+
+T{ 0 0 0  USTEP +UWRAP? 256 GD9
+T{ 0 0 0 -USTEP -UWRAP?   1 GD9
+T{ 0 MIN-INT MAX-INT  STEP +WRAP? 1 GD9
+T{ 0 MAX-INT MIN-INT -STEP -WRAP? 1 GD9
+
+\ --------------------------------------------------------------------------
+\ .( TESTING DO +LOOP with maximum and minimum increments )
+
+: (-MI) MAX-INT DUP NEGATE + 0= IF MAX-INT NEGATE ELSE -32767 THEN ;
+(-MI) CONSTANT -MAX-INT
+
+T{ 0 1 0 MAX-INT GD8  }T{ 1 }T
+T{ 0 -MAX-INT NEGATE -MAX-INT OVER GD8  }T{ 2 }T
+
+T{ 0 MAX-INT  0 MAX-INT GD8  }T{ 1 }T
+T{ 0 MAX-INT  1 MAX-INT GD8  }T{ 1 }T
+T{ 0 MAX-INT -1 MAX-INT GD8  }T{ 2 }T
+T{ 0 MAX-INT DUP 1- MAX-INT GD8  }T{ 1 }T
+
+T{ 0 MIN-INT 1+   0 MIN-INT GD8  }T{ 1 }T
+T{ 0 MIN-INT 1+  -1 MIN-INT GD8  }T{ 1 }T
+T{ 0 MIN-INT 1+   1 MIN-INT GD8  }T{ 2 }T
+T{ 0 MIN-INT 1+ DUP MIN-INT GD8  }T{ 1 }T
+
+
 }TEST
 

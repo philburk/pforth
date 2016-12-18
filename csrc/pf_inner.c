@@ -1391,15 +1391,18 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_PLUSLOOP_P: /* ( delta -- ) ( R: index limit -- | index limit ) */
             {
-                ucell_t OldIndex, NewIndex, Limit;
+		cell_t Limit = M_R_POP;
+		cell_t OldIndex = M_R_POP;
+		cell_t Delta = TOS; /* add TOS to index, not 1 */
+		cell_t NewIndex = OldIndex + Delta;
+		cell_t OldDiff = OldIndex - Limit;
 
-                Limit = M_R_POP;
-                OldIndex = M_R_POP;
-                NewIndex = OldIndex + TOS; /* add TOS to index, not 1 */
-/* Do indices cross boundary between LIMIT-1 and LIMIT ? */
-                if( ( (OldIndex - Limit) & ((Limit-1) - NewIndex) & 0x80000000 ) ||
-                    ( (NewIndex - Limit) & ((Limit-1) - OldIndex) & 0x80000000 ) )
-                {
+		/* This exploits this idea (lifted from Gforth):
+		   (x^y)<0 is equivalent to (x<0) != (y<0) */
+                if( ((OldDiff ^ (OldDiff + Delta)) /* is the limit crossed? */
+		     & (OldDiff ^ Delta))          /* is it a wrap-around? */
+		    < 0 )
+		{
                     InsPtr++;   /* skip branch offset, exit loop */
                 }
                 else
