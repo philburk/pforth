@@ -158,12 +158,24 @@ static cell_t HexDigitToNumber( char c )
 /* Convert a string to the corresponding number using BASE. */
 cell_t ffNumberQ( const char *FWord, cell_t *Num )
 {
-    cell_t Len, i, Accum=0, n, Sign=1;
+    cell_t Len, i, Accum=0, n, Sign=1, Base=gVarBase;
     const char *s;
 
 /* get count */
     Len = *FWord++;
     s = FWord;
+
+    switch (*s) {
+    case '#': Base = 10; s++; Len--; break;
+    case '$': Base = 16; s++; Len--; break;
+    case '%': Base =  2; s++; Len--; break;
+    case '\'':
+	if( Len == 3 && s[2] == '\'' )
+	{
+	    *Num = s[1];
+	    return NUM_TYPE_SINGLE;
+	}
+    }
 
 /* process initial minus sign */
     if( *s == '-' )
@@ -176,12 +188,12 @@ cell_t ffNumberQ( const char *FWord, cell_t *Num )
     for( i=0; i<Len; i++)
     {
         n = HexDigitToNumber( *s++ );
-        if( (n < 0) || (n >= gVarBase) )
+        if( (n < 0) || (n >= Base) )
         {
             return NUM_TYPE_BAD;
         }
 
-        Accum = (Accum * gVarBase) + n;
+        Accum = (Accum * Base) + n;
     }
     *Num = Accum * Sign;
     return NUM_TYPE_SINGLE;
@@ -210,7 +222,7 @@ DBUGX(("ffWord: s3=%c, %d\n", *s3, n3 ));
         gScratch[0] = (char) nc;
         for( i=0; i<nc; i++ )
         {
-            gScratch[i+1] = pfCharToUpper( s2[i] );
+	    gScratch[i+1] = s2[i];
         }
     }
     else
