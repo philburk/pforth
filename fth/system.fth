@@ -596,29 +596,6 @@ ustack 0stackp
         char [compile] literal
 ; immediate
 
-: TOUPPER ( char -- char' )
-	dup [char] a >=
-	IF
-		dup [char] z <= IF [ char A char a - ] literal + THEN
-	THEN
-;
-
-: UPCASE ( c-addr u -- )
-	over + swap ?do
-		i c@ toupper i c!
-	loop
-;
-
-create WORD-SAVE-AREA 257 allot
-
-\ This version performs case-conversion for backward compatibility.
-: WORD ( char -- addr )
-	parse-word
-	word-save-area place
-	word-save-area count upcase
-	word-save-area
-;
-
 : $TYPE  ( $string -- )
         count type
 ;
