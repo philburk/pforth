@@ -831,7 +831,7 @@ ThrowCode ffInterpret( void )
     {
 
         pfDebugMessage("ffInterpret: calling ffWord(()\n");
-        theWord = ffWord( BLANK );
+        theWord = ffLWord( BLANK );
         DBUG(("ffInterpret: theWord = 0x%x, Len = %d\n", theWord, *theWord ));
 
         if( *theWord > 0 )

@@ -96,7 +96,7 @@ decimal
 
     base @ -rot			( base c-addr u )
 
-    \ Regonize prefixes and change base if needed
+    \ Recognize prefixes and change base if needed
     over c@ >r			( base c-addr u  ) ( r: char )
     r@ [char] # = if rot drop 10 -rot 1 /string then
     r@ [char] $ = if rot drop 16 -rot 1 /string then
