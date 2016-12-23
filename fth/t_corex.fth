@@ -281,6 +281,39 @@ T{ 0 MIN-INT 1+  -1 MIN-INT GD8  }T{ 1 }T
 T{ 0 MIN-INT 1+   1 MIN-INT GD8  }T{ 2 }T
 T{ 0 MIN-INT 1+ DUP MIN-INT GD8  }T{ 1 }T
 
+\ ----------------------------------------------------------------------------
+\ .( TESTING number prefixes # $ % and 'c' character input )
+\ Adapted from the Forth 200X Draft 14.5 document
+
+VARIABLE OLD-BASE
+DECIMAL BASE @ OLD-BASE !
+T{ #1289 }T{ 1289 }T
+T{ #-1289 }T{ -1289 }T
+T{ $12eF }T{ 4847 }T
+T{ $-12eF }T{ -4847 }T
+T{ %10010110 }T{ 150 }T
+T{ %-10010110 }T{ -150 }T
+T{ 'z' }T{ 122 }T
+T{ 'Z' }T{ 90 }T
+\ Check BASE is unchanged
+T{ BASE @ OLD-BASE @ = }T{ TRUE }T
+
+\ Repeat in Hex mode
+16 OLD-BASE ! 16 BASE !
+T{ #1289 }T{ 509 }T
+T{ #-1289 }T{ -509 }T
+T{ $12eF }T{ 12EF }T
+T{ $-12eF }T{ -12EF }T
+T{ %10010110 }T{ 96 }T
+T{ %-10010110 }T{ -96 }T
+T{ 'z' }T{ 7a }T
+T{ 'Z' }T{ 5a }T
+\ Check BASE is unchanged
+T{ BASE @ OLD-BASE @ = }T{ TRUE }T   \ 2
+
+DECIMAL
+\ Check number prefixes in compile mode
+T{ : nmp  #8327 $-2cbe %011010111 ''' ; nmp }T{ 8327 -11454 215 39 }T
 
 }TEST
 

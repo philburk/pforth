@@ -158,12 +158,24 @@ static cell_t HexDigitToNumber( char c )
 /* Convert a string to the corresponding number using BASE. */
 cell_t ffNumberQ( const char *FWord, cell_t *Num )
 {
-    cell_t Len, i, Accum=0, n, Sign=1;
+    cell_t Len, i, Accum=0, n, Sign=1, Base=gVarBase;
     const char *s;
 
 /* get count */
     Len = *FWord++;
     s = FWord;
+
+    switch (*s) {
+    case '#': Base = 10; s++; Len--; break;
+    case '$': Base = 16; s++; Len--; break;
+    case '%': Base =  2; s++; Len--; break;
+    case '\'':
+	if( Len == 3 && s[2] == '\'' )
+	{
+	    *Num = s[1];
+	    return NUM_TYPE_SINGLE;
+	}
+    }
 
 /* process initial minus sign */
     if( *s == '-' )
@@ -176,12 +188,12 @@ cell_t ffNumberQ( const char *FWord, cell_t *Num )
     for( i=0; i<Len; i++)
     {
         n = HexDigitToNumber( *s++ );
-        if( (n < 0) || (n >= gVarBase) )
+        if( (n < 0) || (n >= Base) )
         {
             return NUM_TYPE_BAD;
         }
 
-        Accum = (Accum * gVarBase) + n;
+        Accum = (Accum * Base) + n;
     }
     *Num = Accum * Sign;
     return NUM_TYPE_SINGLE;
@@ -191,8 +203,11 @@ cell_t ffNumberQ( const char *FWord, cell_t *Num )
 ** Compiler Support
 ***************************************************************/
 
-/* ( char -- c-addr , parse word ) */
-char * ffWord( char c )
+/* Skip whitespace, then parse input delimited by C. If UPCASE is true
+ * convert the word to upper case.  The result is stored in
+ * gScratch.
+ */
+static char * Word ( char c, int Upcase )
 {
     char *s1,*s2,*s3;
     cell_t n1, n2, n3;
@@ -201,16 +216,16 @@ char * ffWord( char c )
     s1 = gCurrentTask->td_SourcePtr + gCurrentTask->td_IN;
     n1 = gCurrentTask->td_SourceNum - gCurrentTask->td_IN;
     n2 = ffSkip( s1, n1, c, &s2 );
-DBUGX(("ffWord: s2=%c, %d\n", *s2, n2 ));
+DBUGX(("Word: s2=%c, %d\n", *s2, n2 ));
     n3 = ffScan( s2, n2, c, &s3 );
-DBUGX(("ffWord: s3=%c, %d\n", *s3, n3 ));
+DBUGX(("Word: s3=%c, %d\n", *s3, n3 ));
     nc = n2-n3;
     if (nc > 0)
     {
         gScratch[0] = (char) nc;
         for( i=0; i<nc; i++ )
         {
-            gScratch[i+1] = pfCharToUpper( s2[i] );
+	    gScratch[i+1] = Upcase ? pfCharToUpper( s2[i] ) : s2[i] ;
         }
     }
     else
@@ -220,4 +235,16 @@ DBUGX(("ffWord: s3=%c, %d\n", *s3, n3 ));
     }
     gCurrentTask->td_IN += (n1-n3) + 1;
     return &gScratch[0];
+}
+
+/* ( char -- c-addr , parse word ) */
+char * ffWord( char c )
+{
+  return Word( c, TRUE );
+}
+
+/* ( char -- c-addr , parse word, preserving case ) */
+char * ffLWord( char c )
+{
+  return Word( c, FALSE );
 }

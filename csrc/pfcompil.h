@@ -38,6 +38,7 @@ cell_t  ffTokenToName( ExecToken XT, const ForthString **NFAPtr );
 cell_t *NameToCode( ForthString *NFA );
 PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize );
 char *ffWord( char c );
+char *ffLWord( char c );
 const ForthString *NameToPrevious( const ForthString *NFA );
 cell_t FindSpecialCFAs( void );
 cell_t FindSpecialXTs( void );
