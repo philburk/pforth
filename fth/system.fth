@@ -716,9 +716,9 @@ ustack 0stackp
 \ -------------- INCLUDE ------------------------------------------
 variable TRACE-INCLUDE
 
-: INCLUDE.MARK.START  ( $filename -- , mark start of include for FILE?)
+: INCLUDE.MARK.START  ( c-addr u -- , mark start of include for FILE?)
     " ::::"  pad $MOVE
-    count pad $APPEND
+    pad $APPEND
     pad ['] noop (:)
 ;
 
@@ -726,19 +726,18 @@ variable TRACE-INCLUDE
     " ;;;;" ['] noop (:)
 ;
 
-: $INCLUDE ( $filename -- )
-\ Print messages.
+: INCLUDED ( c-addr u -- )
+	\ Print messages.
         trace-include @
         IF
-                >newline ." Include " dup count type cr
+                >newline ." Include " 2dup type cr
         THEN
         here >r
-        dup
-        count r/o open-file
-        IF  ( -- $filename bad-fid )
-                drop ." Could not find file " $type cr abort
-        ELSE ( -- $filename good-fid )
-                swap include.mark.start
+        2dup r/o open-file
+        IF  ( -- c-addr u bad-fid )
+                drop ." Could not find file " type cr abort
+        ELSE ( -- c-addr u good-fid )
+		-rot include.mark.start
                 depth >r
                 include-file    \ will also close the file
                 depth 1+ r> -
@@ -756,6 +755,8 @@ variable TRACE-INCLUDE
         THEN
         rdrop
 ;
+
+: $INCLUDE ( $filename -- ) count included ;
 
 create INCLUDE-SAVE-NAME 128 allot
 : INCLUDE ( <fname> -- )
