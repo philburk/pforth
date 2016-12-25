@@ -315,5 +315,11 @@ DECIMAL
 \ Check number prefixes in compile mode
 T{ : nmp  #8327 $-2cbe %011010111 ''' ; nmp }T{ 8327 -11454 215 39 }T
 
+\  ----------------------------------------------------- ENVIRONMENT?
+
+T{ s" unknown-query-string" ENVIRONMENT? }T{ FALSE }T
+T{ s" MAX-CHAR" ENVIRONMENT? }T{ 255 TRUE }T
+T{ s" ADDRESS-UNITS-BITS" ENVIRONMENT? }T{ 8 TRUE }T
+
 }TEST
 
