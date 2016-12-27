@@ -216,7 +216,7 @@ enum cforth_primitive_ids
     ID_QUIT_P,
     ID_REFILL,
     ID_RESIZE,
-    ID_RESTORE_INPUT,
+    ID_SOURCE_LINE_NUMBER_FETCH, /* used to be ID_RESTORE_INPUT */
     ID_ROLL,
     ID_ROT,
     ID_RP_FETCH,
@@ -226,7 +226,7 @@ enum cforth_primitive_ids
     ID_R_FETCH,
     ID_R_FROM,
     ID_SAVE_FORTH_P,
-    ID_SAVE_INPUT,
+    ID_SOURCE_LINE_NUMBER_STORE, /* used to be ID_SAVE_INPUT */
     ID_SCAN,
     ID_SEMICOLON,
     ID_SKIP,

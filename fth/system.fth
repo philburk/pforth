@@ -360,6 +360,10 @@
         2* swap
 ;
 
+: D= ( xd1 xd2 -- flag )
+	rot = -rot = and
+;
+
 \ define some useful constants ------------------------------
 1 0= constant FALSE
 0 0= constant TRUE
