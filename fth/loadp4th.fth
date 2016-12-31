@@ -24,6 +24,7 @@ include? {       locals.fth
 include? fm/mod  math.fth
 include? task-misc2.fth misc2.fth
 include? [if]    condcomp.fth
+include? save-input save-input.fth
 
 \ load floating point support if basic support is in kernel
 exists? F*

@@ -343,6 +343,8 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_SOURCE_ID, "SOURCE-ID",  0 );
     CreateDicEntryC( ID_SOURCE_ID_PUSH, "PUSH-SOURCE-ID",  0 );
     CreateDicEntryC( ID_SOURCE_ID_POP, "POP-SOURCE-ID",  0 );
+    CreateDicEntryC( ID_SOURCE_LINE_NUMBER_FETCH, "SOURCE-LINE-NUMBER@",  0 );
+    CreateDicEntryC( ID_SOURCE_LINE_NUMBER_STORE, "SOURCE-LINE-NUMBER!",  0 );
     CreateDicEntryC( ID_SWAP, "SWAP",  0 );
     CreateDicEntryC( ID_TEST1, "TEST1",  0 );
     CreateDicEntryC( ID_TEST2, "TEST2",  0 );

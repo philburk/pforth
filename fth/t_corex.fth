@@ -9,10 +9,6 @@ ANEW TASK-T_COREX.FTH
 
 DECIMAL
 
-\ STUB because missing definition in pForth - FIXME
-: SAVE-INPUT ;
-: RESTORE-INPUT -1 ;
-
 TEST{
 
 \ ==========================================================
@@ -155,7 +151,20 @@ T{ ' QUERY 0<> }T{ TRUE }T
 T{ ' REFILL 0<> }T{ TRUE }T
 
 \  ----------------------------------------------------- RESTORE-INPUT
-T{ : T.SAVE-INPUT SAVE-INPUT RESTORE-INPUT ; T.SAVE-INPUT }T{ 0 }T  \ EXPECTED FAILURE
+T{ : T.SAVE-INPUT SAVE-INPUT RESTORE-INPUT ; T.SAVE-INPUT }T{ 0 }T
+
+\ TESTING SAVE-INPUT and RESTORE-INPUT with a string source
+
+VARIABLE SI_INC 0 SI_INC !
+
+: SI1
+   SI_INC @ >IN +!
+   15 SI_INC !
+;
+
+: S$ S" SAVE-INPUT SI1 RESTORE-INPUT 12345" ;
+
+T{ S$ EVALUATE SI_INC @ }T{ 0 2345 15 }T
 
 \  ----------------------------------------------------- ROLL
 T{ 15 14 13 12 11 10 0 ROLL  }T{  15 14 13 12 11 10 }T

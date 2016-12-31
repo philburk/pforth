@@ -1559,16 +1559,6 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 #endif
 
-/* Source     Stack
-** EVALUATE    >IN  SourceID=(-1)  1111
-** keyboard    >IN  SourceID=(0)   2222
-** file        >IN  lineNumber filePos  SourceID=(fileID)
-*/
-        case ID_SAVE_INPUT:  /* FIXME - finish */
-            {
-            }
-            endcase;
-
         case ID_SP_FETCH:    /* ( -- sp , address of top of stack, sorta ) */
             PUSH_TOS;
             TOS = (cell_t)STKPTR;
@@ -1649,6 +1639,16 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else M_DROP;
             endcase;
+
+	case ID_SOURCE_LINE_NUMBER_FETCH: /* ( -- linenr ) */
+	    PUSH_TOS;
+	    TOS = gCurrentTask->td_LineNumber;
+	    endcase;
+
+	case ID_SOURCE_LINE_NUMBER_STORE: /* ( linenr -- ) */
+	    gCurrentTask->td_LineNumber = TOS;
+	    TOS = M_POP;
+	    endcase;
 
         case ID_SWAP:
             Scratch = TOS;
