@@ -22,22 +22,22 @@ private{
 \ skip it; otherwise unread it.  IOR is non-zero if an error occured.
 \ C-ADDR is a buffer that can hold at least on char.
 : SKIP-\n ( c-addr fileid -- ior )
-  { a f }
-  a 1 f read-file               ( u ior )
-  ?dup
-  IF \ Read error?
-      nip
-  ELSE                          ( u )
-      0=
-      IF \ End of file?
-          0
-      ELSE
-          a c@ \n =             ( is-it-a-\n? )
-          IF   0
-          ELSE f unread
-          THEN
-      THEN
-  THEN
+    { a f }
+    a 1 f read-file               ( u ior )
+    ?dup
+    IF \ Read error?
+        nip
+    ELSE                          ( u )
+        0=
+        IF \ End of file?
+            0
+        ELSE
+            a c@ \n =             ( is-it-a-\n? )
+            IF   0
+            ELSE f unread
+            THEN
+        THEN
+    THEN
 ;
 
 \ This is just s\" \n" but s\" isn't yet available.
@@ -51,33 +51,33 @@ create (LINE-TERMINATOR) \n c,
 \ one char at a time with READ-FILE hence READ-FILE should probably do
 \ some form of buffering for good efficiency.
 : READ-LINE ( c-addr u1 fileid -- u2 flag ior )
-  { a u f }
-  u 0 ?DO
-      a i chars + 1 f read-file                                  ( u ior' )
-      ?dup IF nip i false rot UNLOOP EXIT THEN \ Read error?     ( u )
-      0= IF i i 0> 0 UNLOOP EXIT THEN          \ End of file?    ( )
-      a i chars + c@
-      CASE
-          \n OF i true 0 UNLOOP EXIT ENDOF
-          \r OF
-              \ Detect \r\n
-              a i 1+ chars + f skip-\n                           ( ior )
-              ?dup IF i false rot UNLOOP EXIT THEN \ IO Error?   ( )
-              i true 0 UNLOOP EXIT
-	  ENDOF
-      ENDCASE
-  LOOP
-  \ Line doesn't fit in buffer
-  u true 0
+    { a u f }
+    u 0 ?DO
+        a i chars + 1 f read-file                                  ( u ior' )
+        ?dup IF nip i false rot UNLOOP EXIT THEN \ Read error?     ( u )
+        0= IF i i 0> 0 UNLOOP EXIT THEN          \ End of file?    ( )
+        a i chars + c@
+        CASE
+            \n OF i true 0 UNLOOP EXIT ENDOF
+            \r OF
+                \ Detect \r\n
+                a i 1+ chars + f skip-\n                           ( ior )
+                ?dup IF i false rot UNLOOP EXIT THEN \ IO Error?   ( )
+                i true 0 UNLOOP EXIT
+	    ENDOF
+        ENDCASE
+    LOOP
+    \ Line doesn't fit in buffer
+    u true 0
 ;
 
 : WRITE-LINE ( c-addr u fileid -- ior )
-  { f }
-  f write-file                  ( ior )
-  ?dup
-  IF \ IO error
-  ELSE line-terminator f write-file
-  THEN
+    { f }
+    f write-file                  ( ior )
+    ?dup
+    IF \ IO error
+    ELSE line-terminator f write-file
+    THEN
 ;
 
 privatize
