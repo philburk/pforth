@@ -140,6 +140,7 @@ test: $(PFORTHAPP)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_locals.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_alloc.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_floats.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_file.fth)
 
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)
