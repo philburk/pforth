@@ -1,0 +1,7 @@
+build/unix/*.eo
+build/unix/*.o
+build/unix/pfdicdat.h
+build/unix/pforth
+build/unix/pforth.dic
+build/unix/pforth_standalone
+fth/fatest1.txt
