@@ -118,6 +118,23 @@ T{ BUF 100 FID1 @ READ-LINE ROT DUP #CHARS ! -> TRUE 0 LINE1 SWAP DROP }T
 T{ BUF #CHARS @ LINE1 S= -> TRUE }T
 T{ FID1 @ CLOSE-FILE -> 0 }T
 
+\ Test with buffer shorter than line.
+T{ FN1 R/O OPEN-FILE SWAP FID1 ! -> 0 }T
+T{ FID1 @ FILE-POSITION -> 0. 0 }T
+T{ BUF 0 FID1 @ READ-LINE ROT DUP #CHARS ! -> TRUE 0 0 }T
+T{ BUF 3 FID1 @ READ-LINE ROT DUP #CHARS ! -> TRUE 0 3 }T
+T{ BUF #CHARS @ LINE1 DROP 3 S= -> TRUE }T
+T{ BUF 100 FID1 @ READ-LINE ROT DUP #CHARS ! -> TRUE 0 LINE1 NIP 3 - }T
+T{ BUF #CHARS @ LINE1 3 /STRING S= -> TRUE }T
+T{ FID1 @ CLOSE-FILE -> 0 }T
+
+\ Test with buffer exactly as long as the line.
+T{ FN1 R/O OPEN-FILE SWAP FID1 ! -> 0 }T
+T{ FID1 @ FILE-POSITION -> 0. 0 }T
+T{ BUF LINE1 NIP FID1 @ READ-LINE ROT DUP #CHARS ! -> TRUE 0 LINE1 NIP }T
+T{ BUF #CHARS @ LINE1 S= -> TRUE }T
+T{ FID1 @ CLOSE-FILE -> 0 }T
+
 \ ----------------------------------------------------------------------------
 TESTING S" in interpretation mode (compile mode tested in Core tests)
 

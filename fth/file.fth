@@ -1,29 +1,35 @@
 \ READ-LINE and WRITE-LINE
 \
-\ This file is in the public domain.
+\ This code is part of pForth.
 \
+\ The pForth software code is dedicated to the public domain,
+\ and any third party may reproduce, distribute and modify
+\ the pForth software code or any derivative works thereof
+\ without any compensation or license.  The pForth software
+\ code is provided on an "as is" basis without any warranty
+\ of any kind, including, without limitation, the implied
+\ warranties of merchantability and fitness for a particular
+\ purpose and their equivalents under the laws of any jurisdiction.
 
 private{
 
-10 constant \n
-13 constant \r
+10 constant \N
+13 constant \R
 
 \ Unread one char from file FILEID.
-: UNREAD ( fileid -- ior )
-    { f }
-    f file-position          ( ud ior )
+: UNREAD { fileid -- ior }
+    fileid file-position          ( ud ior )
     ?dup
     IF   nip nip \ IO error
-    ELSE 1 s>d d- f reposition-file
+    ELSE 1 s>d d- fileid reposition-file
     THEN
 ;
 
 \ Read the next available char from file FILEID and if it is a \n then
 \ skip it; otherwise unread it.  IOR is non-zero if an error occured.
-\ C-ADDR is a buffer that can hold at least on char.
-: SKIP-\n ( c-addr fileid -- ior )
-    { a f }
-    a 1 f read-file               ( u ior )
+\ C-ADDR is a buffer that can hold at least one char.
+: SKIP-\N { c-addr fileid -- ior }
+    c-addr 1 fileid read-file     ( u ior )
     ?dup
     IF \ Read error?
         nip
@@ -32,9 +38,9 @@ private{
         IF \ End of file?
             0
         ELSE
-            a c@ \n =             ( is-it-a-\n? )
+            c-addr c@ \n =        ( is-it-a-\n? )
             IF   0
-            ELSE f unread
+            ELSE fileid unread
             THEN
         THEN
     THEN
@@ -46,7 +52,6 @@ create (LINE-TERMINATOR) \n c,
 
 }private
 
-
 \ This treats \n, \r\n, and \r as line terminator.  Reading is done
 \ one char at a time with READ-FILE hence READ-FILE should probably do
 \ some form of buffering for good efficiency.
@@ -55,13 +60,13 @@ create (LINE-TERMINATOR) \n c,
     u 0 ?DO
         a i chars + 1 f read-file                                  ( u ior' )
         ?dup IF nip i false rot UNLOOP EXIT THEN \ Read error?     ( u )
-        0= IF i i 0> 0 UNLOOP EXIT THEN          \ End of file?    ( )
+        0= IF i i 0<> 0 UNLOOP EXIT THEN         \ End of file?    ( )
         a i chars + c@
         CASE
             \n OF i true 0 UNLOOP EXIT ENDOF
             \r OF
                 \ Detect \r\n
-                a i 1+ chars + f skip-\n                           ( ior )
+                a i chars + f skip-\n                              ( ior )
                 ?dup IF i false rot UNLOOP EXIT THEN \ IO Error?   ( )
                 i true 0 UNLOOP EXIT
 	    ENDOF
