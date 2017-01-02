@@ -1091,6 +1091,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             TOS = TOS | PF_FAM_BINARY_FLAG;
             endcase;
 
+	case ID_FILE_FLUSH: /* ( fileid -- ior ) */
+	    {
+		FileStream *Stream = (FileStream *) TOS;
+		TOS = (sdFlushFile( Stream ) == 0) ? 0 : THROW_FLUSH_FILE;
+	    }
+	    endcase;
+
         case ID_FILL: /* ( caddr num charval -- ) */
             {
                 register char *DstPtr;
