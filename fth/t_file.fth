@@ -75,7 +75,6 @@ true value verbose
 
 \ FIXME: stubs for missing definitions
 : resize-file drop 2drop -1 ;
-: rename-file 2drop 2drop -1 ;
 : file-status 2drop 0 -1 ;
 
 TESTING File Access word set
@@ -231,7 +230,7 @@ T{ SOURCE-ID DUP -1 = SWAP 0= OR -> FALSE }T
 TESTING RENAME-FILE FILE-STATUS FLUSH-FILE
 
 : FN3 S" fatest3.txt" ;
-: >END FID1 @ FILE-SIZE .s DROP FID1 @ REPOSITION-FILE ;
+: >END FID1 @ FILE-SIZE DROP FID1 @ REPOSITION-FILE ;
 
 
 T{ FN3 DELETE-FILE DROP -> }T
@@ -239,11 +238,11 @@ T{ FN1 FN3 RENAME-FILE 0= -> TRUE }T
 T{ FN1 FILE-STATUS SWAP DROP 0= -> FALSE }T
 T{ FN3 FILE-STATUS SWAP DROP 0= -> TRUE }T  \ Return value is undefined
 T{ FN3 R/W OPEN-FILE SWAP FID1 ! -> 0 }T
-\ nyi T{ >END -> 0 }T
-\ nyi T{ S" Final line" fid1 @ WRITE-LINE -> 0 }T
+T{ >END -> 0 }T
+T{ S" Final line" fid1 @ WRITE-LINE -> 0 }T
 
-\ nyi T{ FID1 @ FLUSH-FILE -> 0 }T      \ Can only test FLUSH-FILE doesn't fail
-\ nyi T{ FID1 @ CLOSE-FILE -> 0 }T
+T{ FID1 @ FLUSH-FILE -> 0 }T      \ Can only test FLUSH-FILE doesn't fail
+T{ FID1 @ CLOSE-FILE -> 0 }T
 
 \ Tidy the test folder
 T{ fn3 DELETE-FILE DROP -> }T

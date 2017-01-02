@@ -259,6 +259,7 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_FILE_POSITION, "FILE-POSITION",  0 );
     CreateDicEntryC( ID_FILE_REPOSITION, "REPOSITION-FILE",  0 );
     CreateDicEntryC( ID_FILE_FLUSH, "FLUSH-FILE",  0 );
+    CreateDicEntryC( ID_FILE_RENAME, "(RENAME-FILE)",  0 );
     CreateDicEntryC( ID_FILE_RO, "R/O",  0 );
     CreateDicEntryC( ID_FILE_RW, "R/W",  0 );
     CreateDicEntryC( ID_FILE_WO, "W/O",  0 );

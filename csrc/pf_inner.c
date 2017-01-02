@@ -1098,6 +1098,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 	    }
 	    endcase;
 
+	case ID_FILE_RENAME: /* ( oldName newName -- ior ) */
+	    {
+		char *New = (char *) TOS;
+		char *Old = (char *) M_POP;
+		TOS = sdRenameFile( Old, New );
+	    }
+	    endcase;
+
         case ID_FILL: /* ( caddr num charval -- ) */
             {
                 register char *DstPtr;
