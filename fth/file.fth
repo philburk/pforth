@@ -50,6 +50,8 @@ private{
 create (LINE-TERMINATOR) \n c,
 : LINE-TERMINATOR ( -- c-addr u ) (line-terminator) 1 ;
 
+-72 constant THROW_RENAME_FILE
+
 }private
 
 \ This treats \n, \r\n, and \r as line terminator.  Reading is done
@@ -82,6 +84,21 @@ create (LINE-TERMINATOR) \n c,
     ?dup
     IF \ IO error
     ELSE line-terminator f write-file
+    THEN
+;
+
+: RENAME-FILE ( c-addr1 u1 c-addr2 u2 -- ior )
+    { a1 u1 a2 u2 | new }
+    \ Convert the file-names to C-strings by copying them after HERE
+    \ with trailing zeros added.
+    a1 here u1 move
+    0 here u1 chars + c!
+    here u1 1+ chars + to new
+    a2 new u2 move
+    0 new u2 chars + c!
+    here new (rename-file) 0=
+    IF 0
+    ELSE throw_rename_file
     THEN
 ;
 

@@ -282,6 +282,7 @@ enum cforth_primitive_ids
     /* DELETE-FILE */
     ID_FILE_DELETE,
     ID_FILE_FLUSH,		/* FLUSH-FILE */
+    ID_FILE_RENAME,		/* (RENAME-FILE) */
 /* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
@@ -298,7 +299,6 @@ enum cforth_primitive_ids
     ID_RESERVED09,
     ID_RESERVED10,
     ID_RESERVED11,
-    ID_RESERVED12,
     ID_FP_D_TO_F,
     ID_FP_FSTORE,
     ID_FP_FTIMES,

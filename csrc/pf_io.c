@@ -221,5 +221,13 @@ FileStream *sdDeleteFile( const char *FileName )
     TOUCH(FileName);
     return NULL;
 }
+
+int sdRenameFile( const char *OldName, const char *NewName )
+{
+    UNIMPLEMENTED("sdRenameFile");
+    TOUCH(OldName);
+    TOUCH(NewName);
+    return -1;
+}
 #endif
 

@@ -85,6 +85,7 @@ void ioTerm( void );
     cell_t sdReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
     cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
     cell_t sdSeekFile( FileStream * Stream, off_t Position, int32_t Mode );
+    cell_t sdRenameFile( const char *OldName, const char *NewName );
     off_t sdTellFile( FileStream * Stream );
     cell_t sdCloseFile( FileStream * Stream );
     cell_t sdInputChar( FileStream *stream );
@@ -127,6 +128,7 @@ void ioTerm( void );
             #define sdTellFile      ftello
         #endif
         #define sdCloseFile     fclose
+        #define sdRenameFile    rename
         #define sdInputChar     fgetc
 
         #define PF_STDIN  ((FileStream *) stdin)
