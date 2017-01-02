@@ -61,6 +61,16 @@ create (LINE-TERMINATOR) \n c,
     0 2r> + c!        ( )
 ;
 
+: MULTI-LINE-COMMENT ( "comment<rparen>" -- )
+    BEGIN
+        >in @ ')' parse         ( >in c-addr len )
+        nip + >in @ =           ( delimiter-not-found? )
+    WHILE                       ( )
+        refill 0= IF EXIT THEN  ( )
+    REPEAT
+
+;
+
 }private
 
 \ This treats \n, \r\n, and \r as line terminator.  Reading is done
@@ -107,5 +117,14 @@ create (LINE-TERMINATOR) \n c,
     ELSE throw_rename_file
     THEN
 ;
+
+: (  ( "comment<rparen>"  -- )
+    source-id
+    CASE
+        -1 OF postpone ( ENDOF
+        0  OF postpone ( ENDOF
+        multi-line-comment
+    ENDCASE
+; immediate
 
 privatize
