@@ -50,7 +50,16 @@ private{
 create (LINE-TERMINATOR) \n c,
 : LINE-TERMINATOR ( -- c-addr u ) (line-terminator) 1 ;
 
+\ Standard throw code
+\ See: http://lars.nocrew.org/forth2012/exception.html#table:throw
 -72 constant THROW_RENAME_FILE
+
+\ Copy the string C-ADDR/U1 to C-ADDR2 and append a NUL.
+: PLACE-CSTR  ( c-addr1 u1 c-addr2 -- )
+    2dup 2>r          ( c-addr1 u1 c-addr2 )  ( r: u1 c-addr2 )
+    swap cmove        ( ) ( r: u1 c-addr2 )
+    0 2r> + c!        ( )
+;
 
 }private
 
@@ -89,13 +98,10 @@ create (LINE-TERMINATOR) \n c,
 
 : RENAME-FILE ( c-addr1 u1 c-addr2 u2 -- ior )
     { a1 u1 a2 u2 | new }
-    \ Convert the file-names to C-strings by copying them after HERE
-    \ with trailing zeros added.
-    a1 here u1 move
-    0 here u1 chars + c!
+    \ Convert the file-names to C-strings by copying them after HERE.
+    a1 u1 here place-cstr
     here u1 1+ chars + to new
-    a2 new u2 move
-    0 new u2 chars + c!
+    a2 u2 new place-cstr
     here new (rename-file) 0=
     IF 0
     ELSE throw_rename_file

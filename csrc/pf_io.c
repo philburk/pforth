@@ -222,7 +222,7 @@ FileStream *sdDeleteFile( const char *FileName )
     return NULL;
 }
 
-int sdRenameFile( const char *OldName, const char *NewName )
+cell_t sdRenameFile( const char *OldName, const char *NewName )
 {
     UNIMPLEMENTED("sdRenameFile");
     TOUCH(OldName);
