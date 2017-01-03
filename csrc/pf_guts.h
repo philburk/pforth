@@ -283,6 +283,7 @@ enum cforth_primitive_ids
     ID_FILE_DELETE,
     ID_FILE_FLUSH,		/* FLUSH-FILE */
     ID_FILE_RENAME,		/* (RENAME-FILE) */
+    ID_FILE_RESIZE,		/* RESIZE-FILE */
 /* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
@@ -298,7 +299,6 @@ enum cforth_primitive_ids
     ID_RESERVED08,
     ID_RESERVED09,
     ID_RESERVED10,
-    ID_RESERVED11,
     ID_FP_D_TO_F,
     ID_FP_FSTORE,
     ID_FP_FTIMES,
@@ -369,6 +369,7 @@ enum cforth_primitive_ids
 #define THROW_FLOAT_STACK_UNDERFLOW  ( -45)
 #define THROW_QUIT            (-56)
 #define THROW_FLUSH_FILE      (-68)
+#define THROW_RESIZE_FILE     (-74)
 
 /* THROW codes unique to pForth */
 #define THROW_BYE            (-256) /* Exit program. */
