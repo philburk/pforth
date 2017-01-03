@@ -127,4 +127,18 @@ create (LINE-TERMINATOR) \n c,
     ENDCASE
 ; immediate
 
+\ We basically try to open the file in read-only mode.  That seems to
+\ be the best that we can do with ANSI C.  If we ever want to do
+\ something more sophisticated, like calling access(2), we must create
+\ a proper primitive.  (OTOH, portable programs can't assume much
+\ about FILE-STATUS and non-portable programs could create a custom
+\ function for access(2).)
+: FILE-STATUS ( c-addr u -- x ior )
+    r/o bin open-file           ( fileid ior1 )
+    ?dup
+    IF                          ( fileid ior1 )
+    ELSE close-file 0 swap      ( 0 ior2 )
+    THEN
+;
+
 privatize

@@ -60,7 +60,7 @@ include? }T{  t_tools.fth
 
 true fp-require-e !
 
-true value verbose
+false value verbose
 
 : testing
     verbose IF
@@ -72,9 +72,6 @@ true value verbose
 : -> }T{ ;
 : s= compare 0= ;
 : $" state IF postpone s" else ['] s" execute THEN ; immediate
-
-\ FIXME: stubs for missing definitions
-: file-status 2drop 0 -1 ;
 
 TESTING File Access word set
 
