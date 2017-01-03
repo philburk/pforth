@@ -68,7 +68,6 @@ create (LINE-TERMINATOR) \n c,
     WHILE                       ( )
         refill 0= IF EXIT THEN  ( )
     REPEAT
-
 ;
 
 }private
@@ -123,6 +122,7 @@ create (LINE-TERMINATOR) \n c,
     CASE
         -1 OF postpone ( ENDOF
         0  OF postpone ( ENDOF
+        \ for input from files
         multi-line-comment
     ENDCASE
 ; immediate
