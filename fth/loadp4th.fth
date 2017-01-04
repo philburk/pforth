@@ -26,6 +26,8 @@ include? task-misc2.fth misc2.fth
 include? [if]    condcomp.fth
 include? save-input save-input.fth
 include? read-line  file.fth
+include? file?      filefind.fth
+include? require    require.fth
 
 \ load floating point support if basic support is in kernel
 exists? F*
@@ -37,7 +39,6 @@ exists? F*
 include? task-member.fth   member.fth
 include? :struct c_struct.fth
 include? smif{   smart_if.fth
-include? file?   filefind.fth
 include? see     see.fth
 include? words.like wordslik.fth
 include? trace   trace.fth
