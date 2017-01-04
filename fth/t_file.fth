@@ -215,12 +215,12 @@ T{ FN2 R/W BIN OPEN-FILE SWAP DROP 0= -> FALSE }T
 T{ FN2 DELETE-FILE 0= -> FALSE }T
 
 \ ----------------------------------------------------------------------------
-\ TESTING multi-line ( comments
-\ 
-\ T{ ( 1 2 3
-\ 4 5 6
-\ 7 8 9 ) 11 22 33 -> 11 22 33 }T
-\ 
+TESTING multi-line ( comments
+
+T{ ( 1 2 3
+4 5 6
+7 8 9 ) 11 22 33 -> 11 22 33 }T
+
 \ ----------------------------------------------------------------------------
 TESTING SOURCE-ID (can only test it does not return 0 or -1)
 
