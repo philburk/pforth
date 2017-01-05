@@ -215,11 +215,11 @@ cell_t sdCloseFile( FileStream * Stream )
     return 0;
 }
 
-FileStream *sdDeleteFile( const char *FileName )
+cell_t sdDeleteFile( const char *FileName )
 {
     UNIMPLEMENTED("sdDeleteFile");
     TOUCH(FileName);
-    return NULL;
+    return -1;
 }
 
 cell_t sdRenameFile( const char *OldName, const char *NewName )
@@ -229,5 +229,15 @@ cell_t sdRenameFile( const char *OldName, const char *NewName )
     TOUCH(NewName);
     return -1;
 }
+
+ThrowCode sdResizeFile( FileStream * File, ucell_t SizeLo, ucell_t SizeHi )
+{
+    UNIMPLEMENTED("sdResizeFile");
+    TOUCH(File);
+    TOUCH(SizeLo);
+    TOUCH(SizeHi);
+    return THROW_RESIZE_FILE;
+}
+
 #endif
 

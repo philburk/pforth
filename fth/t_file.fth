@@ -74,7 +74,6 @@ true value verbose
 : $" state IF postpone s" else ['] s" execute THEN ; immediate
 
 \ FIXME: stubs for missing definitions
-: resize-file drop 2drop -1 ;
 : file-status 2drop 0 -1 ;
 
 TESTING File Access word set

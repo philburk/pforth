@@ -44,7 +44,7 @@ FULL_WARNINGS =  \
 CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
 #IO_SOURCE = pf_io_posix.c
-IO_SOURCE = pf_io_stdio.c
+IO_SOURCE = pf_io_stdio.c pf_fileio_stdio.c
 #IO_SOURCE = pf_io_win32_console.c
 
 EMBCCOPTS = -DPF_STATIC_DIC

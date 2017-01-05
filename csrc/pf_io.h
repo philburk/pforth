@@ -86,6 +86,8 @@ void ioTerm( void );
     cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
     cell_t sdSeekFile( FileStream * Stream, off_t Position, int32_t Mode );
     cell_t sdRenameFile( const char *OldName, const char *NewName );
+    cell_t sdDeleteFile( const char *FileName );
+    ThrowCode sdResizeFile( FileStream *, ucell_t SizeLo, ucell_t SizeHi );
     off_t sdTellFile( FileStream * Stream );
     cell_t sdCloseFile( FileStream * Stream );
     cell_t sdInputChar( FileStream *stream );
@@ -115,7 +117,7 @@ void ioTerm( void );
         typedef FILE FileStream;
 
         #define sdOpenFile      fopen
-        #define sdDeleteFile      remove
+        #define sdDeleteFile    remove
         #define sdFlushFile     fflush
         #define sdReadFile      fread
         #define sdWriteFile     fwrite
@@ -137,6 +139,8 @@ void ioTerm( void );
         #define  PF_SEEK_SET   (SEEK_SET)
         #define  PF_SEEK_CUR   (SEEK_CUR)
         #define  PF_SEEK_END   (SEEK_END)
+
+        ThrowCode sdResizeFile( FileStream *, ucell_t SizeLo, ucell_t SizeHi );
 
         /*
         ** printf() is only used for debugging purposes.

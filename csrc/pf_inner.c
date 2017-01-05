@@ -1106,6 +1106,15 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 	    }
 	    endcase;
 
+	case ID_FILE_RESIZE: /* ( ud fileid -- ior ) */
+	    {
+		FileStream *File = (FileStream *) TOS;
+		ucell_t SizeHi = (ucell_t) M_POP;
+		ucell_t SizeLo = (ucell_t) M_POP;
+		TOS = sdResizeFile( File, SizeLo, SizeHi );
+	    }
+	    endcase;
+
         case ID_FILL: /* ( caddr num charval -- ) */
             {
                 register char *DstPtr;

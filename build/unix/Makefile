@@ -40,10 +40,10 @@ FULL_WARNINGS =  \
 DEBUGOPTS = -g
 CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
-IO_SOURCE = pf_io_posix.c
+IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
 #IO_SOURCE = pf_io_stdio.c
 
-EMBCCOPTS = -DPF_STATIC_DIC
+EMBCCOPTS = -DPF_STATIC_DIC #-DPF_NO_FILEIO
 
 #######################################
 PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
