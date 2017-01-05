@@ -20,8 +20,7 @@ private{
 : INCLUDED? ( c-addr u -- flag )
     s" ::::" here place         ( c-addr u )
     here $append                ( )
-    here latest findnfa.from    ( x found? )
-    nip
+    here find nip 0<>           ( found? )
 ;
 
 \ FIXME: use real PARSE-NAME when available
