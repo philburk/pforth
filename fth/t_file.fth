@@ -250,15 +250,15 @@ T{ fn3 DELETE-FILE DROP -> }T
 TESTING REQUIRED REQUIRE INCLUDED
 \ Tests taken from Forth 2012 RfD
 
-T{ 0 S" t_required-helper1.fth" REQUIRED
-     REQUIRE t_required-helper1.fth
-     INCLUDE t_required-helper1.fth
+T{ 0 S" t_required_helper1.fth" REQUIRED
+     REQUIRE t_required_helper1.fth
+     INCLUDE t_required_helper1.fth
      -> 2 }T
 
-T{ 0 INCLUDE t_required-helper2.fth
-     S" t_required-helper2.fth" REQUIRED
-     REQUIRE t_required-helper2.fth
-     S" t_required-helper2.fth" INCLUDED
+T{ 0 INCLUDE t_required_helper2.fth
+     S" t_required_helper2.fth" REQUIRED
+     REQUIRE t_required_helper2.fth
+     S" t_required_helper2.fth" INCLUDED
      -> 2 }T
 
 \ ----------------------------------------------------------------------------
