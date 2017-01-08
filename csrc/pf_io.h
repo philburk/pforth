@@ -87,7 +87,7 @@ void ioTerm( void );
     cell_t sdSeekFile( FileStream * Stream, off_t Position, int32_t Mode );
     cell_t sdRenameFile( const char *OldName, const char *NewName );
     cell_t sdDeleteFile( const char *FileName );
-    ThrowCode sdResizeFile( FileStream *, ucell_t SizeLo, ucell_t SizeHi );
+    ThrowCode sdResizeFile( FileStream *, uint64_t Size);
     off_t sdTellFile( FileStream * Stream );
     cell_t sdCloseFile( FileStream * Stream );
     cell_t sdInputChar( FileStream *stream );
@@ -140,7 +140,7 @@ void ioTerm( void );
         #define  PF_SEEK_CUR   (SEEK_CUR)
         #define  PF_SEEK_END   (SEEK_END)
 
-        ThrowCode sdResizeFile( FileStream *, ucell_t SizeLo, ucell_t SizeHi );
+        ThrowCode sdResizeFile( FileStream *, uint64_t Size);
 
         /*
         ** printf() is only used for debugging purposes.

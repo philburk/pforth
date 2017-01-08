@@ -364,6 +364,14 @@
 	rot = -rot = and
 ;
 
+: D< ( d1 d2 -- flag )
+    d- nip 0<
+;
+
+: D> ( d1 d2 -- flag )
+    2swap d<
+;
+
 \ define some useful constants ------------------------------
 1 0= constant FALSE
 0 0= constant TRUE

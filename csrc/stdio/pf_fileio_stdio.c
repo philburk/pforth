@@ -106,20 +106,12 @@ static bool_t ExtendFile( FileStream *File, size_t Diff )
     return Error;
 }
 
-/* Return non-FALSE if the double-cell unsigned number LO/HI
- * is greater then LONG_MAX.
- */
-static bool_t IsGreaterThanLongMax( ucell_t Lo, ucell_t Hi )
-{
-    return (Hi != 0) || (Lo > LONG_MAX);
-}
-
-ThrowCode sdResizeFile( FileStream *File, ucell_t SizeLo, ucell_t SizeHi )
+ThrowCode sdResizeFile( FileStream *File, uint64_t Size )
 {
     bool_t Error = TRUE;
-    if( !IsGreaterThanLongMax( SizeLo, SizeHi ) )
+    if( Size <= LONG_MAX )
     {
-	long Newsize = (long) SizeLo;
+	long Newsize = (long) Size;
 	if( fseek( File, 0, SEEK_END ) == 0 )
 	{
 	    long Oldsize = ftell( File );

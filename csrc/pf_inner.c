@@ -199,6 +199,24 @@ static void TraceNames( ExecToken Token, cell_t Level )
 /* Use local copy of CODE_BASE for speed. */
 #define LOCAL_CODEREL_TO_ABS( a ) ((cell_t *) (((cell_t) a) + CodeBase))
 
+/* Truncate the unsigned double cell integer LO/HI to an uint64_t. */
+static uint64_t UdToUint64( ucell_t Lo, ucell_t Hi )
+{
+    return (( 2 * sizeof(ucell_t) == sizeof(uint64_t) )
+	    ? (((uint64_t)Lo) | (((uint64_t)Hi) >> (sizeof(ucell_t) * 8)))
+	    : Lo );
+}
+
+/* Return TRUE if the unsigned double cell integer LO/HI is not greater
+ * then the greatest uint64_t.
+ */
+static int UdIsUint64( ucell_t Lo, ucell_t Hi )
+{
+    return (( 2 * sizeof(ucell_t) == sizeof(uint64_t) )
+	    ? TRUE
+	    : Hi == 0 );
+}
+
 static const char *pfSelectFileModeCreate( int fam );
 static const char *pfSelectFileModeOpen( int fam );
 
@@ -1111,7 +1129,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		FileStream *File = (FileStream *) TOS;
 		ucell_t SizeHi = (ucell_t) M_POP;
 		ucell_t SizeLo = (ucell_t) M_POP;
-		TOS = sdResizeFile( File, SizeLo, SizeHi );
+		TOS = ( UdIsUint64( SizeLo, SizeHi )
+			? sdResizeFile( File, UdToUint64( SizeLo, SizeHi ))
+			: THROW_RESIZE_FILE );
 	    }
 	    endcase;
 
