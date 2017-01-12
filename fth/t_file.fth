@@ -243,6 +243,21 @@ T{ FID1 @ CLOSE-FILE -> 0 }T
 \ Tidy the test folder
 T{ fn3 DELETE-FILE DROP -> }T
 
+\ ------------------------------------------------------------------------------
+TESTING REQUIRED REQUIRE INCLUDED
+\ Tests taken from Forth 2012 RfD
+
+T{ 0 S" t_required_helper1.fth" REQUIRED
+     REQUIRE t_required_helper1.fth
+     INCLUDE t_required_helper1.fth
+     -> 2 }T
+
+T{ 0 INCLUDE t_required_helper2.fth
+     S" t_required_helper2.fth" REQUIRED
+     REQUIRE t_required_helper2.fth
+     S" t_required_helper2.fth" INCLUDED
+     -> 2 }T
+
 \ ----------------------------------------------------------------------------
 TESTING two buffers available for S" and/or S\" (Forth 2012)
 

@@ -26,6 +26,7 @@ include? task-misc2.fth misc2.fth
 include? [if]    condcomp.fth
 include? save-input save-input.fth
 include? read-line  file.fth
+include? require    require.fth
 
 \ load floating point support if basic support is in kernel
 exists? F*

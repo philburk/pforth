@@ -721,9 +721,11 @@ ustack 0stackp
 variable TRACE-INCLUDE
 
 : INCLUDE.MARK.START  ( c-addr u -- , mark start of include for FILE?)
-    " ::::"  pad $MOVE
-    pad $APPEND
-    pad ['] noop (:)
+    dup 5 + allocate throw >r
+    " ::::" r@ $move
+    r@ $append
+    r@ ['] noop (:)
+    r> free throw
 ;
 
 : INCLUDE.MARK.END  ( -- , mark end of include )
