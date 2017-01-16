@@ -117,6 +117,22 @@ create (LINE-TERMINATOR) \n c,
     THEN
 ;
 
+\ A limit used to perform a sanity check on the size argument for
+\ RESIZE-FILE.
+2variable RESIZE-FILE-LIMIT
+10000000 0 resize-file-limit 2!  \ 10MB is somewhat arbitrarily chosen
+
+: RESIZE-FILE ( ud fileid -- ior )
+    -rot 2dup resize-file-limit 2@ d>             ( fileid ud big? )
+    IF
+        ." Argument (" 0 d.r ." ) is larger then RESIZE-FILE-LIMIT." cr
+        ." (You can increase RESIZE-FILE-LIMIT with 2!)" cr
+        abort
+    ELSE
+        rot (resize-file)
+    THEN
+;
+
 : (  ( "comment<rparen>"  -- )
     source-id
     CASE

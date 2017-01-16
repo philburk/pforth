@@ -230,12 +230,10 @@ cell_t sdRenameFile( const char *OldName, const char *NewName )
     return -1;
 }
 
-ThrowCode sdResizeFile( FileStream * File, ucell_t SizeLo, ucell_t SizeHi )
+ThrowCode sdResizeFile( FileStream * File, uint64_t NewSize )
 {
     UNIMPLEMENTED("sdResizeFile");
-    TOUCH(File);
-    TOUCH(SizeLo);
-    TOUCH(SizeHi);
+    TOUCH(NewSize);
     return THROW_RESIZE_FILE;
 }
 
