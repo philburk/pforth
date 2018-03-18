@@ -41,6 +41,10 @@ anew task-misc2.fth
 
 variable if-debug
 
+: ? ( address -- , fatch from address and print value )
+    @ .
+;
+
 decimal
 create msec-delay 10000 ,  ( default for SUN )
 : (MSEC) ( #msecs -- )
