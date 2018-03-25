@@ -23,6 +23,13 @@
 ** Type Declarations
 ***************************************************************/
 
+#ifndef AMIGA
+#include <sys/types.h>
+#endif
+
+/* file_offset_t is used in place of off_t */
+typedef long file_offset_t;
+
 #ifndef Err
     typedef long Err;
 #endif

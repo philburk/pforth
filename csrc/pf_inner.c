@@ -26,12 +26,6 @@
 **
 ***************************************************************/
 
-#ifndef AMIGA
-#include <sys/types.h>
-#else
-typedef long off_t;
-#endif
-
 #include "pf_all.h"
 
 #if defined(WIN32) && !defined(__MINGW32__)
@@ -1043,13 +1037,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 /* Determine file size by seeking to end and returning position. */
             FileID = (FileStream *) TOS;
             {
-                off_t endposition, offsetHi;
-                off_t original = sdTellFile( FileID );
+                file_offset_t endposition, offsetHi;
+                file_offset_t original = sdTellFile( FileID );
                 sdSeekFile( FileID, 0, PF_SEEK_END );
                 endposition = sdTellFile( FileID );
                 M_PUSH(endposition);
                 /* Just use a 0 if they are the same size. */
-                offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (endposition >> (8*sizeof(cell_t))) : 0 ;
+                offsetHi = (sizeof(file_offset_t) > sizeof(cell_t))
+						? (endposition >> (8*sizeof(cell_t))) : 0 ;
                 M_PUSH(offsetHi);
                 sdSeekFile( FileID, original, PF_SEEK_SET );
                 TOS = (original < 0) ? -4 : 0 ; /* !!! err num */
@@ -1066,11 +1061,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_FILE_REPOSITION: /* ( ud fid -- ior ) */
             {
-                off_t offset;
+                file_offset_t offset;
                 FileID = (FileStream *) TOS;
                 offset = M_POP;
                 /* Avoid compiler warnings on Mac. */
-                offset = (sizeof(off_t) > sizeof(cell_t)) ? (offset << 8*sizeof(cell_t)) : 0 ;
+                offset = (sizeof(file_offset_t) > sizeof(cell_t))
+						? (offset << 8*sizeof(cell_t)) : 0 ;
                 offset += M_POP;
                 TOS = sdSeekFile( FileID, offset, PF_SEEK_SET );
             }
@@ -1078,13 +1074,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_FILE_POSITION: /* ( fid -- ud ior ) */
             {
-                off_t position;
-                off_t offsetHi;
+                file_offset_t position;
+                file_offset_t offsetHi;
                 FileID = (FileStream *) TOS;
                 position = sdTellFile( FileID );
                 M_PUSH(position);
                 /* Just use a 0 if they are the same size. */
-                offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (position >> (8*sizeof(cell_t))) : 0 ;
+                offsetHi = (sizeof(file_offset_t) > sizeof(cell_t))
+						? (position >> (8*sizeof(cell_t))) : 0 ;
                 M_PUSH(offsetHi);
                 TOS = (position < 0) ? -4 : 0 ; /* !!! err num */
             }

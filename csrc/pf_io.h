@@ -19,6 +19,8 @@
 **
 ***************************************************************/
 
+#include "pf_types.h"
+
 #define PF_CHAR_XON    (0x11)
 #define PF_CHAR_XOFF   (0x13)
 
@@ -32,7 +34,6 @@ void sdTerminalTerm( void );
 
 void ioInit( void );
 void ioTerm( void );
-
 
 #ifdef PF_NO_CHARIO
     void sdEnableInput( void );
@@ -84,11 +85,11 @@ void ioTerm( void );
     cell_t sdFlushFile( FileStream * Stream  );
     cell_t sdReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
     cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
-    cell_t sdSeekFile( FileStream * Stream, off_t Position, int32_t Mode );
+    cell_t sdSeekFile( FileStream * Stream, file_offset_t Position, int32_t Mode );
     cell_t sdRenameFile( const char *OldName, const char *NewName );
     cell_t sdDeleteFile( const char *FileName );
     ThrowCode sdResizeFile( FileStream *, uint64_t Size);
-    off_t sdTellFile( FileStream * Stream );
+    file_offset_t sdTellFile( FileStream * Stream );
     cell_t sdCloseFile( FileStream * Stream );
     cell_t sdInputChar( FileStream *stream );
 
