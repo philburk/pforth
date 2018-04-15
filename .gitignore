@@ -4,4 +4,7 @@ build/unix/pfdicdat.h
 build/unix/pforth
 build/unix/pforth.dic
 build/unix/pforth_standalone
+build/win32/**/.vs
+build/win32/**/Debug
+build/win32/**/Release
 fth/fatest1.txt
