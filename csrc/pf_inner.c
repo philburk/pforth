@@ -750,8 +750,8 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 /* Calculate product sign: */
                 sg = ((cell_t)(ahi ^ bhi) < 0);
 /* Take absolute values and reduce to um* */
-                if ((cell_t)ahi < 0) ahi = (ucell_t)(-ahi);
-                if ((cell_t)bhi < 0) bhi = (ucell_t)(-bhi);
+                if ((cell_t)ahi < 0) ahi = (ucell_t)(-(cell_t)ahi);
+                if ((cell_t)bhi < 0) bhi = (ucell_t)(-(cell_t)bhi);
 
 /* Break into hi and lo 16 bit parts. */
                 alo = LOWER_HALF(ahi);

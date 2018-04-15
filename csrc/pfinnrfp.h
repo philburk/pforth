@@ -207,7 +207,7 @@
 
     case ID_FP_FROUND:
         PUSH_TOS;
-        TOS = fp_round(FP_TOS);
+        TOS = (cell_t)fp_round(FP_TOS);
         M_FP_DROP;
         break;
 
