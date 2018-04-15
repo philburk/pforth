@@ -459,7 +459,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
         NameSize = QUADUP(NameSize);  /* Align */
         if( NameSize > 0 )
         {
-            NameSize = MAX( NameSize, (NameChunkSize + 1024) );
+            NameSize = MAX( (ucell_t)NameSize, (NameChunkSize + 1024) );
         }
         SD.sd_NameSize = NameSize;
     }
@@ -467,7 +467,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 /* How much real code is there? */
     CodeChunkSize = QUADUP(relativeCodePtr);
     CodeSize = QUADUP(CodeSize);  /* Align */
-    CodeSize = MAX( CodeSize, (CodeChunkSize + 2048) );
+    CodeSize = MAX( (ucell_t)CodeSize, (CodeChunkSize + 2048) );
     SD.sd_CodeSize = CodeSize;
 
 
