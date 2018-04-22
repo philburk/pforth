@@ -1062,12 +1062,20 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FILE_REPOSITION: /* ( ud fid -- ior ) */
             {
                 file_offset_t offset;
+                cell_t offsetHigh;
+                cell_t offsetLow;
                 FileID = (FileStream *) TOS;
-                offset = M_POP;
-                /* Avoid compiler warnings on Mac. */
-                offset = (sizeof(file_offset_t) > sizeof(cell_t))
-						? (offset << 8*sizeof(cell_t)) : 0 ;
-                offset += M_POP;
+                offsetHigh = M_POP;
+                offsetLow = M_POP;
+                /* We do not support double precision file offsets in pForth.
+                 * So check to make sure the high bits are not used.
+                 */
+                if (offsetHigh != 0)
+                {
+                    TOS = -3; /* TODO err num? */
+                    break;
+                }
+                offset = offsetLow;
                 TOS = sdSeekFile( FileID, offset, PF_SEEK_SET );
             }
             endcase;
@@ -1075,15 +1083,21 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FILE_POSITION: /* ( fid -- ud ior ) */
             {
                 file_offset_t position;
-                file_offset_t offsetHi;
                 FileID = (FileStream *) TOS;
                 position = sdTellFile( FileID );
-                M_PUSH(position);
-                /* Just use a 0 if they are the same size. */
-                offsetHi = (sizeof(file_offset_t) > sizeof(cell_t))
-						? (position >> (8*sizeof(cell_t))) : 0 ;
-                M_PUSH(offsetHi);
-                TOS = (position < 0) ? -4 : 0 ; /* !!! err num */
+                if (position < 0)
+                {
+                    M_PUSH(0); /* low */
+                    M_PUSH(0); /* high */
+                    TOS = -4;  /* TODO proper error number */
+                }
+                else
+                {
+                    M_PUSH(position); /* low */
+                    /* We do not support double precision file offsets.*/
+                    M_PUSH(0); /* high */
+                    TOS = 0;
+                }
             }
             endcase;
 

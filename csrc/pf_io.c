@@ -194,7 +194,7 @@ cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream 
     TOUCH(Stream);
     return 0;
 }
-cell_t sdSeekFile( FileStream * Stream, cell_t Position, int32_t Mode )
+cell_t sdSeekFile( FileStream * Stream, file_offset_t Position, int32_t Mode )
 {
     UNIMPLEMENTED("sdSeekFile");
     TOUCH(Stream);

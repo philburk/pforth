@@ -122,14 +122,18 @@ void ioTerm( void );
         #define sdFlushFile     fflush
         #define sdReadFile      fread
         #define sdWriteFile     fwrite
-        #if defined(WIN32) || defined(__NT__) || defined(AMIGA)
-            /* TODO To support 64-bit file offset we probably need fseeki64(). */
-            #define sdSeekFile      fseek
-            #define sdTellFile      ftell
-        #else
-            #define sdSeekFile      fseeko
-            #define sdTellFile      ftello
-        #endif
+
+        /*
+         * Note that fseek() and ftell() only support a long file offset.
+         * So 64-bit offsets may not be supported on some platforms.
+         * At one point we supported fseeko() and ftello() but they require
+         * the off_t data type, which is not very portable.
+         * So we decided to sacrifice vary large file support in
+         * favor of portability.
+         */
+        #define sdSeekFile      fseek
+        #define sdTellFile      ftell
+
         #define sdCloseFile     fclose
         #define sdRenameFile    rename
         #define sdInputChar     fgetc
@@ -141,6 +145,7 @@ void ioTerm( void );
         #define  PF_SEEK_CUR   (SEEK_CUR)
         #define  PF_SEEK_END   (SEEK_END)
 
+        /* TODO review the Size data type. */
         ThrowCode sdResizeFile( FileStream *, uint64_t Size);
 
         /*
