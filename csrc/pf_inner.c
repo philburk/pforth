@@ -1029,25 +1029,38 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = M_POP;
             CharPtr = (char *) M_POP;
             Temp = sdReadFile( CharPtr, 1, Scratch, FileID );
+            /* TODO check feof() or ferror() */
             M_PUSH(Temp);
             TOS = 0;
             endcase;
 
+        /* TODO Why does this crash when passed an illegal FID? */
         case ID_FILE_SIZE: /* ( fid -- ud ior ) */
 /* Determine file size by seeking to end and returning position. */
             FileID = (FileStream *) TOS;
             {
-                file_offset_t endposition, offsetHi;
+                file_offset_t endposition = -1;
                 file_offset_t original = sdTellFile( FileID );
-                sdSeekFile( FileID, 0, PF_SEEK_END );
-                endposition = sdTellFile( FileID );
-                M_PUSH(endposition);
-                /* Just use a 0 if they are the same size. */
-                offsetHi = (sizeof(file_offset_t) > sizeof(cell_t))
-						? (endposition >> (8*sizeof(cell_t))) : 0 ;
-                M_PUSH(offsetHi);
-                sdSeekFile( FileID, original, PF_SEEK_SET );
-                TOS = (original < 0) ? -4 : 0 ; /* !!! err num */
+                if (original >= 0)
+                {
+                    sdSeekFile( FileID, 0, PF_SEEK_END );
+                    endposition = sdTellFile( FileID );
+                    /* Restore original position. */
+                    sdSeekFile( FileID, original, PF_SEEK_SET );
+                }
+                if (endposition < 0)
+                {
+                    M_PUSH(0); /* low */
+                    M_PUSH(0); /* high */
+                    TOS = -4;  /* TODO proper error number */
+                }
+                else
+                {
+                    M_PUSH(endposition); /* low */
+                    /* We do not support double precision file offsets.*/
+                    M_PUSH(0); /* high */
+                    TOS = 0;   /* OK */
+                }
             }
             endcase;
 
@@ -1096,7 +1109,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                     M_PUSH(position); /* low */
                     /* We do not support double precision file offsets.*/
                     M_PUSH(0); /* high */
-                    TOS = 0;
+                    TOS = 0; /* OK */
                 }
             }
             endcase;

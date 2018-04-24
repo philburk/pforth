@@ -202,7 +202,7 @@ cell_t sdSeekFile( FileStream * Stream, file_offset_t Position, int32_t Mode )
     TOUCH(Mode);
     return 0;
 }
-cell_t sdTellFile( FileStream * Stream )
+file_offset_t sdTellFile( FileStream * Stream )
 {
     UNIMPLEMENTED("sdTellFile");
     TOUCH(Stream);
