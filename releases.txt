@@ -2,7 +2,13 @@ Release History for pForth - a Portable ANS-like Forth written in ANSI 'C'
 
 Documentation for pForth at http://www.softsynth.com/pforth/
 
-V28 - unreleased
+V29 - unreleased
+
+V28 - 4/24/2018
+    - remove off_t
+    - too many changes to list, see commit history (TODO add changes)
+    - fix $ROM
+    - fix HISTORY
     - fixes for MinGW build
 
 V27 - 11/22/2010

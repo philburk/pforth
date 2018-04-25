@@ -23,7 +23,7 @@
 ** PFORTH_VERSION changes when PForth is modified and released.
 ** See README file for version info.
 */
-#define PFORTH_VERSION "27"
+#define PFORTH_VERSION "28"
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
@@ -36,8 +36,9 @@
 ** FV7 - 971203 - Added ID_FILL, (1LOCAL@),  etc., ran out of reserved, resorted.
 ** FV8 - 980818 - Added Endian flag.
 ** FV9 - 20100503 - Added support for 64-bit CELL.
+** FV10 - 20170103 - Added ID_FILE_FLUSH ID_FILE_RENAME ID_FILE_RESIZE
 */
-#define PF_FILE_VERSION (9)   /* Bump this whenever primitives added. */
+#define PF_FILE_VERSION (10)   /* Bump this whenever primitives added. */
 #define PF_EARLIEST_FILE_VERSION (9)  /* earliest one still compatible */
 
 /***************************************************************
