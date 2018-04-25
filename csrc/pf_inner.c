@@ -502,6 +502,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
             endcase;
 
         case ID_BYE:
+            EMIT_CR;
             M_THROW( THROW_BYE );
             endcase;
 
