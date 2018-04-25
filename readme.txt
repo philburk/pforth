@@ -4,7 +4,7 @@ by Phil Burk
 with Larry Polansky, David Rosenboom and Darren Gibbs.
 Support for 64-bit cells by Aleksej Saushev.
 
-Last updated: April 24, 2017 V28
+Last updated: April 24, 2018 V28
 
 Code for pForth is maintained on GitHub at:
   https://github.com/philburk/pforth
