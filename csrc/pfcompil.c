@@ -981,7 +981,7 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
 ***************************************************************/
 Err ffPushInputStream( FileStream *InputFile )
 {
-    cell_t Result = 0;
+    Err Result = 0;
     IncludeFrame *inf;
 
 /* Push current input state onto special include stack. */

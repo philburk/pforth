@@ -211,11 +211,11 @@ static int UdIsUint64( ucell_t Lo, ucell_t Hi )
 	    : Hi == 0 );
 }
 
-static const char *pfSelectFileModeCreate( int fam );
-static const char *pfSelectFileModeOpen( int fam );
+static const char *pfSelectFileModeCreate(cell_t fam );
+static const char *pfSelectFileModeOpen(cell_t fam );
 
 /**************************************************************/
-static const char *pfSelectFileModeCreate( int fam )
+static const char *pfSelectFileModeCreate( cell_t fam )
 {
     const char *famText = NULL;
     switch( fam )
@@ -240,7 +240,7 @@ static const char *pfSelectFileModeCreate( int fam )
 }
 
 /**************************************************************/
-static const char *pfSelectFileModeOpen( int fam )
+static const char *pfSelectFileModeOpen( cell_t fam )
 {
     const char *famText = NULL;
     switch( fam )
@@ -269,7 +269,7 @@ static const char *pfSelectFileModeOpen( int fam )
 }
 
 /**************************************************************/
-int pfCatch( ExecToken XT )
+ThrowCode pfCatch( ExecToken XT )
 {
     register cell_t  TopOfStack;    /* Cache for faster execution. */
     register cell_t *DataStackPtr;
@@ -1089,7 +1089,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                     TOS = -3; /* TODO err num? */
                     break;
                 }
-                offset = offsetLow;
+                offset = (file_offset_t)offsetLow;
                 TOS = sdSeekFile( FileID, offset, PF_SEEK_SET );
             }
             endcase;
