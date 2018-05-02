@@ -315,7 +315,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 /***************************************************************/
 static int Write32ToFile( FileStream *fid, uint32_t Val )
 {
-    size_t numw;
+    cell_t numw;
     uint8_t pad[4];
 
     Write32BigEndian(pad,Val);
@@ -332,8 +332,10 @@ static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t 
 
     EvenNumW = EVENUP(NumBytes);
 
-    if( Write32ToFile( fid, ID ) < 0 ) goto error;
-    if( Write32ToFile( fid, EvenNumW ) < 0 ) goto error;
+    assert(ID <= UINT32_MAX);
+    if( Write32ToFile( fid, (uint32_t)ID ) < 0 ) goto error;
+    assert(EvenNumW <= UINT32_MAX);
+    if( Write32ToFile( fid, (uint32_t)EvenNumW ) < 0 ) goto error;
 
     numw = sdWriteFile( Data, 1, EvenNumW, fid );
     if( numw != EvenNumW ) goto error;
@@ -515,7 +517,7 @@ error:
 /***************************************************************/
 static int32_t Read32FromFile( FileStream *fid, uint32_t *ValPtr )
 {
-    size_t numr;
+    cell_t numr;
     uint8_t pad[4];
     numr = sdReadFile( pad, 1, sizeof(pad), fid );
     if( numr != sizeof(pad) ) return -1;
@@ -533,7 +535,7 @@ PForthDictionary pfLoadDictionary( const char *FileName, ExecToken *EntryPointPt
     uint32_t ChunkSize;
     uint32_t FormSize;
     uint32_t BytesLeft;
-    size_t numr;
+    cell_t numr;
     int   isDicBigEndian;
 
 DBUG(("pfLoadDictionary( %s )\n", FileName ));
