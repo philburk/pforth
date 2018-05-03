@@ -54,7 +54,7 @@ void pfReportThrow( ThrowCode code );
 char  *ForthStringToC( char *dst, const char *FString, cell_t dstSize );
 char  *CStringToForth( char *dst, const char *CString, cell_t dstSize  );
 
-cell_t ffCompare( const char *s1, cell_t len1, const char *s2, int32_t len2 );
+cell_t ffCompare( const char *s1, cell_t len1, const char *s2, cell_t len2 );
 cell_t ffCompareText( const char *s1, const char *s2, cell_t len );
 cell_t ffCompareTextCaseN( const char *s1, const char *s2, cell_t len );
 

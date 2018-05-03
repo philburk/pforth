@@ -462,7 +462,7 @@ typedef struct IncludeFrame
 extern "C" {
 #endif
 
-int pfCatch( ExecToken XT );
+ThrowCode pfCatch( ExecToken XT );
 
 #ifdef __cplusplus
 }
