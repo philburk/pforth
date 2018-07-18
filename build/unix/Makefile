@@ -111,6 +111,7 @@ $(PFORTHAPP): $(PFDICDAT) $(PFEMBOBJS)
 	@echo ""
 	@echo "Standalone pForth executable written to $(PFORTHAPP)"
 
+pf_save.eo: $(PFDICDAT)
 
 # target aliases
 pfdicapp: $(PFDICAPP)
