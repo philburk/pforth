@@ -26,7 +26,7 @@
 \ Based on HMSL Forth
 \
 \ Author: Phil Burk
-\ Copyright 1994 3DO, Phil Burk, Larry Polansky, Devid Rosenboom
+\ Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
 \
 \ The pForth software code is dedicated to the public domain,
 \ and any third party may reproduce, distribute and modify
@@ -358,6 +358,18 @@
         2* over
         cell 8 * 1- rshift or  swap
         2* swap
+;
+
+: D= ( xd1 xd2 -- flag )
+	rot = -rot = and
+;
+
+: D< ( d1 d2 -- flag )
+    d- nip 0<
+;
+
+: D> ( d1 d2 -- flag )
+    2swap d<
 ;
 
 \ define some useful constants ------------------------------
@@ -716,29 +728,30 @@ ustack 0stackp
 \ -------------- INCLUDE ------------------------------------------
 variable TRACE-INCLUDE
 
-: INCLUDE.MARK.START  ( $filename -- , mark start of include for FILE?)
-    " ::::"  pad $MOVE
-    count pad $APPEND
-    pad ['] noop (:)
+: INCLUDE.MARK.START  ( c-addr u -- , mark start of include for FILE?)
+    dup 5 + allocate throw >r
+    " ::::" r@ $move
+    r@ $append
+    r@ ['] noop (:)
+    r> free throw
 ;
 
 : INCLUDE.MARK.END  ( -- , mark end of include )
     " ;;;;" ['] noop (:)
 ;
 
-: $INCLUDE ( $filename -- )
-\ Print messages.
+: INCLUDED ( c-addr u -- )
+	\ Print messages.
         trace-include @
         IF
-                >newline ." Include " dup count type cr
+                >newline ." Include " 2dup type cr
         THEN
         here >r
-        dup
-        count r/o open-file
-        IF  ( -- $filename bad-fid )
-                drop ." Could not find file " $type cr abort
-        ELSE ( -- $filename good-fid )
-                swap include.mark.start
+        2dup r/o open-file
+        IF  ( -- c-addr u bad-fid )
+                drop ." Could not find file " type cr abort
+        ELSE ( -- c-addr u good-fid )
+		-rot include.mark.start
                 depth >r
                 include-file    \ will also close the file
                 depth 1+ r> -
@@ -756,6 +769,8 @@ variable TRACE-INCLUDE
         THEN
         rdrop
 ;
+
+: $INCLUDE ( $filename -- ) count included ;
 
 create INCLUDE-SAVE-NAME 128 allot
 : INCLUDE ( <fname> -- )

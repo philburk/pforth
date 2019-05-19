@@ -258,6 +258,9 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_FILE_WRITE, "WRITE-FILE",  0 );
     CreateDicEntryC( ID_FILE_POSITION, "FILE-POSITION",  0 );
     CreateDicEntryC( ID_FILE_REPOSITION, "REPOSITION-FILE",  0 );
+    CreateDicEntryC( ID_FILE_FLUSH, "FLUSH-FILE",  0 );
+    CreateDicEntryC( ID_FILE_RENAME, "(RENAME-FILE)",  0 );
+    CreateDicEntryC( ID_FILE_RESIZE, "(RESIZE-FILE)",  0 );
     CreateDicEntryC( ID_FILE_RO, "R/O",  0 );
     CreateDicEntryC( ID_FILE_RW, "R/W",  0 );
     CreateDicEntryC( ID_FILE_WO, "W/O",  0 );
@@ -343,6 +346,8 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_SOURCE_ID, "SOURCE-ID",  0 );
     CreateDicEntryC( ID_SOURCE_ID_PUSH, "PUSH-SOURCE-ID",  0 );
     CreateDicEntryC( ID_SOURCE_ID_POP, "POP-SOURCE-ID",  0 );
+    CreateDicEntryC( ID_SOURCE_LINE_NUMBER_FETCH, "SOURCE-LINE-NUMBER@",  0 );
+    CreateDicEntryC( ID_SOURCE_LINE_NUMBER_STORE, "SOURCE-LINE-NUMBER!",  0 );
     CreateDicEntryC( ID_SWAP, "SWAP",  0 );
     CreateDicEntryC( ID_TEST1, "TEST1",  0 );
     CreateDicEntryC( ID_TEST2, "TEST2",  0 );
@@ -831,7 +836,7 @@ ThrowCode ffInterpret( void )
     {
 
         pfDebugMessage("ffInterpret: calling ffWord(()\n");
-        theWord = ffWord( BLANK );
+        theWord = ffLWord( BLANK );
         DBUG(("ffInterpret: theWord = 0x%x, Len = %d\n", theWord, *theWord ));
 
         if( *theWord > 0 )
@@ -976,7 +981,7 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
 ***************************************************************/
 Err ffPushInputStream( FileStream *InputFile )
 {
-    cell_t Result = 0;
+    Err Result = 0;
     IncludeFrame *inf;
 
 /* Push current input state onto special include stack. */

@@ -5,7 +5,7 @@
 \ This file must be loaded before loading any .J files.
 \
 \ Author: Phil Burk
-\ Copyright 1994 3DO, Phil Burk, Larry Polansky, Devid Rosenboom
+\ Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
 \
 \ The pForth software code is dedicated to the public domain,
 \ and any third party may reproduce, distribute and modify

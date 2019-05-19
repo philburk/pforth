@@ -194,7 +194,7 @@ cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream 
     TOUCH(Stream);
     return 0;
 }
-cell_t sdSeekFile( FileStream * Stream, cell_t Position, int32_t Mode )
+cell_t sdSeekFile( FileStream * Stream, file_offset_t Position, int32_t Mode )
 {
     UNIMPLEMENTED("sdSeekFile");
     TOUCH(Stream);
@@ -202,7 +202,7 @@ cell_t sdSeekFile( FileStream * Stream, cell_t Position, int32_t Mode )
     TOUCH(Mode);
     return 0;
 }
-cell_t sdTellFile( FileStream * Stream )
+file_offset_t sdTellFile( FileStream * Stream )
 {
     UNIMPLEMENTED("sdTellFile");
     TOUCH(Stream);
@@ -215,11 +215,27 @@ cell_t sdCloseFile( FileStream * Stream )
     return 0;
 }
 
-FileStream *sdDeleteFile( const char *FileName )
+cell_t sdDeleteFile( const char *FileName )
 {
     UNIMPLEMENTED("sdDeleteFile");
     TOUCH(FileName);
-    return NULL;
+    return -1;
 }
+
+cell_t sdRenameFile( const char *OldName, const char *NewName )
+{
+    UNIMPLEMENTED("sdRenameFile");
+    TOUCH(OldName);
+    TOUCH(NewName);
+    return -1;
+}
+
+ThrowCode sdResizeFile( FileStream * File, uint64_t NewSize )
+{
+    UNIMPLEMENTED("sdResizeFile");
+    TOUCH(NewSize);
+    return THROW_RESIZE_FILE;
+}
+
 #endif
 

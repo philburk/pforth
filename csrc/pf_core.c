@@ -170,9 +170,9 @@ nomem:
 ** Dictionary Management
 ***************************************************************/
 
-cell_t pfExecIfDefined( const char *CString )
+ThrowCode pfExecIfDefined( const char *CString )
 {
-    int result = 0;
+    ThrowCode result = 0;
     if( NAME_BASE != (cell_t)NULL)
     {
         ExecToken  XT;
@@ -427,11 +427,11 @@ void pfMessage( const char *CString )
 /**************************************************************************
 ** Main entry point for pForth.
 */
-cell_t pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit )
+ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit )
 {
     pfTaskData_t *cftd;
     pfDictionary_t *dic = NULL;
-    cell_t Result = 0;
+    ThrowCode Result = 0;
     ExecToken  EntryPoint = 0;
 
 #ifdef PF_USER_INIT

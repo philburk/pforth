@@ -2,7 +2,7 @@
 \ Load various files needed by PForth
 \
 \ Author: Phil Burk
-\ Copyright 1994 3DO, Phil Burk, Larry Polansky, Devid Rosenboom
+\ Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
 \
 \ The pForth software code is dedicated to the public domain,
 \ and any third party may reproduce, distribute and modify
@@ -24,6 +24,9 @@ include? {       locals.fth
 include? fm/mod  math.fth
 include? task-misc2.fth misc2.fth
 include? [if]    condcomp.fth
+include? save-input save-input.fth
+include? read-line  file.fth
+include? require    require.fth
 
 \ load floating point support if basic support is in kernel
 exists? F*

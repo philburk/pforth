@@ -4,7 +4,7 @@
 \ numeric conversion
 \
 \ Author: Phil Burk
-\ Copyright 1994 3DO, Phil Burk, Larry Polansky, Devid Rosenboom
+\ Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
 \
 \ The pForth software code is dedicated to the public domain,
 \ and any third party may reproduce, distribute and modify
@@ -84,21 +84,43 @@ decimal
 1 constant NUM_TYPE_SINGLE
 2 constant NUM_TYPE_DOUBLE
 
+\ Like >number, but temporarily switch BASE.
+: (>number-with-base) ( ud c-addr u base -- ud' c-addr' u' )
+	base @ >r base ! >number r> base !
+;
+
 \ This is similar to the F83 NUMBER? except that it returns a number type
 \ and then either a single or double precision number.
 : ((NUMBER?))   ( c-addr u -- 0 | n 1 | d 2 , convert string to number )
     dup 0= IF 2drop NUM_TYPE_BAD exit THEN   \ any chars?
 
-\ prepare for >number
-    0 0 2swap ( 0 0 c-addr cnt )
+    base @ -rot			( base c-addr u )
+
+    \ Recognize prefixes and change base if needed
+    over c@ >r			( base c-addr u  ) ( r: char )
+    r@ [char] # = if rot drop 10 -rot 1 /string then
+    r@ [char] $ = if rot drop 16 -rot 1 /string then
+    r@ [char] % = if rot drop  2 -rot 1 /string then
+    r@ [char] ' = if
+	    \ Recognize '<char>'
+	    dup 3 = if
+		    over 2 chars + c@ [char] ' = if
+			    drop nip rdrop
+			    char+ c@ NUM_TYPE_SINGLE exit
+		    then
+	    then
+    then
+    r> drop
 
 \ check for '-' at beginning, skip if present
     over c@ ascii - = \ is it a '-'
     dup >r            \ save flag
-    IF 1- >r 1+ r>  ( -- 0 0 c-addr+1 cnt-1 , skip past minus sign )
+    IF 1 /string  ( -- base c-addr+1 cnt-1 , skip past minus sign )
     THEN
-\
-    >number dup 0=   \ convert as much as we can
+
+    ( base c-addr cnt ) ( r: minus-flag )
+    rot >r 0 0 2swap r>
+    (>number-with-base) dup 0=   \ convert as much as we can
     IF
         2drop    \ drop addr cnt
         drop     \ drop hi part of num

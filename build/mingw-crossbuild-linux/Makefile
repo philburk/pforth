@@ -45,7 +45,7 @@ CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
 #IO_SOURCE = pf_io_posix.c
 #IO_SOURCE = pf_io_stdio.c
-IO_SOURCE = pf_io_win32_console.c
+IO_SOURCE = pf_io_win32_console.c pf_fileio_stdio.c
 
 EMBCCOPTS = -DPF_STATIC_DIC
 
@@ -140,6 +140,7 @@ test: $(PFORTHAPP)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_locals.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_alloc.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_floats.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_file.fth)
 
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)

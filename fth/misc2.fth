@@ -2,7 +2,7 @@
 \ Utilities for PForth extracted from HMSL
 \
 \ Author: Phil Burk
-\ Copyright 1994 3DO, Phil Burk, Larry Polansky, Devid Rosenboom
+\ Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
 \
 \ The pForth software code is dedicated to the public domain,
 \ and any third party may reproduce, distribute and modify
@@ -40,6 +40,10 @@ anew task-misc2.fth
 ; immediate
 
 variable if-debug
+
+: ? ( address -- , fatch from address and print value )
+    @ .
+;
 
 decimal
 create msec-delay 10000 ,  ( default for SUN )
@@ -233,3 +237,40 @@ VARIABLE SPAN
     addr3 cnt3 flag
 ;
 
+private{
+
+: env= ( c-addr u c-addr1 u1 x -- x true true | c-addr u false )
+    { x } 2over compare 0= if 2drop x true true else false then
+;
+
+: 2env= ( c-addr u c-addr1 u1 x y -- x y true true | c-addr u false )
+    { x y } 2over compare 0= if 2drop x y true true else false then
+;
+
+0 invert constant max-u
+0 invert 1 rshift constant max-n
+
+}private
+
+: ENVIRONMENT? ( c-addr u -- false | i*x true )
+    s" /COUNTED-STRING"      255 env= if exit then
+    s" /HOLD"                128 env= if exit then \ same as PAD
+    s" /PAD"                 128 env= if exit then
+    s" ADDRESS-UNITS-BITS"     8 env= if exit then
+    s" FLOORED"            false env= if exit then
+    s" MAX-CHAR"             255 env= if exit then
+    s" MAX-D"       max-n max-u 2env= if exit then
+    s" MAX-N"              max-n env= if exit then
+    s" MAX-U"              max-u env= if exit then
+    s" MAX-UD"      max-u max-u 2env= if exit then
+    s" RETURN-STACK-CELLS"   512 env= if exit then \ DEFAULT_RETURN_DEPTH
+    s" STACK-CELLS"          512 env= if exit then \ DEFAULT_USER_DEPTH
+    \ FIXME: maybe define those:
+    \ s" FLOATING-STACK"
+    \ s" MAX-FLOAT"
+    \ s" #LOCALS"
+    \ s" WORDLISTS"
+    2drop false
+;
+
+privatize

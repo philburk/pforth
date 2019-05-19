@@ -26,12 +26,6 @@
 **
 ***************************************************************/
 
-#ifndef AMIGA
-#include <sys/types.h>
-#else
-typedef long off_t;
-#endif
-
 #include "pf_all.h"
 
 #if defined(WIN32) && !defined(__MINGW32__)
@@ -199,6 +193,24 @@ static void TraceNames( ExecToken Token, cell_t Level )
 /* Use local copy of CODE_BASE for speed. */
 #define LOCAL_CODEREL_TO_ABS( a ) ((cell_t *) (((cell_t) a) + CodeBase))
 
+/* Truncate the unsigned double cell integer LO/HI to an uint64_t. */
+static uint64_t UdToUint64( ucell_t Lo, ucell_t Hi )
+{
+    return (( 2 * sizeof(ucell_t) == sizeof(uint64_t) )
+        ? (((uint64_t)Lo) | (((uint64_t)Hi) >> (sizeof(ucell_t) * 8)))
+        : Lo);
+}
+
+/* Return TRUE if the unsigned double cell integer LO/HI is not greater
+ * then the greatest uint64_t.
+ */
+static int UdIsUint64( ucell_t Lo, ucell_t Hi )
+{
+    return (( 2 * sizeof(ucell_t) == sizeof(uint64_t) )
+        ? TRUE
+        : Hi == 0);
+}
+
 static const char *pfSelectFileModeCreate( cell_t fam );
 static const char *pfSelectFileModeOpen( cell_t fam );
 
@@ -257,7 +269,7 @@ static const char *pfSelectFileModeOpen( cell_t fam )
 }
 
 /**************************************************************/
-int pfCatch( ExecToken XT )
+ThrowCode pfCatch( ExecToken XT )
 {
     register cell_t  TopOfStack;    /* Cache for faster execution. */
     register cell_t *DataStackPtr;
@@ -490,6 +502,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
             endcase;
 
         case ID_BYE:
+            EMIT_CR;
             M_THROW( THROW_BYE );
             endcase;
 
@@ -732,8 +745,8 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 /* Calculate product sign: */
                 sg = ((cell_t)(ahi ^ bhi) < 0);
 /* Take absolute values and reduce to um* */
-                if ((cell_t)ahi < 0) ahi = (ucell_t)(-ahi);
-                if ((cell_t)bhi < 0) bhi = (ucell_t)(-bhi);
+                if ((cell_t)ahi < 0) ahi = (ucell_t)(-(cell_t)ahi);
+                if ((cell_t)bhi < 0) bhi = (ucell_t)(-(cell_t)bhi);
 
 /* Break into hi and lo 16 bit parts. */
                 alo = LOWER_HALF(ahi);
@@ -1017,24 +1030,38 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = M_POP;
             CharPtr = (char *) M_POP;
             Temp = sdReadFile( CharPtr, 1, Scratch, FileID );
+            /* TODO check feof() or ferror() */
             M_PUSH(Temp);
             TOS = 0;
             endcase;
 
+        /* TODO Why does this crash when passed an illegal FID? */
         case ID_FILE_SIZE: /* ( fid -- ud ior ) */
 /* Determine file size by seeking to end and returning position. */
             FileID = (FileStream *) TOS;
             {
-                off_t endposition, offsetHi;
-                off_t original = sdTellFile( FileID );
-                sdSeekFile( FileID, 0, PF_SEEK_END );
-                endposition = sdTellFile( FileID );
-                M_PUSH(endposition);
-                /* Just use a 0 if they are the same size. */
-                offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (endposition >> (8*sizeof(cell_t))) : 0 ;
-                M_PUSH(offsetHi);
-                sdSeekFile( FileID, original, PF_SEEK_SET );
-                TOS = (original < 0) ? -4 : 0 ; /* !!! err num */
+                file_offset_t endposition = -1;
+                file_offset_t original = sdTellFile( FileID );
+                if (original >= 0)
+                {
+                    sdSeekFile( FileID, 0, PF_SEEK_END );
+                    endposition = sdTellFile( FileID );
+                    /* Restore original position. */
+                    sdSeekFile( FileID, original, PF_SEEK_SET );
+                }
+                if (endposition < 0)
+                {
+                    M_PUSH(0); /* low */
+                    M_PUSH(0); /* high */
+                    TOS = -4;  /* TODO proper error number */
+                }
+                else
+                {
+                    M_PUSH(endposition); /* low */
+                    /* We do not support double precision file offsets.*/
+                    M_PUSH(0); /* high */
+                    TOS = 0;   /* OK */
+                }
             }
             endcase;
 
@@ -1048,27 +1075,43 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_FILE_REPOSITION: /* ( ud fid -- ior ) */
             {
-                off_t offset;
+                file_offset_t offset;
+                cell_t offsetHigh;
+                cell_t offsetLow;
                 FileID = (FileStream *) TOS;
-                offset = M_POP;
-                /* Avoid compiler warnings on Mac. */
-                offset = (sizeof(off_t) > sizeof(cell_t)) ? (offset << 8*sizeof(cell_t)) : 0 ;
-                offset += M_POP;
+                offsetHigh = M_POP;
+                offsetLow = M_POP;
+                /* We do not support double precision file offsets in pForth.
+                 * So check to make sure the high bits are not used.
+                 */
+                if (offsetHigh != 0)
+                {
+                    TOS = -3; /* TODO err num? */
+                    break;
+                }
+                offset = (file_offset_t)offsetLow;
                 TOS = sdSeekFile( FileID, offset, PF_SEEK_SET );
             }
             endcase;
 
         case ID_FILE_POSITION: /* ( fid -- ud ior ) */
             {
-                off_t position;
-                off_t offsetHi;
+                file_offset_t position;
                 FileID = (FileStream *) TOS;
                 position = sdTellFile( FileID );
-                M_PUSH(position);
-                /* Just use a 0 if they are the same size. */
-                offsetHi = (sizeof(off_t) > sizeof(cell_t)) ? (position >> (8*sizeof(cell_t))) : 0 ;
-                M_PUSH(offsetHi);
-                TOS = (position < 0) ? -4 : 0 ; /* !!! err num */
+                if (position < 0)
+                {
+                    M_PUSH(0); /* low */
+                    M_PUSH(0); /* high */
+                    TOS = -4;  /* TODO proper error number */
+                }
+                else
+                {
+                    M_PUSH(position); /* low */
+                    /* We do not support double precision file offsets.*/
+                    M_PUSH(0); /* high */
+                    TOS = 0; /* OK */
+                }
             }
             endcase;
 
@@ -1090,6 +1133,32 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FILE_BIN: /* ( -- fam ) */
             TOS = TOS | PF_FAM_BINARY_FLAG;
             endcase;
+
+	case ID_FILE_FLUSH: /* ( fileid -- ior ) */
+	    {
+		FileStream *Stream = (FileStream *) TOS;
+		TOS = (sdFlushFile( Stream ) == 0) ? 0 : THROW_FLUSH_FILE;
+	    }
+	    endcase;
+
+	case ID_FILE_RENAME: /* ( oldName newName -- ior ) */
+	    {
+		char *New = (char *) TOS;
+		char *Old = (char *) M_POP;
+		TOS = sdRenameFile( Old, New );
+	    }
+	    endcase;
+
+	case ID_FILE_RESIZE: /* ( ud fileid -- ior ) */
+	    {
+		FileStream *File = (FileStream *) TOS;
+		ucell_t SizeHi = (ucell_t) M_POP;
+		ucell_t SizeLo = (ucell_t) M_POP;
+		TOS = ( UdIsUint64( SizeLo, SizeHi )
+			? sdResizeFile( File, UdToUint64( SizeLo, SizeHi ))
+			: THROW_RESIZE_FILE );
+	    }
+	    endcase;
 
         case ID_FILL: /* ( caddr num charval -- ) */
             {
@@ -1391,15 +1460,18 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_PLUSLOOP_P: /* ( delta -- ) ( R: index limit -- | index limit ) */
             {
-                ucell_t OldIndex, NewIndex, Limit;
+		cell_t Limit = M_R_POP;
+		cell_t OldIndex = M_R_POP;
+		cell_t Delta = TOS; /* add TOS to index, not 1 */
+		cell_t NewIndex = OldIndex + Delta;
+		cell_t OldDiff = OldIndex - Limit;
 
-                Limit = M_R_POP;
-                OldIndex = M_R_POP;
-                NewIndex = OldIndex + TOS; /* add TOS to index, not 1 */
-/* Do indices cross boundary between LIMIT-1 and LIMIT ? */
-                if( ( (OldIndex - Limit) & ((Limit-1) - NewIndex) & 0x80000000 ) ||
-                    ( (NewIndex - Limit) & ((Limit-1) - OldIndex) & 0x80000000 ) )
-                {
+		/* This exploits this idea (lifted from Gforth):
+		   (x^y)<0 is equivalent to (x<0) != (y<0) */
+                if( ((OldDiff ^ (OldDiff + Delta)) /* is the limit crossed? */
+		     & (OldDiff ^ Delta))          /* is it a wrap-around? */
+		    < 0 )
+		{
                     InsPtr++;   /* skip branch offset, exit loop */
                 }
                 else
@@ -1556,16 +1628,6 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 #endif
 
-/* Source     Stack
-** EVALUATE    >IN  SourceID=(-1)  1111
-** keyboard    >IN  SourceID=(0)   2222
-** file        >IN  lineNumber filePos  SourceID=(fileID)
-*/
-        case ID_SAVE_INPUT:  /* FIXME - finish */
-            {
-            }
-            endcase;
-
         case ID_SP_FETCH:    /* ( -- sp , address of top of stack, sorta ) */
             PUSH_TOS;
             TOS = (cell_t)STKPTR;
@@ -1646,6 +1708,16 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else M_DROP;
             endcase;
+
+	case ID_SOURCE_LINE_NUMBER_FETCH: /* ( -- linenr ) */
+	    PUSH_TOS;
+	    TOS = gCurrentTask->td_LineNumber;
+	    endcase;
+
+	case ID_SOURCE_LINE_NUMBER_STORE: /* ( linenr -- ) */
+	    gCurrentTask->td_LineNumber = TOS;
+	    TOS = M_POP;
+	    endcase;
 
         case ID_SWAP:
             Scratch = TOS;

@@ -67,7 +67,7 @@ int main( int argc, char **argv )
     char IfInit = FALSE;
     char *s;
     cell_t i;
-    int Result;
+    ThrowCode Result;
 
 /* For Metroworks on Mac */
 #ifdef __MWERKS__
@@ -140,7 +140,7 @@ int main( int argc, char **argv )
     Result = pfDoForth( DicName, SourceName, IfInit);
 
 on_error:
-    return Result;
+    return (int)Result;
 }
 
 #endif  /* PF_EMBEDDED */

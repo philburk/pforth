@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 /* Main entry point to pForth. */
-cell_t pfDoForth( const char *DicName, const char *SourceName, cell_t IfInit );
+ThrowCode pfDoForth( const char *DicName, const char *SourceName, cell_t IfInit );
 
 /* Turn off messages. */
 void  pfSetQuiet( cell_t IfQuiet );
@@ -78,7 +78,7 @@ void  pfDeleteDictionary( PForthDictionary dict );
 ThrowCode pfQuit( void );
 
 /* Execute a single execution token in the current task and return 0 or an error code. */
-int pfCatch( ExecToken XT );
+ThrowCode pfCatch( ExecToken XT );
 
 /* Include the given pForth source code file. */
 ThrowCode pfIncludeFile( const char *FileName );

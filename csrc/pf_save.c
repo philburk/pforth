@@ -332,7 +332,9 @@ static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t 
 
     EvenNumW = EVENUP(NumBytes);
 
+    assert(ID <= UINT32_MAX);
     if( Write32ToFile( fid, (uint32_t)ID ) < 0 ) goto error;
+    assert(EvenNumW <= UINT32_MAX);
     if( Write32ToFile( fid, (uint32_t)EvenNumW ) < 0 ) goto error;
 
     numw = sdWriteFile( Data, 1, EvenNumW, fid );
@@ -459,7 +461,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
         NameSize = QUADUP(NameSize);  /* Align */
         if( NameSize > 0 )
         {
-            NameSize = MAX( NameSize, (NameChunkSize + 1024) );
+            NameSize = MAX( (ucell_t)NameSize, (NameChunkSize + 1024) );
         }
         SD.sd_NameSize = NameSize;
     }
@@ -467,7 +469,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 /* How much real code is there? */
     CodeChunkSize = QUADUP(relativeCodePtr);
     CodeSize = QUADUP(CodeSize);  /* Align */
-    CodeSize = MAX( CodeSize, (CodeChunkSize + 2048) );
+    CodeSize = MAX( (ucell_t)CodeSize, (CodeChunkSize + 2048) );
     SD.sd_CodeSize = CodeSize;
 
 
@@ -515,7 +517,7 @@ error:
 /***************************************************************/
 static int32_t Read32FromFile( FileStream *fid, uint32_t *ValPtr )
 {
-    int32_t numr;
+    cell_t numr;
     uint8_t pad[4];
     numr = sdReadFile( pad, 1, sizeof(pad), fid );
     if( numr != sizeof(pad) ) return -1;
@@ -533,7 +535,7 @@ PForthDictionary pfLoadDictionary( const char *FileName, ExecToken *EntryPointPt
     uint32_t ChunkSize;
     uint32_t FormSize;
     uint32_t BytesLeft;
-    uint32_t numr;
+    cell_t numr;
     int   isDicBigEndian;
 
 DBUG(("pfLoadDictionary( %s )\n", FileName ));
@@ -726,7 +728,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
 /* Find special words in dictionary for global XTs. */
         if( (Result = FindSpecialXTs()) < 0 )
         {
-            pfReportError("pfLoadDictionary: FindSpecialXTs", Result);
+            pfReportError("pfLoadDictionary: FindSpecialXTs", (Err)Result);
             goto error;
         }
     }

@@ -1,0 +1,21 @@
+os:
+  - linux
+  - osx
+env:
+  - WIDTHOPT=-m64
+  - WIDTHOPT=-m32
+language: c
+compiler:
+  - gcc
+  - clang
+matrix:
+  exclude:
+    - os: osx
+      compiler: gcc # gcc seems to be an symlink to clang
+sudo: true
+before_install: |
+  if [ "$TRAVIS_OS_NAME" = linux -a "$WIDTHOPT" = -m32 ]; then
+     sudo apt-get install -y gcc-multilib
+  fi
+script:  # CC is exported by travis
+  - make WIDTHOPT=$WIDTHOPT -C build/unix/ test

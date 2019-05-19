@@ -23,7 +23,7 @@
 ** PFORTH_VERSION changes when PForth is modified and released.
 ** See README file for version info.
 */
-#define PFORTH_VERSION "27"
+#define PFORTH_VERSION "28"
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
@@ -36,8 +36,9 @@
 ** FV7 - 971203 - Added ID_FILL, (1LOCAL@),  etc., ran out of reserved, resorted.
 ** FV8 - 980818 - Added Endian flag.
 ** FV9 - 20100503 - Added support for 64-bit CELL.
+** FV10 - 20170103 - Added ID_FILE_FLUSH ID_FILE_RENAME ID_FILE_RESIZE
 */
-#define PF_FILE_VERSION (9)   /* Bump this whenever primitives added. */
+#define PF_FILE_VERSION (10)   /* Bump this whenever primitives added. */
 #define PF_EARLIEST_FILE_VERSION (9)  /* earliest one still compatible */
 
 /***************************************************************
@@ -216,7 +217,7 @@ enum cforth_primitive_ids
     ID_QUIT_P,
     ID_REFILL,
     ID_RESIZE,
-    ID_RESTORE_INPUT,
+    ID_SOURCE_LINE_NUMBER_FETCH, /* used to be ID_RESTORE_INPUT */
     ID_ROLL,
     ID_ROT,
     ID_RP_FETCH,
@@ -226,7 +227,7 @@ enum cforth_primitive_ids
     ID_R_FETCH,
     ID_R_FROM,
     ID_SAVE_FORTH_P,
-    ID_SAVE_INPUT,
+    ID_SOURCE_LINE_NUMBER_STORE, /* used to be ID_SAVE_INPUT */
     ID_SCAN,
     ID_SEMICOLON,
     ID_SKIP,
@@ -281,6 +282,9 @@ enum cforth_primitive_ids
     ID_CELLS,
     /* DELETE-FILE */
     ID_FILE_DELETE,
+    ID_FILE_FLUSH,		/* FLUSH-FILE */
+    ID_FILE_RENAME,		/* (RENAME-FILE) */
+    ID_FILE_RESIZE,		/* RESIZE-FILE */
 /* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
@@ -296,9 +300,6 @@ enum cforth_primitive_ids
     ID_RESERVED08,
     ID_RESERVED09,
     ID_RESERVED10,
-    ID_RESERVED11,
-    ID_RESERVED12,
-    ID_RESERVED13,
     ID_FP_D_TO_F,
     ID_FP_FSTORE,
     ID_FP_FTIMES,
@@ -368,6 +369,8 @@ enum cforth_primitive_ids
 #define THROW_PAIRS           (-22)
 #define THROW_FLOAT_STACK_UNDERFLOW  ( -45)
 #define THROW_QUIT            (-56)
+#define THROW_FLUSH_FILE      (-68)
+#define THROW_RESIZE_FILE     (-74)
 
 /* THROW codes unique to pForth */
 #define THROW_BYE            (-256) /* Exit program. */
@@ -459,7 +462,7 @@ typedef struct IncludeFrame
 extern "C" {
 #endif
 
-int pfCatch( ExecToken XT );
+ThrowCode pfCatch( ExecToken XT );
 
 #ifdef __cplusplus
 }

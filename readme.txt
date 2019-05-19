@@ -4,7 +4,7 @@ by Phil Burk
 with Larry Polansky, David Rosenboom and Darren Gibbs.
 Support for 64-bit cells by Aleksej Saushev.
 
-Last updated: December 23, 2014 V27
+Last updated: April 24, 2018 V28
 
 Code for pForth is maintained on GitHub at:
   https://github.com/philburk/pforth
@@ -29,7 +29,6 @@ purpose and their equivalents under the laws of any jurisdiction.
 -- Contents of SDK --------------------------------------
 
     build - tools for building pForth on various platforms
-    build/win32/vs2005 - Visual Studio 2005 Project and Solution
     build/unix - Makefile for unix
     
     csrc - pForth kernel in ANSI 'C'

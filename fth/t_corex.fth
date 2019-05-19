@@ -9,10 +9,6 @@ ANEW TASK-T_COREX.FTH
 
 DECIMAL
 
-\ STUB because missing definition in pForth - FIXME
-: SAVE-INPUT ;
-: RESTORE-INPUT -1 ;
-
 TEST{
 
 \ ==========================================================
@@ -155,7 +151,20 @@ T{ ' QUERY 0<> }T{ TRUE }T
 T{ ' REFILL 0<> }T{ TRUE }T
 
 \  ----------------------------------------------------- RESTORE-INPUT
-T{ : T.SAVE-INPUT SAVE-INPUT RESTORE-INPUT ; T.SAVE-INPUT }T{ 0 }T  \ EXPECTED FAILURE
+T{ : T.SAVE-INPUT SAVE-INPUT RESTORE-INPUT ; T.SAVE-INPUT }T{ 0 }T
+
+\ TESTING SAVE-INPUT and RESTORE-INPUT with a string source
+
+VARIABLE SI_INC 0 SI_INC !
+
+: SI1
+   SI_INC @ >IN +!
+   15 SI_INC !
+;
+
+: S$ S" SAVE-INPUT SI1 RESTORE-INPUT 12345" ;
+
+T{ S$ EVALUATE SI_INC @ }T{ 0 2345 15 }T
 
 \  ----------------------------------------------------- ROLL
 T{ 15 14 13 12 11 10 0 ROLL  }T{  15 14 13 12 11 10 }T
@@ -222,5 +231,104 @@ T{ 10  -5 10 WITHIN }T{ 0 }T
 T{ T.[COMPILE] }T{ TRUE }T
 
 \  ----------------------------------------------------- \
+
+\ .( TESTING DO +LOOP with large and small increments )
+
+\ Contributed by Andrew Haley
+0 invert CONSTANT MAX-UINT
+0 INVERT 1 RSHIFT CONSTANT MAX-INT
+0 INVERT 1 RSHIFT INVERT    CONSTANT MIN-INT
+MAX-UINT 8 RSHIFT 1+ CONSTANT USTEP
+USTEP NEGATE CONSTANT -USTEP
+MAX-INT 7 RSHIFT 1+ CONSTANT STEP
+STEP NEGATE CONSTANT -STEP
+
+VARIABLE BUMP
+
+T{ : GD8 BUMP ! DO 1+ BUMP @ +LOOP ; }T{ }T
+
+T{ 0 MAX-UINT 0 USTEP GD8 }T{ 256 }T
+T{ 0 0 MAX-UINT -USTEP GD8 }T{ 256 }T
+
+T{ 0 MAX-INT MIN-INT STEP GD8 }T{ 256 }T
+T{ 0 MIN-INT MAX-INT -STEP GD8 }T{ 256 }T
+
+\ Two's complement arithmetic, wraps around modulo wordsize
+\ Only tested if the Forth system does wrap around, use of conditional
+\ compilation deliberately avoided
+
+MAX-INT 1+ MIN-INT = CONSTANT +WRAP?
+MIN-INT 1- MAX-INT = CONSTANT -WRAP?
+MAX-UINT 1+ 0=       CONSTANT +UWRAP?
+0 1- MAX-UINT =      CONSTANT -UWRAP?
+
+: GD9  ( n limit start step f result -- )
+   >R IF GD8 ELSE 2DROP 2DROP R@ THEN }T{ R> }T
+;
+
+T{ 0 0 0  USTEP +UWRAP? 256 GD9
+T{ 0 0 0 -USTEP -UWRAP?   1 GD9
+T{ 0 MIN-INT MAX-INT  STEP +WRAP? 1 GD9
+T{ 0 MAX-INT MIN-INT -STEP -WRAP? 1 GD9
+
+\ --------------------------------------------------------------------------
+\ .( TESTING DO +LOOP with maximum and minimum increments )
+
+: (-MI) MAX-INT DUP NEGATE + 0= IF MAX-INT NEGATE ELSE -32767 THEN ;
+(-MI) CONSTANT -MAX-INT
+
+T{ 0 1 0 MAX-INT GD8  }T{ 1 }T
+T{ 0 -MAX-INT NEGATE -MAX-INT OVER GD8  }T{ 2 }T
+
+T{ 0 MAX-INT  0 MAX-INT GD8  }T{ 1 }T
+T{ 0 MAX-INT  1 MAX-INT GD8  }T{ 1 }T
+T{ 0 MAX-INT -1 MAX-INT GD8  }T{ 2 }T
+T{ 0 MAX-INT DUP 1- MAX-INT GD8  }T{ 1 }T
+
+T{ 0 MIN-INT 1+   0 MIN-INT GD8  }T{ 1 }T
+T{ 0 MIN-INT 1+  -1 MIN-INT GD8  }T{ 1 }T
+T{ 0 MIN-INT 1+   1 MIN-INT GD8  }T{ 2 }T
+T{ 0 MIN-INT 1+ DUP MIN-INT GD8  }T{ 1 }T
+
+\ ----------------------------------------------------------------------------
+\ .( TESTING number prefixes # $ % and 'c' character input )
+\ Adapted from the Forth 200X Draft 14.5 document
+
+VARIABLE OLD-BASE
+DECIMAL BASE @ OLD-BASE !
+T{ #1289 }T{ 1289 }T
+T{ #-1289 }T{ -1289 }T
+T{ $12eF }T{ 4847 }T
+T{ $-12eF }T{ -4847 }T
+T{ %10010110 }T{ 150 }T
+T{ %-10010110 }T{ -150 }T
+T{ 'z' }T{ 122 }T
+T{ 'Z' }T{ 90 }T
+\ Check BASE is unchanged
+T{ BASE @ OLD-BASE @ = }T{ TRUE }T
+
+\ Repeat in Hex mode
+16 OLD-BASE ! 16 BASE !
+T{ #1289 }T{ 509 }T
+T{ #-1289 }T{ -509 }T
+T{ $12eF }T{ 12EF }T
+T{ $-12eF }T{ -12EF }T
+T{ %10010110 }T{ 96 }T
+T{ %-10010110 }T{ -96 }T
+T{ 'z' }T{ 7a }T
+T{ 'Z' }T{ 5a }T
+\ Check BASE is unchanged
+T{ BASE @ OLD-BASE @ = }T{ TRUE }T   \ 2
+
+DECIMAL
+\ Check number prefixes in compile mode
+T{ : nmp  #8327 $-2cbe %011010111 ''' ; nmp }T{ 8327 -11454 215 39 }T
+
+\  ----------------------------------------------------- ENVIRONMENT?
+
+T{ s" unknown-query-string" ENVIRONMENT? }T{ FALSE }T
+T{ s" MAX-CHAR" ENVIRONMENT? }T{ 255 TRUE }T
+T{ s" ADDRESS-UNITS-BITS" ENVIRONMENT? }T{ 8 TRUE }T
+
 }TEST
 

@@ -19,6 +19,8 @@
 **
 ***************************************************************/
 
+#include "pf_types.h"
+
 #define PF_CHAR_XON    (0x11)
 #define PF_CHAR_XOFF   (0x13)
 
@@ -32,7 +34,6 @@ void sdTerminalTerm( void );
 
 void ioInit( void );
 void ioTerm( void );
-
 
 #ifdef PF_NO_CHARIO
     void sdEnableInput( void );
@@ -84,8 +85,11 @@ void ioTerm( void );
     cell_t sdFlushFile( FileStream * Stream  );
     cell_t sdReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
     cell_t sdWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  );
-    cell_t sdSeekFile( FileStream * Stream, off_t Position, int32_t Mode );
-    off_t sdTellFile( FileStream * Stream );
+    cell_t sdSeekFile( FileStream * Stream, file_offset_t Position, int32_t Mode );
+    cell_t sdRenameFile( const char *OldName, const char *NewName );
+    cell_t sdDeleteFile( const char *FileName );
+    ThrowCode sdResizeFile( FileStream *, uint64_t Size);
+    file_offset_t sdTellFile( FileStream * Stream );
     cell_t sdCloseFile( FileStream * Stream );
     cell_t sdInputChar( FileStream *stream );
 
@@ -114,19 +118,24 @@ void ioTerm( void );
         typedef FILE FileStream;
 
         #define sdOpenFile      fopen
-        #define sdDeleteFile      remove
+        #define sdDeleteFile    remove
         #define sdFlushFile     fflush
         #define sdReadFile      fread
         #define sdWriteFile     fwrite
-        #if defined(WIN32) || defined(__NT__) || defined(AMIGA)
-            /* TODO To support 64-bit file offset we probably need fseeki64(). */
-            #define sdSeekFile      fseek
-            #define sdTellFile      ftell
-        #else
-            #define sdSeekFile      fseeko
-            #define sdTellFile      ftello
-        #endif
+
+        /*
+         * Note that fseek() and ftell() only support a long file offset.
+         * So 64-bit offsets may not be supported on some platforms.
+         * At one point we supported fseeko() and ftello() but they require
+         * the off_t data type, which is not very portable.
+         * So we decided to sacrifice vary large file support in
+         * favor of portability.
+         */
+        #define sdSeekFile      fseek
+        #define sdTellFile      ftell
+
         #define sdCloseFile     fclose
+        #define sdRenameFile    rename
         #define sdInputChar     fgetc
 
         #define PF_STDIN  ((FileStream *) stdin)
@@ -135,6 +144,9 @@ void ioTerm( void );
         #define  PF_SEEK_SET   (SEEK_SET)
         #define  PF_SEEK_CUR   (SEEK_CUR)
         #define  PF_SEEK_END   (SEEK_END)
+
+        /* TODO review the Size data type. */
+        ThrowCode sdResizeFile( FileStream *, uint64_t Size);
 
         /*
         ** printf() is only used for debugging purposes.
