@@ -821,4 +821,6 @@ decimal
 FREEZE    \ prevent forgetting below this point
 
 .( Dictionary compiled, save in "pforth.dic".) cr
+\ 300000 headers-size !
+\ 700000 code-size !
 c" pforth.dic" save-forth

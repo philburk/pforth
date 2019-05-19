@@ -315,7 +315,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 /***************************************************************/
 static int Write32ToFile( FileStream *fid, uint32_t Val )
 {
-    int numw;
+    size_t numw;
     uint8_t pad[4];
 
     Write32BigEndian(pad,Val);
@@ -332,8 +332,8 @@ static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t 
 
     EvenNumW = EVENUP(NumBytes);
 
-    if( Write32ToFile( fid, ID ) < 0 ) goto error;
-    if( Write32ToFile( fid, EvenNumW ) < 0 ) goto error;
+    if( Write32ToFile( fid, (uint32_t)ID ) < 0 ) goto error;
+    if( Write32ToFile( fid, (uint32_t)EvenNumW ) < 0 ) goto error;
 
     numw = sdWriteFile( Data, 1, EvenNumW, fid );
     if( numw != EvenNumW ) goto error;

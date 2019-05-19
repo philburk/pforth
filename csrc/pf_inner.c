@@ -199,11 +199,11 @@ static void TraceNames( ExecToken Token, cell_t Level )
 /* Use local copy of CODE_BASE for speed. */
 #define LOCAL_CODEREL_TO_ABS( a ) ((cell_t *) (((cell_t) a) + CodeBase))
 
-static const char *pfSelectFileModeCreate( int fam );
-static const char *pfSelectFileModeOpen( int fam );
+static const char *pfSelectFileModeCreate( cell_t fam );
+static const char *pfSelectFileModeOpen( cell_t fam );
 
 /**************************************************************/
-static const char *pfSelectFileModeCreate( int fam )
+static const char *pfSelectFileModeCreate( cell_t fam )
 {
     const char *famText = NULL;
     switch( fam )
@@ -228,7 +228,7 @@ static const char *pfSelectFileModeCreate( int fam )
 }
 
 /**************************************************************/
-static const char *pfSelectFileModeOpen( int fam )
+static const char *pfSelectFileModeOpen( cell_t fam )
 {
     const char *famText = NULL;
     switch( fam )

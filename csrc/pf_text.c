@@ -222,7 +222,7 @@ DBUGX(("ffCompareText: return 0x%x\n", Result ));
 ** Compare two strings, case sensitive.
 ** Return zero if they match, -1 if s1<s2, +1 is s1>s2;
 */
-cell_t ffCompare( const char *s1, cell_t len1, const char *s2, int32_t len2 )
+cell_t ffCompare( const char *s1, cell_t len1, const char *s2, cell_t len2 )
 {
     cell_t i, result, n, diff;
 
