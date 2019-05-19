@@ -211,8 +211,8 @@ static int UdIsUint64( ucell_t Lo, ucell_t Hi )
         : Hi == 0);
 }
 
-static const char *pfSelectFileModeCreate(cell_t fam );
-static const char *pfSelectFileModeOpen(cell_t fam );
+static const char *pfSelectFileModeCreate( cell_t fam );
+static const char *pfSelectFileModeOpen( cell_t fam );
 
 /**************************************************************/
 static const char *pfSelectFileModeCreate( cell_t fam )

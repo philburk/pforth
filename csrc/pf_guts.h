@@ -571,9 +571,12 @@ extern cell_t         gIncludeIndex;
 /* Force Quad alignment. */
 #define QUADUP(x) (((x)+3)&~3)
 
+#ifndef MIN
 #define MIN(a,b)  ( ((a)<(b)) ? (a) : (b) )
+#endif
+#ifndef MAX
 #define MAX(a,b)  ( ((a)>(b)) ? (a) : (b) )
-
+#endif
 
 #ifndef TOUCH
     #define TOUCH(argument) ((void)argument)

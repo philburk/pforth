@@ -122,18 +122,18 @@ variable rand-seed here rand-seed !
 : B->S ( c -- c' , sign extend byte )
     dup $ 80 and
     IF
-        $ FFFFFF00 or
+        [ $ 0FF invert ] literal or
     ELSE
-        $ 000000FF and
+        $ 0FF and
     THEN
 ;
-: W->S ( 16bit-signed -- 32bit-signed )
+: W->S ( 16bit-signed -- cell-signed )
     dup $ 8000 and
-    if
-        $ FFFF0000 or
+    IF
+        [ $ 0FFFF invert ] literal or
     ELSE
-        $ 0000FFFF and
-    then
+        $ 0FFFF and
+    THEN
 ;
 
 : WITHIN { n1 n2 n3 -- flag }

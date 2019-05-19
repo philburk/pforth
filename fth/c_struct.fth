@@ -94,13 +94,13 @@ decimal
 : (S+REL!)  ( ptr addr offset -- )  + >r if.use->rel r> ! ;
 
 : compile+!bytes ( offset size -- )
-\   ." compile+!bytes ( " over . dup . ." )" cr
+    ." compile+!bytes ( " over . dup . ." )" cr
     swap [compile] literal   \ compile offset into word
     CASE
     cell OF compile (s+!)  ENDOF
     2 OF compile (s+w!)      ENDOF
     1 OF compile (s+c!)      ENDOF
-    -4 OF compile (s+rel!)   ENDOF \ 00002
+    -cell OF compile (s+rel!)   ENDOF \ 00002
     -2 OF compile (s+w!)     ENDOF
     -1 OF compile (s+c!)     ENDOF
     true abort" s! - illegal size!"
@@ -110,7 +110,7 @@ decimal
 : !BYTES ( value address size -- )
     CASE
     cell OF ! ENDOF
-    -4 OF ( aptr addr )  swap if.use->rel swap ! ENDOF \ 00002
+    -cell OF ( aptr addr )  swap if.use->rel swap ! ENDOF \ 00002
     ABS
        2 OF w! ENDOF
        1 OF c! ENDOF
@@ -137,7 +137,7 @@ decimal
     cell OF @  ENDOF
        2 OF w@      ENDOF
        1 OF c@      ENDOF
-      -4 OF @ if.rel->use      ENDOF \ 00002
+      -cell OF @ if.rel->use      ENDOF \ 00002
       -2 OF w@ w->s     ENDOF
       -1 OF c@ b->s     ENDOF
        true abort" s@ - illegal size!"
@@ -152,13 +152,13 @@ decimal
 : (S+W@)  ( addr offset -- val )  + w@ w->s ;
 
 : compile+@bytes ( offset size -- )
-\   ." compile+@bytes ( " over . dup . ." )" cr
+   ." compile+@bytes ( " over . dup . ." )" cr
     swap [compile] literal   \ compile offset into word
     CASE
     cell OF compile (s+@)  ENDOF
     2 OF compile (s+uw@)      ENDOF
     1 OF compile (s+uc@)      ENDOF
-    -4 OF compile (s+rel@)      ENDOF \ 00002
+    -cell OF compile (s+rel@)      ENDOF \ 00002
     -2 OF compile (s+w@)     ENDOF
     -1 OF compile (s+c@)     ENDOF
     true abort" s@ - illegal size!"
@@ -213,21 +213,28 @@ exists? F* [IF]
 :struct mapper
     long map_l1
     long map_l2
-    aptr map_a1
-    rptr map_r1
-    flpt map_f1
     short map_s1
     ushort map_s2
     byte map_b1
     ubyte map_b2
+    aptr map_a1
+    rptr map_r1
+    flpt map_f1
 ;struct
 mapper map1
 
+." compiling TT" cr
 : TT
+    123456 map1 s! map_l1
+    map1 s@ map_l1 123456 - abort" map_l1 failed!"
+    987654 map1 s! map_l2
+    map1 s@ map_l2 987654 - abort" map_l2 failed!"
+
     -500 map1 s! map_s1
-    map1 s@ map_s1 -500 - abort" map_s1 failed!"
+    map1 s@ map_s1 dup . cr -500 - abort" map_s1 failed!"
     -500 map1 s! map_s2
     map1 s@ map_s2 -500 $ FFFF and - abort" map_s2 failed!"
+
     -89 map1 s! map_b1
     map1 s@ map_b1 -89 - abort" map_s1 failed!"
     here map1 s! map_r1

@@ -315,7 +315,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 /***************************************************************/
 static int Write32ToFile( FileStream *fid, uint32_t Val )
 {
-    cell_t numw;
+    size_t numw;
     uint8_t pad[4];
 
     Write32BigEndian(pad,Val);
