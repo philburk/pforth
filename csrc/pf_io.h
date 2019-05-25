@@ -24,6 +24,9 @@
 #define PF_CHAR_XON    (0x11)
 #define PF_CHAR_XOFF   (0x13)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 int  sdTerminalOut( char c );
 int  sdTerminalEcho( char c );
 int  sdTerminalFlush( void );
@@ -31,6 +34,9 @@ int  sdTerminalIn( void );
 int  sdQueryTerminal( void );
 void sdTerminalInit( void );
 void sdTerminalTerm( void );
+#ifdef __cplusplus
+}
+#endif
 
 void ioInit( void );
 void ioTerm( void );

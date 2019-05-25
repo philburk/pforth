@@ -39,18 +39,18 @@
 ** Global Data
 ***************************************************************/
 
-char          gScratch[TIB_SIZE];
+char            gScratch[TIB_SIZE];
 pfTaskData_t   *gCurrentTask = NULL;
 pfDictionary_t *gCurrentDictionary;
-cell_t         gNumPrimitives;
+cell_t          gNumPrimitives;
 
-ExecToken     gLocalCompiler_XT;   /* custom compiler for local variables */
-ExecToken     gNumberQ_XT;         /* XT of NUMBER? */
-ExecToken     gQuitP_XT;           /* XT of (QUIT) */
-ExecToken     gAcceptP_XT;         /* XT of ACCEPT */
+ExecToken       gLocalCompiler_XT;   /* custom compiler for local variables */
+ExecToken       gNumberQ_XT;         /* XT of NUMBER? */
+ExecToken       gQuitP_XT;           /* XT of (QUIT) */
+ExecToken       gAcceptP_XT;         /* XT of ACCEPT */
 
 /* Depth of data stack when colon called. */
-cell_t         gDepthAtColon;
+cell_t          gDepthAtColon;
 
 /* Global Forth variables. */
 cell_t          gVarContext;      /* Points to last name field. */
@@ -64,8 +64,8 @@ cell_t          gVarQuiet;        /* Suppress unnecessary messages, OK, etc. */
 cell_t          gVarReturnCode;   /* Returned to caller of Forth, eg. UNIX shell. */
 
 /* data for INCLUDE that allows multiple nested files. */
-IncludeFrame  gIncludeStack[MAX_INCLUDE_DEPTH];
-cell_t         gIncludeIndex;
+IncludeFrame    gIncludeStack[MAX_INCLUDE_DEPTH];
+cell_t          gIncludeIndex;
 
 static void pfResetForthTask( void );
 static void pfInit( void );
