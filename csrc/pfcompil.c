@@ -1158,7 +1158,11 @@ cell_t ffRefill( void )
     /* ACCEPT is deferred so we call it through the dictionary. */
         PUSH_DATA_STACK( gCurrentTask->td_SourcePtr );
         PUSH_DATA_STACK( TIB_SIZE );
-        pfCatch( gAcceptP_XT );
+        ThrowCode throwCode = pfCatch( gAcceptP_XT );
+        if (throwCode) {
+            Result = throwCode;
+            goto error;
+        }
         Num = POP_DATA_STACK;
         if( Num < 0 )
         {

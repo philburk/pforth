@@ -49,6 +49,7 @@
 #define M_DUP    PUSH_TOS;
 #define M_DROP   { TOS = M_POP; }
 
+#define ASCII_EOT   (0x04)
 
 /***************************************************************
 ** Macros for Floating Point stack access.
@@ -1264,6 +1265,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_KEY:
             PUSH_TOS;
             TOS = ioKey();
+            if (TOS == ASCII_EOT) {
+                M_THROW(THROW_BYE);
+            }
             endcase;
 
 #ifndef PF_NO_SHELL
