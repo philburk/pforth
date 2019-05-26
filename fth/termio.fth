@@ -21,7 +21,18 @@ $ 01 constant ASCII_CTRL_A
 $ 05 constant ASCII_CTRL_E
 $ 18 constant ASCII_CTRL_X
 
-\ ANSI Terminal Control
+\ ANSI arrow key sequences
+\ ESC [ 0x41 is UP
+\ ESC [ 0x42 is DOWN
+\ ESC [ 0x43 is RIGHT
+\ ESC [ 0x44 is LEFT
+
+\ ANSI terminal control
+\ ESC [ 2J is clear screen
+\ ESC [ {n} D is move left
+\ ESC [ {n} C is move right
+\ ESC [ K is erase to end of line
+
 : ESC[ ( send ESCAPE and [ )
     ASCII_ESCAPE emit
     ascii [ emit
@@ -51,7 +62,6 @@ $ 18 constant ASCII_CTRL_X
     ESC[
     ascii K emit
 ;
-
 
 : BELL ( -- , ring the terminal bell )
     7 emit
