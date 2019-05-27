@@ -71,11 +71,16 @@ static void pfResetForthTask( void );
 static void pfInit( void );
 static void pfTerm( void );
 
-/* TODO move to pf_config.h header. */
 #define DEFAULT_RETURN_DEPTH (512)
 #define DEFAULT_USER_DEPTH (512)
+
+#ifndef PF_DEFAULT_HEADER_SIZE
 #define DEFAULT_HEADER_SIZE (120000)
-#define DEFAULT_CODE_SIZE (300000)
+#endif
+
+#ifndef PF_DEFAULT_CODE_SIZE
+#define PF_DEFAULT_CODE_SIZE (300000)
+#endif
 
 /* Initialize globals in a function to simplify loading on
  * embedded systems which may not support initialization of data section.
@@ -486,7 +491,7 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
         if( IfInit )
         {
             pfDebugMessage("Build dictionary from scratch.\n");
-            dic = pfBuildDictionary( DEFAULT_HEADER_SIZE, DEFAULT_CODE_SIZE );
+            dic = pfBuildDictionary( PF_DEFAULT_HEADER_SIZE, PF_DEFAULT_CODE_SIZE );
         }
         else
 #else
