@@ -94,7 +94,7 @@ decimal
 : (S+REL!)  ( ptr addr offset -- )  + >r if.use->rel r> ! ;
 
 : compile+!bytes ( offset size -- )
-    ." compile+!bytes ( " over . dup . ." )" cr
+    \ ." compile+!bytes ( " over . dup . ." )" cr
     swap [compile] literal   \ compile offset into word
     CASE
     cell OF compile (s+!)  ENDOF
@@ -152,7 +152,7 @@ decimal
 : (S+W@)  ( addr offset -- val )  + w@ w->s ;
 
 : compile+@bytes ( offset size -- )
-   ." compile+@bytes ( " over . dup . ." )" cr
+    \ ." compile+@bytes ( " over . dup . ." )" cr
     swap [compile] literal   \ compile offset into word
     CASE
     cell OF compile (s+@)  ENDOF
@@ -176,8 +176,6 @@ decimal
     ob.stats?
     (s@)
 ; immediate
-
-
 
 exists? F* [IF]
 \ 951112 Floating Point support
