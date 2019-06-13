@@ -75,7 +75,7 @@ static void pfTerm( void );
 #define DEFAULT_USER_DEPTH (512)
 
 #ifndef PF_DEFAULT_HEADER_SIZE
-#define DEFAULT_HEADER_SIZE (120000)
+#define PF_DEFAULT_HEADER_SIZE (120000)
 #endif
 
 #ifndef PF_DEFAULT_CODE_SIZE
