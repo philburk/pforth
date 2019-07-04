@@ -23,7 +23,7 @@
 ** Type Declarations
 ***************************************************************/
 
-#ifndef AMIGA
+#if !defined(AMIGA) && !defined(ATARI)
 #include <sys/types.h>
 #endif
 
