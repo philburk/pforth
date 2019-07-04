@@ -1,5 +1,5 @@
 # This Makefile can be used to cross-compile pForth on a Linux host to
-# an Amiga target.  GCC is used as host-compiler and VBCC as
+# an Atari ST target.  GCC is used as host-compiler and VBCC as
 # cross-compiler.
 
 # makefile for pForth
@@ -13,9 +13,8 @@
 # See "docs/pf_ref.htm" file for more info.
 
 # We are going to use VBCC as cross compiler.  I've installed VBCC
-# under /opt/m68k-amigaos.  It's configured to generate Motorola 680x0 code in
-# "Amiga Hunk" object format.
-VBCC := /opt/m68k-amigaos
+# under /opt/vbcc.  It's configured to generate Motorola 680x0 code.
+VBCC := /opt/vbcc
 PATH := $(VBCC)/bin:$(PATH)
 XCC          = vc # The VBCC compiler
 
@@ -27,7 +26,7 @@ FTHDIR       = $(PFORTHDIR)/fth
 PFDICAPP     = pforth
 PFORTHDIC    = pforth.dic
 PFDICDAT     = pfdicdat.h
-PFORTHAPP    = amiga_pforth_standalone
+PFORTHAPP    = pforth.ttp
 
 # We need to create a 32-bit dictionary
 WIDTHOPT= -m32
@@ -69,10 +68,10 @@ LDFLAGS = $(WIDTHOPT) -lm
 COMPILE = $(CC) $(CFLAGS) $(CPPFLAGS)
 
 # Cross compiler flags (for VBCC not gcc)
-XCFLAGS = -c99 -O3
+XCFLAGS = +tos -c99 -O3
 #XCPPFLAGS = -DPF_SUPPORT_FP -DWIN32
-XCPPFLAGS = -I. -DAMIGA -DPF_SUPPORT_FP
-XLDFLAGS = -lmieee -lm881
+XCPPFLAGS = -I. -DATARI -DPF_SUPPORT_FP
+XLDFLAGS = +tos -lm -lm881
 
 XCOMPILE = $(XCC) $(XCFLAGS) $(XCPPFLAGS)
 XLINK = $(XCC) $(XLDFLAGS)
