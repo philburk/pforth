@@ -767,7 +767,9 @@ PForthDictionary pfLoadStaticDictionary( void )
 #ifdef PF_STATIC_DIC
     cell_t Result;
     pfDictionary_t *dic;
+#ifndef PF_USE_STATIC_DIC
     cell_t NewNameSize, NewCodeSize;
+#endif
 
     if( IF_LITTLE_ENDIAN != IsHostLittleEndian() )
     {
@@ -793,6 +795,7 @@ PForthDictionary pfLoadStaticDictionary( void )
         goto error;
     }
 
+#ifndef PF_USE_STATIC_DIC
 
 #ifndef PF_EXTRA_HEADERS
     #define PF_EXTRA_HEADERS  (20000)
@@ -817,6 +820,23 @@ PForthDictionary pfLoadStaticDictionary( void )
 
     dic->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(CODEPTR);
     gNumPrimitives = NUM_PRIMITIVES;
+
+#else /* PF_USE_STATIC_DIC */
+
+    gCurrentDictionary = dic = pfCreateDictionary( sizeof(MinDicNames), sizeof(MinDicCode) );
+    if( !dic ) goto nomem_error;
+
+    dic->dic_HeaderBase = (ucell_t) MinDicNames;
+    dic->dic_HeaderLimit = dic->dic_HeaderBase + sizeof(MinDicNames);
+    dic->dic_HeaderPtr = dic->dic_HeaderBase;
+    dic->dic_CodeBase = (ucell_t) MinDicCode;
+    dic->dic_CodeLimit = dic->dic_CodeBase + sizeof(MinDicCode);
+    dic->dic_CodePtr.Byte = ((uint8_t *) (dic->dic_CodeBase + QUADUP(NUM_PRIMITIVES)));
+
+    dic->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(CODEPTR);
+    gNumPrimitives = NUM_PRIMITIVES;
+
+#endif /* PF_USE_STATIC_DIC */
 
     if( NAME_BASE != 0)
     {

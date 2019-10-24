@@ -223,6 +223,10 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 
     dic->dic_Flags |= PF_DICF_ALLOCATED_SEGMENTS;
 
+#ifdef PF_USE_STATIC_DIC
+    return (PForthDictionary) dic;
+#endif
+
 /* Align dictionary segments to preserve alignment of floats across hosts.
  * Thank you Helmut Proelss for pointing out that this needs to be cast
  * to (ucell_t) on 16 bit systems.
