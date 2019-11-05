@@ -8,3 +8,6 @@ build/win32/**/.vs
 build/win32/**/Debug
 build/win32/**/Release
 fth/fatest1.txt
+fth/pforth.dic
+**/.DS_Store
+
