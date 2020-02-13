@@ -1156,9 +1156,10 @@ cell_t ffRefill( void )
     if( gCurrentTask->td_InputStream == PF_STDIN )
     {
     /* ACCEPT is deferred so we call it through the dictionary. */
+        ThrowCode throwCode;
         PUSH_DATA_STACK( gCurrentTask->td_SourcePtr );
         PUSH_DATA_STACK( TIB_SIZE );
-        ThrowCode throwCode = pfCatch( gAcceptP_XT );
+        throwCode = pfCatch( gAcceptP_XT );
         if (throwCode) {
             Result = throwCode;
             goto error;
