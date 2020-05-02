@@ -2,6 +2,13 @@
 # Created by Robin Rowe 2020-05-01
 # License: License Public Domain
 
+# The process of building pForth involves several steps. 
+# cmake .. 
+# cd fth
+# ../build/Win32/Debug/pforth -i system.fth
+# Save the compiled dictionary as "pforth.dic".
+# The next time you run pforth, the precompiled pforth.dic file will be loaded automatically.
+
 cmake_minimum_required(VERSION 3.8)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
