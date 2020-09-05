@@ -187,7 +187,7 @@ exists? F* [IF]
     THEN
 ;
 
-PRIVATIZE
+\ PRIVATIZE
 
 0 [IF]
 
