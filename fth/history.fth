@@ -494,6 +494,7 @@ variable KH-INSIDE        ( true if we are scrolling inside the history buffer )
     THEN
 ;
 
+privatize
 
 : AUTO.INIT
     auto.init

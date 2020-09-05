@@ -24,16 +24,20 @@ variable private-stop
 $ 20 constant FLAG_SMUDGE
 
 : PRIVATE{
+    private-start @ 0= not abort" ERROR: Missing PRIVATIZE"
+    private-stop @ 0= not abort" ERROR: Missing PRIVATIZE"
     latest private-start !
     0 private-stop !
 ;
+
 : }PRIVATE
-    private-stop @ 0= not abort" Extra }PRIVATE"
+    private-stop @ 0= not abort" ERROR: Extra }PRIVATE"
     latest private-stop !
 ;
+
 : PRIVATIZE  ( -- , smudge all words between PRIVATE{ and }PRIVATE )
-    private-start @ 0= abort" Missing PRIVATE{"
-    private-stop @ 0= abort" Missing }PRIVATE"
+    private-start @ 0= abort" ERROR: Missing PRIVATE{"
+    private-stop @ 0= abort" ERROR: Missing }PRIVATE"
     private-stop @
     BEGIN
         dup private-start @ u>    \ 19970701
