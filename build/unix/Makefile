@@ -73,10 +73,10 @@ LINK = $(CC) $(LDFLAGS)
 PFOBJS     = $(PFSOURCE:.c=.o)
 PFEMBOBJS  = $(PFSOURCE:.c=.eo)
 
-.c.o: $(PFINCLUDES)
+%.o: %.c $(PFINCLUDES)
 	$(COMPILE) -c -o $@ $<
 
-.c.eo: $(PFINCLUDES) pfdicdat.h
+%.eo: %.c $(PFINCLUDES) pfdicdat.h
 	$(COMPILE) $(EMBCCOPTS) -c -o $@ $<
 
 .PHONY: all clean test
