@@ -139,19 +139,11 @@ if.forgotten lv.term
     THEN
 ;
 
-
 : VALUE
     CREATE ( n <name> )
         ,
-        immediate
     DOES>
-        state @
-        IF
-            [compile] aliteral
-            compile @
-        ELSE
-            @
-        THEN
+        @
 ;
 
 : TO  ( val <name> -- )
@@ -161,7 +153,7 @@ if.forgotten lv.term
         lv.compile.store
     ELSE
         find
-        1 = 0= abort" TO or -> before non-local or non-value"
+        0= abort" not found"
         >body  \ point to data
         state @
         IF  \ compiling  ( -- pfa )
@@ -183,7 +175,7 @@ if.forgotten lv.term
         [compile] literal compile (local+!)
     ELSE
         find
-        1 = 0= abort" +-> before non-local or non-value"
+        0= abort" not found"
         >body  \ point to data
         state @
         IF  \ compiling  ( -- pfa )
