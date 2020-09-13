@@ -14,6 +14,7 @@ test{
 T{ 333 value  my-value   my-value }T{  333 }T
 T{ 1000 -> my-value   my-value }T{ 1000 }T
 T{ 35 +-> my-value   my-value }T{ 1035 }T
+T{ 987 to my-value   my-value }T{ 987 }T
 : test.value  ( -- ok )
     100 -> my-value
     my-value 100 =
@@ -21,6 +22,11 @@ T{ 35 +-> my-value   my-value }T{ 1035 }T
     my-value 147 = AND
 ;
 T{ test.value }T{ TRUE }T
+
+\ test compile time behavior of a VALUE
+567 value VAL3 immediate
+: VD3 val3 literal ;
+T{ vd3 }T{ 567 }T
 
 \ test locals in a word
 : test.locs  { aa bb | cc -- ok }
