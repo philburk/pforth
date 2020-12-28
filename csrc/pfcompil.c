@@ -722,7 +722,7 @@ void ffLiteral( cell_t Num )
 #ifdef PF_SUPPORT_FP
 void ffFPLiteral( PF_FLOAT fnum )
 {
-    /* Hack for Metrowerks complier which won't compile the
+    /* Hack for Metrowerks compiler which won't compile the
      * original expression.
      */
     PF_FLOAT  *temp;
