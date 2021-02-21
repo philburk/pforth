@@ -8,13 +8,13 @@ Last updated: April 24, 2018 V28
 
 Code for pForth is maintained on GitHub at:
   https://github.com/philburk/pforth
- 
+
 Documentation for pForth at:
   http://www.softsynth.com/pforth/
 
 For technical support please use the pForth forum at:
   http://groups.google.com/group/pforthdev
-  
+
 -- LEGAL NOTICE -----------------------------------------
 
 Permission to use, copy, modify, and/or distribute this
@@ -31,16 +31,16 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -- Contents of SDK --------------------------------------
 
-    build - tools for building pForth on various platforms
-    build/unix - Makefile for unix
-    
+    platforms - tools for building pForth on various platforms
+    platforms/unix - Makefile for unix
+
     csrc - pForth kernel in ANSI 'C'
     csrc/pf_main.c - main() application for a standalone Forth
     csrc/stdio - I/O code using basic stdio for generic platforms
     csrc/posix - I/O code for Posix platform
     csrc/win32 - I/O code for basic WIN32 platform
     csrc/win32_console - I/O code for WIN32 console that supports command line history
-    
+
     fth - Forth code
     fth/util - utility functions
 
@@ -49,7 +49,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 See pForth reference manual at:
 
   http://www.softsynth.com/pforth/pf_ref.php
-  
+
 -- How to run pForth ------------------------------------
 
 Once you have compiled and built the dictionary, just enter:
@@ -90,5 +90,5 @@ To run the other tests, enter:
     pforth t_strings.fth
     pforth t_locals.fth
     pforth t_alloc.fth
-    
+
 They will report the number of tests that pass or fail.
