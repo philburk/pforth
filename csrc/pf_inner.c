@@ -1134,7 +1134,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             TOS = PF_FAM_WRITE_ONLY;
             endcase;
 
-        case ID_FILE_BIN: /* ( -- fam ) */
+        case ID_FILE_BIN: /* ( fam1 -- fam2 ) */
             TOS = TOS | PF_FAM_BINARY_FLAG;
             endcase;
 
