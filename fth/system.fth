@@ -309,6 +309,11 @@
         DOES> @ ( -- n )
 ;
 
+: 2CONSTANT ( n1 n2 <name> -c- ) ( -x- n1 n2 )
+        CREATE , , ( n1 n2 -- )
+        DOES> 2@   ( -- n1 n2 )
+;
+
 
 
 0 1- constant -1
