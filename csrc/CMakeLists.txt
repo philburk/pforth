@@ -34,7 +34,9 @@ else()
 endif()
 
 add_library(${PROJECT_NAME}_lib ${SOURCES} ${PLATFORM})
+target_compile_definitions(${PROJECT_NAME}_lib PRIVATE PF_SUPPORT_FP)
 
 # Compile the same library but with an option for the static dictionary.
 add_library(${PROJECT_NAME}_lib_sd STATIC ${SOURCES} ${PLATFORM})
 target_compile_definitions(${PROJECT_NAME}_lib_sd PRIVATE PF_STATIC_DIC)
+target_compile_definitions(${PROJECT_NAME}_lib_sd PRIVATE PF_SUPPORT_FP)
