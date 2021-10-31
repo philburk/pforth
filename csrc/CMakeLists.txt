@@ -1,6 +1,6 @@
 # pforth/csrc/CMakeLists.txt
-# Created by Robin Rowe 2020-05-01
-# License: License Public Domain
+# Extended by Phil Burk 2021-10-31
+# License: BSD Zero
 
 file(STRINGS sources.cmake SOURCES)
 
@@ -34,3 +34,7 @@ else()
 endif()
 
 add_library(${PROJECT_NAME}_lib ${SOURCES} ${PLATFORM})
+
+# Compile the same library but with an option for the static dictionary.
+add_library(${PROJECT_NAME}_lib_sd STATIC ${SOURCES} ${PLATFORM})
+target_compile_definitions(${PROJECT_NAME}_lib_sd PRIVATE PF_STATIC_DIC)
