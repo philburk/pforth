@@ -209,9 +209,11 @@
         break;
 
     case ID_FP_FROUND:
-        PUSH_TOS;
-        TOS = (cell_t)fp_round(FP_TOS);
-        M_FP_DROP;
+        /* This was broken before and used to push its result to the
+         * integer data stack! Now it conforms to the ANSI standard.
+         * https://github.com/philburk/pforth/issues/69
+         */
+        FP_TOS = (PF_FLOAT)fp_round(FP_TOS);
         break;
 
     case ID_FP_FSWAP: /* ( -- ) ( F: r1 r2 -- r2 r1 ) */
