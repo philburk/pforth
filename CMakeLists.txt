@@ -54,7 +54,7 @@ endif(UNISTD)
 
 # 1. Build pforth executable
 add_executable(pforth csrc/pf_main.c)
-target_link_libraries(pforth ${PROJECT_NAME}_lib)
+target_link_libraries(pforth ${PROJECT_NAME}_lib m)
 
 # 2. Build pforth.dic by compiling system.fth
 set(PFORTH_DIC "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pforth.dic")
@@ -83,7 +83,7 @@ add_dependencies(${PROJECT_NAME}_lib_sd pforth_dic_header)
 
 # 4. Build pforth_standalone using the precompiled dictionary.
 add_executable(pforth_standalone csrc/pf_main.c)
-target_link_libraries(pforth_standalone ${PROJECT_NAME}_lib_sd)
+target_link_libraries(pforth_standalone ${PROJECT_NAME}_lib_sd m)
 target_compile_definitions(pforth_standalone PRIVATE PF_STATIC_DIC)
 add_dependencies(pforth_standalone pforth_dic_header)
 
