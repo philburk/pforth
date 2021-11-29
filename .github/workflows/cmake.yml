@@ -34,5 +34,5 @@ jobs:
         ./pforth_standalone t_corex.fth | tee temp.txt && grep "0 failed" temp.txt
         ./pforth_standalone t_strings.fth | tee temp.txt && grep "0 failed" temp.txt
         ./pforth_standalone t_locals.fth | tee temp.txt && grep "0 failed" temp.txt
-        ./pforth_standalone t_alloc.fth | tee temp.txt && grep "0 failed" temp.txt
+        ./pforth_standalone t_alloc.fth | tee temp.txt && grep "PASSED" temp.txt
       
