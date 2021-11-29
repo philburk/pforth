@@ -103,4 +103,30 @@ ALIGN
 T{ : T.SLITERAL.1  [ FAKE-STRING 5 ] SLITERAL ; T.SLITERAL.1   FAKE-STRING 5 COMPARE
      }T{ 0 }T
 
+\  ----------------------------------------------------- S\"
+HEX
+T{ : GC5 S\" \a\b\e\f\l\m\q\r\t\v\x0F0\x1Fa\xaBx\z\"\\" ; }T{ }T
+T{ GC5 SWAP DROP          }T{ 14 }T \ String length
+T{ GC5 DROP            C@ }T{ 07 }T \ \a   BEL  Bell
+T{ GC5 DROP  1 CHARS + C@ }T{ 08 }T \ \b   BS   Backspace
+T{ GC5 DROP  2 CHARS + C@ }T{ 1B }T \ \e   ESC  Escape
+T{ GC5 DROP  3 CHARS + C@ }T{ 0C }T \ \f   FF   Form feed
+T{ GC5 DROP  4 CHARS + C@ }T{ 0A }T \ \l   LF   Line feed
+T{ GC5 DROP  5 CHARS + C@ }T{ 0D }T \ \m        CR of CR/LF pair
+T{ GC5 DROP  6 CHARS + C@ }T{ 0A }T \           LF of CR/LF pair
+T{ GC5 DROP  7 CHARS + C@ }T{ 22 }T \ \q   "    Double Quote
+T{ GC5 DROP  8 CHARS + C@ }T{ 0D }T \ \r   CR   Carriage Return
+T{ GC5 DROP  9 CHARS + C@ }T{ 09 }T \ \t   TAB  Horizontal Tab
+T{ GC5 DROP  A CHARS + C@ }T{ 0B }T \ \v   VT   Vertical Tab
+T{ GC5 DROP  B CHARS + C@ }T{ 0F }T \ \x0F      Given Char
+T{ GC5 DROP  C CHARS + C@ }T{ 30 }T \ 0    0    Digit follow on
+T{ GC5 DROP  D CHARS + C@ }T{ 1F }T \ \x1F      Given Char
+T{ GC5 DROP  E CHARS + C@ }T{ 61 }T \ a    a    Hex follow on
+T{ GC5 DROP  F CHARS + C@ }T{ AB }T \ \xaB      Insensitive Given Char
+T{ GC5 DROP 10 CHARS + C@ }T{ 78 }T \ x    x    Non hex follow on
+T{ GC5 DROP 11 CHARS + C@ }T{ 00 }T \ \z   NUL  No Character
+T{ GC5 DROP 12 CHARS + C@ }T{ 22 }T \ \"   "    Double Quote
+T{ GC5 DROP 13 CHARS + C@ }T{ 5C }T \ \\   \    Back Slash
+DECIMAL
+
 }test
