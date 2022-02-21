@@ -773,7 +773,13 @@ variable TRACE-INCLUDE
         rdrop
 ;
 
-: $INCLUDE ( $filename -- ) count included ;
+defer MAP.FILENAME ( $filename1 -- $filename2 , modify name )
+' noop is map.filename
+
+: $INCLUDE ( $filename -- )
+    map.filename
+    count included
+;
 
 create INCLUDE-SAVE-NAME 128 allot
 : INCLUDE ( <fname> -- )
