@@ -131,6 +131,10 @@ void sdTerminalInit(void)
         {
             perror("sdTerminalInit: tcsetattr");
         }
+        if (setvbuf(stdout, NULL, _IONBF, (size_t) 0) != 0)
+        {
+            perror("sdTerminalInit: setvbuf");
+        }
     }
 }
 
