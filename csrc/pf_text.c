@@ -311,6 +311,12 @@ void DumpMemory( void *addr, cell_t cnt)
 
     EMIT_CR;
 
+    /* do not segfault on  ' + 16 DUMP  or similar */
+    if ((size_t) ptr <= NUM_PRIMITIVES) {
+	    MSG("Will not dump a primitive.");
+	    return;
+    }
+
     for (ln=0; ln<nlines; ln++)
     {
         MSG( ConvertNumberToText( (cell_t) ptr, 16, FALSE, 8 ) );
