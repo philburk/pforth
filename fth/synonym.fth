@@ -1,4 +1,4 @@
-: SYNONYM
+: SYNONYM ( "<spaces>newname" "<spaces>oldname" -- ) 
   create immediate bl word find
   dup 0= if ." could not find " drop count type -13 throw then
   -1 = , , does> 2@
@@ -8,6 +8,6 @@
       execute dup .
     then ;
 
-synonym [DEFINED] exists?
+synonym [DEFINED] exists? ( "<spaces>name ..." -- flag )
 
-: [UNDEFINED] POSTPONE [DEFINED] 0= ;
+: [UNDEFINED] ( "<spaces>name ..." -- flag ) POSTPONE [DEFINED] 0= ; immediate
