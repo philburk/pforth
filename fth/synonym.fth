@@ -1,7 +1,13 @@
 : SYNONYM
-  create bl word find
+  create immediate bl word find
   dup 0= if ." could not find " drop count type -13 throw then
-  1 = if immediate then , does> @ execute ;
+  -1 = , , does> 2@
+    state @ and dup . if
+      compile,
+    else
+      execute dup .
+    then ;
 
 synonym [DEFINED] exists?
-: [UNDEFINED] [DEFINED] 0= ;
+
+: [UNDEFINED] POSTPONE [DEFINED] 0= ;

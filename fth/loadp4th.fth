@@ -49,5 +49,5 @@ include? words.like wordslik.fth
 include? trace   trace.fth
 include? ESC[    termio.fth
 include? HISTORY history.fth
-
+include? +FIELD  struct.fth
 map
