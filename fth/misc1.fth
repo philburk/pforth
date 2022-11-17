@@ -100,13 +100,19 @@ variable TAB-WIDTH  8 TAB-WIDTH !
     tab-width @   swap - spaces
 ;
 
+$ 20 constant FLAG_SMUDGE
+
 \ Vocabulary listing
 : WORDS  ( -- )
     0 latest
     BEGIN  dup 0<>
-    WHILE  dup id. tab cr? ?pause
+    WHILE ( -- count NFA )
+        dup c@ flag_smudge and 0=
+        IF
+            dup id. tab cr? ?pause
+            swap 1+ swap
+        THEN
         prevname
-        swap 1+ swap
     REPEAT drop
     cr . ."  words" cr
 ;
