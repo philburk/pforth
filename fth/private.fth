@@ -21,7 +21,6 @@ anew task-private.fth
 
 variable private-start
 variable private-stop
-$ 20 constant FLAG_SMUDGE
 
 : PRIVATE{
     private-start @ 0= not abort" ERROR: Missing PRIVATIZE"
