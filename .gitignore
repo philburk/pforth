@@ -1,9 +1,9 @@
-platform/unix/*.eo
-platform/unix/*.o
-platform/unix/pfdicdat.h
-platform/unix/pforth
-platform/unix/pforth.dic
-platform/unix/pforth_standalone
+**/*.eo
+**/*.o
+**/pfdicdat.h
+**/pforth
+**/pforth.dic
+**/pforth_standalone
 platform/win32/**/.vs
 platform/win32/**/Debug
 platform/win32/**/Release
@@ -24,6 +24,4 @@ csrc/cmake_install.cmake
 csrc/libPforth_lib.a
 csrc/libPforth_lib_sd.a
 csrc/pfdicdat.h
-pforth
-pforth_standalone
 

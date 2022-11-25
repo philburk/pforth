@@ -49,7 +49,7 @@ EMBCCOPTS = -DPF_STATIC_DIC #-DPF_NO_FILEIO
 PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
 	pf_guts.h pf_host.h pf_inc1.h pf_io.h pf_mem.h pf_save.h \
 	pf_text.h pf_types.h pf_win32.h pf_words.h pfcompfp.h \
-	pfcompil.h pfdicdat_arm.h pfinnrfp.h pforth.h
+	pfcompil.h pfinnrfp.h pforth.h
 PFBASESOURCE = pf_cglue.c pf_clib.c pf_core.c pf_inner.c \
 	pf_io.c pf_io_none.c pf_main.c pf_mem.c pf_save.c \
 	pf_text.c pf_words.c pfcompil.c pfcustom.c
@@ -104,13 +104,15 @@ $(PFORTHDIC): $(PFDICAPP)
 	(cd $(FTHDIR); cat pforth.dic; rm -f pforth.dic) > $@
 
 $(PFDICDAT): $(PFORTHDIC) $(PFDICAPP)
+	@test -f $(CSRCDIR)/$(PFDICDAT) && echo WARNING old $(CSRCDIR)/$(PFDICDAT) would interfere || True
+	# Remove stray csrc/pfdicdat.h because it may accidentally get included.
+	rm -f $(CSRCDIR)/$(PFDICDAT)
 	echo 'include $(FTHDIR)/savedicd.fth SDAD BYE' | ./$(PFDICAPP) -d $(PFORTHDIC)
 
 $(PFORTHAPP): $(PFDICDAT) $(PFEMBOBJS)
 	$(LINK) -o $@ $(PFEMBOBJS) $(LDADD) -lm
 	@echo ""
 	@echo "Standalone pForth executable written to $(PFORTHAPP)"
-
 
 # target aliases
 pfdicapp: $(PFDICAPP)
@@ -143,6 +145,6 @@ test: $(PFORTHAPP)
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)
 	rm -f $(PFORTHAPP)
-	rm -f $(PFDICDAT) $(FTHDIR)/$(PFDICDAT)
+	rm -f $(PFDICDAT) $(FTHDIR)/$(PFDICDAT) $(CSRCDIR)/$(PFDICDAT)
 	rm -f $(PFORTHDIC) $(FTHDIR)/$(PFORTHDIC)
 	rm -f $(PFDICAPP)
