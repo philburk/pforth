@@ -26,7 +26,8 @@
 ** PFORTH_VERSION changes when PForth is modified and released.
 ** See README file for version info.
 */
-#define PFORTH_VERSION "28"
+#define PFORTH_VERSION_CODE 29
+#define PFORTH_VERSION_NAME "2.0.0"
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
@@ -290,12 +291,12 @@ enum cforth_primitive_ids
     ID_FILE_RESIZE,    /* RESIZE-FILE */
     ID_SLEEP_P,        /* (SLEEP) V2.0.0 */
     ID_VAR_BYE_CODE,   /* BYE-CODE */
-    /* If you add a word here, take away one reserved word below. */
+    ID_VERSION_CODE,
+/* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
 ** unsupported primitives when loading dictionary.
 */
-    ID_RESERVED02,
     ID_RESERVED03,
     ID_RESERVED04,
     ID_RESERVED05,

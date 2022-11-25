@@ -378,6 +378,7 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_VAR_OUT, "OUT", 0 );
     CreateDicEntryC( ID_VAR_STATE, "STATE", 0 );
     CreateDicEntryC( ID_VAR_TO_IN, ">IN", 0 );
+    CreateDicEntryC( ID_VERSION_CODE, "VERSION_CODE", 0 );
     CreateDicEntryC( ID_WORD, "WORD", 0 );
     CreateDicEntryC( ID_WORD_FETCH, "W@", 0 );
     CreateDicEntryC( ID_WORD_STORE, "W!", 0 );

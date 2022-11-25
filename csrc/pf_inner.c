@@ -1805,6 +1805,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_VAR_TRACE_STACK: DO_VAR(gVarTraceStack); endcase;
         case ID_VAR_RETURN_CODE: DO_VAR(gVarReturnCode); endcase;
 
+        case ID_VERSION_CODE:
+            M_PUSH( TOS );
+            TOS = PFORTH_VERSION_CODE;
+            endcase;
+
         case ID_WORD:
             TOS = (cell_t) ffWord( (char) TOS );
             endcase;
