@@ -5,7 +5,7 @@
 /***************************************************************
 ** Include file for pForth, a portable Forth based on 'C'
 **
-** This file is included in any application that uses pForth as a tool.
+** This file is included in any application that uses pForth as a library.
 **
 ** Author: Phil Burk
 ** Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
