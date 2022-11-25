@@ -460,9 +460,10 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
 
         if( !gVarQuiet )
         {
-            MSG( "PForth V"PFORTH_VERSION );
-            if( IsHostLittleEndian() ) MSG("-LE");
-            else MSG("-BE");
+            MSG( "PForth V"PFORTH_VERSION_NAME", " );
+
+            if( IsHostLittleEndian() ) MSG("LE");
+            else MSG("BE");
 #if PF_BIG_ENDIAN_DIC
             MSG("/BE");
 #elif PF_LITTLE_ENDIAN_DIC
