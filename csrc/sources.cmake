@@ -16,7 +16,6 @@ pf_win32.h
 pf_words.h
 pfcompfp.h
 pfcompil.h
-pfdicdat_arm.h
 pfinnrfp.h
 pforth.h
 pf_cglue.c
