@@ -104,7 +104,7 @@ $(PFORTHDIC): $(PFDICAPP)
 	(cd $(FTHDIR); cat pforth.dic; rm -f pforth.dic) > $@
 
 $(PFDICDAT): $(PFORTHDIC) $(PFDICAPP)
-	@test -f $(CSRCDIR)/$(PFDICDAT) && echo WARNING old $(CSRCDIR)/$(PFDICDAT) would interfere || True
+	@test -f $(CSRCDIR)/$(PFDICDAT) && echo WARNING old $(CSRCDIR)/$(PFDICDAT) would interfere || true
 	# Remove stray csrc/pfdicdat.h because it may accidentally get included.
 	rm -f $(CSRCDIR)/$(PFDICDAT)
 	echo 'include $(FTHDIR)/savedicd.fth SDAD BYE' | ./$(PFDICAPP) -d $(PFORTHDIC)
