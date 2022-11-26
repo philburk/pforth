@@ -100,7 +100,7 @@ $(PFDICAPP): $(PFINCLUDES) $(PFOBJS)
 
 # Build basic dictionary image by running newly built pforth and including "system.fth".
 $(PFORTHDIC): $(PFDICAPP)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFDICAPP) -i system.fth)
+	wd=$$(pwd); (cd $(FTHDIR); "$${wd}/$(PFDICAPP)" -i system.fth)
 	(cd $(FTHDIR); cat pforth.dic; rm -f pforth.dic) > $@
 
 $(PFDICDAT): $(PFORTHDIC) $(PFDICAPP)
