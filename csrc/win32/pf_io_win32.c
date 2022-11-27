@@ -24,6 +24,7 @@
 #include "../pf_all.h"
 
 #include <conio.h>
+#include <synchapi.h>   /* for Sleep() */
 
 /* Use console mode I/O so that KEY and ?TERMINAL will work. */
 #if defined(WIN32) || defined(__NT__)
@@ -72,4 +73,12 @@ void sdTerminalInit( void )
 void sdTerminalTerm( void )
 {
 }
+
+cell_t sdSleepMillis(cell_t msec)
+{
+    if (msec < 0) return 0;
+    Sleep((DWORD)msec);
+    return 0;
+}
+
 #endif

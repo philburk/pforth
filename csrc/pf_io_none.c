@@ -49,4 +49,10 @@ void sdTerminalInit( void )
 void sdTerminalTerm( void )
 {
 }
+
+void sdSleepMillis(cell_t /* msec */)
+{
+    // TODO Call some platform specific sleep function here.
+    return PF_ERR_NOT_SUPPORTED;
+}
 #endif

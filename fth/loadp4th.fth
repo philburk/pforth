@@ -25,8 +25,8 @@ include? privatize   private.fth
 include? (local) ansilocs.fth
 include? {       locals.fth
 include? fm/mod  math.fth
-include? task-misc2.fth misc2.fth
 include? [if]    condcomp.fth
+include? task-misc2.fth misc2.fth
 include? save-input save-input.fth
 include? read-line  file.fth
 include? require    require.fth

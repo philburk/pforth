@@ -146,3 +146,23 @@ void sdTerminalTerm(void)
         tcsetattr(STDIN_FILENO, TCSANOW, &save_termios);
     }
 }
+
+cell_t sdSleepMillis(cell_t msec)
+{
+    const cell_t kMaxMicros = 500000; /* to be safe, usleep() limit is 1000000 */
+    cell_t micros;
+    cell_t napTime;
+    if (msec < 0) return 0;
+    micros = msec * 1000;
+    while (micros > 0)
+    {
+        napTime = (micros > kMaxMicros) ? kMaxMicros : micros;
+        if (usleep(napTime))
+        {
+            perror("sdSleepMillis: usleep failed");
+            return -1;
+        }
+        micros -= napTime;
+    }
+    return 0;
+}
