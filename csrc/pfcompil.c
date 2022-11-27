@@ -344,6 +344,7 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_SAVE_FORTH_P, "(SAVE-FORTH)",  0 );
     CreateDicEntryC( ID_SCAN, "SCAN",  0 );
     CreateDicEntryC( ID_SKIP, "SKIP",  0 );
+    CreateDicEntryC( ID_SLEEP_P, "(SLEEP)", 0 );
     CreateDicEntryC( ID_SOURCE, "SOURCE",  0 );
     CreateDicEntryC( ID_SOURCE_SET, "SET-SOURCE",  0 );
     CreateDicEntryC( ID_SOURCE_ID, "SOURCE-ID",  0 );

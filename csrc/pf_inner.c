@@ -1635,6 +1635,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 #endif
 
+        case ID_SLEEP_P:
+            TOS = sdSleepMillis(TOS);
+            endcase;
+
         case ID_SP_FETCH:    /* ( -- sp , address of top of stack, sorta ) */
             PUSH_TOS;
             TOS = (cell_t)STKPTR;

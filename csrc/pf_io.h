@@ -37,6 +37,7 @@ int  sdTerminalIn( void );
 int  sdQueryTerminal( void );
 void sdTerminalInit( void );
 void sdTerminalTerm( void );
+cell_t sdSleepMillis( cell_t msec );
 #ifdef __cplusplus
 }
 #endif

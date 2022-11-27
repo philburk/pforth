@@ -285,9 +285,10 @@ enum cforth_primitive_ids
     ID_CELLS,
     /* DELETE-FILE */
     ID_FILE_DELETE,
-    ID_FILE_FLUSH,		/* FLUSH-FILE */
-    ID_FILE_RENAME,		/* (RENAME-FILE) */
-    ID_FILE_RESIZE,		/* RESIZE-FILE */
+    ID_FILE_FLUSH,     /* FLUSH-FILE */
+    ID_FILE_RENAME,    /* (RENAME-FILE) */
+    ID_FILE_RESIZE,    /* RESIZE-FILE */
+    ID_SLEEP_P,        /* (SLEEP) V2.0.0 */
 /* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
@@ -302,7 +303,6 @@ enum cforth_primitive_ids
     ID_RESERVED07,
     ID_RESERVED08,
     ID_RESERVED09,
-    ID_RESERVED10,
     ID_FP_D_TO_F,
     ID_FP_FSTORE,
     ID_FP_FTIMES,
