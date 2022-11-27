@@ -96,9 +96,9 @@ To run the all-in-one pForth enter:
 
     ./pforth_standalone
     
-OR to run using the dictionary file enter:
+OR, to run using the dictionary file, enter:
 
-    pforth
+    ./pforth
 
 Quick check of Forth:
 
@@ -133,8 +133,10 @@ On Unix and MacOS using Makefile:
     cd platforms/unix
     make test
 
-Using CMake
+Using CMake:
 
+    cmake .
+    make
     cd fth
     ./pforth
     include tester.fth
@@ -149,7 +151,7 @@ To run the other tests, enter:
 
 They will report the number of tests that pass or fail.
 
-You can also test pForth kernel without loading a dictionary.
+You can also test pForth kernel without loading a dictionary using option "-i".
 Only the primitive words defined in C will be available.
 This might be necessary if the dictionary can't be built.
 
