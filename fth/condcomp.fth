@@ -46,5 +46,15 @@ anew task-condcomp.fth
 
 : EXISTS? ( <name> -- flag , true if defined )
     bl word find
-    swap drop
+    nip 0<>
+; immediate
+
+: [DEFINED] ( <name> -- flag , true if defined, ANS )
+    bl word find
+    nip 0<>
+; immediate
+
+: [UNDEFINED] ( <name> -- flag , true if not defined, ANS )
+    bl word find
+    nip 0=
 ; immediate
