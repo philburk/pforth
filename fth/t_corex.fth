@@ -330,5 +330,19 @@ T{ s" unknown-query-string" ENVIRONMENT? }T{ FALSE }T
 T{ s" MAX-CHAR" ENVIRONMENT? }T{ 255 TRUE }T
 T{ s" ADDRESS-UNITS-BITS" ENVIRONMENT? }T{ 8 TRUE }T
 
+\  ----------------------------------------------------- PROGRAMMING
+
+T{ exists? words }T{ true }T  \ high level
+T{ exists? swap }T{ true }T   \ in kernel
+T{ exists? lkajsdlakjs }T{ false }T
+
+T{ [defined] if }T{ true }T   \ high level
+T{ [defined] dup }T{ true }T  \ in kernel
+T{ [defined] k23jh42 }T{ false }T
+
+T{ [undefined] if }T{ false }T  \ high level
+T{ [undefined] dup }T{ false }T \ in kernel
+T{ [undefined] k23jh42 }T{ true }T
+
 }TEST
 
