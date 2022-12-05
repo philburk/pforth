@@ -20,6 +20,7 @@ include? forget  forget.fth
 include? >number numberio.fth
 include? task-misc1.fth   misc1.fth
 include? case    case.fth
+include? +field  structure.fth
 include? $=      strings.fth
 include? privatize   private.fth
 include? (local) ansilocs.fth
