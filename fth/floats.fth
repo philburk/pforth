@@ -64,7 +64,12 @@ fp-create-size swap - constant CREATE_SIZE
     fdepth 0 max  0 ?DO fdrop LOOP
 ;
 
-\ Convert between single precision and floating point
+\ Floating point structure member.
+: FFIELD:   ( n1 "name" -- n2 ; addr1 -- addr2 )
+    FALIGNED 1 FLOATS +FIELD
+;
+
+\ Convert between single precision integer and floating point
 : S>F ( s -- ) ( F: -- r )
     s>d d>f
 ;

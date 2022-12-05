@@ -344,5 +344,29 @@ T{ [undefined] if }T{ false }T  \ high level
 T{ [undefined] dup }T{ false }T \ in kernel
 T{ [undefined] k23jh42 }T{ true }T
 
+\  ----------------------------------------------------- Structures
+
+BEGIN-STRUCTURE XYZS
+    cfield: xyz.c1
+    field:  xyz.w1
+    cfield: xyz.c2
+END-STRUCTURE
+
+T{ xyzs }T{ 2 cells 1+ }T
+T{ 0 xyz.c1 }T{ 0 }T
+T{ 0 xyz.w1 }T{ cell }T
+T{ 0 xyz.c2 }T{ 2 cells }T
+
+CREATE MY-XYZS XYZS ALLOT
+\ test forward order
+77 my-xyzs xyz.c1 c!
+1234567 my-xyzs xyz.w1 !
+99 my-xyzs xyz.c2 c!
+
+T{  my-xyzs xyz.c1 c@ }T{ 77 }T
+T{  my-xyzs xyz.w1 @ }T{ 1234567 }T
+T{  my-xyzs xyz.c2 c@ }T{ 99 }T
+
+
 }TEST
 

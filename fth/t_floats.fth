@@ -129,6 +129,33 @@ T{  PI 2.0 F*  FSIN   0.0   0.00001 F~    }T{  true  }T
 T{  PI 0.5 F*  FSIN   1.0   0.00001 F~    }T{  true  }T
 T{  PI 6.0 F/  FSIN   0.5   0.00001 F~    }T{  true  }T
 
+\  ----------------------------------------------------- FROUND
+T{  0.1 FROUND   0.0  0.0 F~ }T{ true }T
+T{  6.6 FROUND   7.0  0.0 F~ }T{ true }T
+T{ -3.2 FROUND  -3.0  0.0 F~ }T{ true }T
+T{ -8.8 FROUND  -9.0  0.0 F~ }T{ true }T
+
+\  ----------------------------------------------------- FFIELD:
+BEGIN-STRUCTURE ABCS
+    field:  abc.w1
+    ffield: abc.f1
+    field:  abc.w2
+END-STRUCTURE
+
+T{ 0 abc.w1 }T{ 0 }T
+T{ 0 abc.f1 }T{ 1 floats }T  \ aligns to next float boundary
+T{ 0 abc.w2 }T{ 2 cells }T
+T{ abcs }T{ cell  1 floats +  cell + }T
+
+CREATE MY-ABCS ABCS ALLOT
+6543 my-abcs abc.w1 !
+23.45 my-abcs abc.f1 f!
+98765 my-abcs abc.w2 !
+
+T{  my-abcs abc.w1  @ }T{ 6543 }T
+T{  my-abcs abc.f1 f@ 23.45 0.0 F~ }T{ true }T
+T{  my-abcs abc.w2  @ }T{ 98765 }T
+
 \  ----------------------------------------------------- \
 }TEST
 
