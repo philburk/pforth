@@ -24,11 +24,14 @@
 ***************************************************************/
 
 #if (defined(PF_NO_STDIO) || defined(PF_EMBEDDED))
-    #define NULL  ((void *) 0)
-    #define ERR(msg) /* { printf msg; } */
+#define NULL ((void *)0)
+#define ERR(msg) /* { printf msg; } */
 #else
-    #include <stdio.h>
-    #define ERR(msg) { printf msg; }
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#define ERR(msg) \
+  { printf msg; }
 #endif
 
 #include "pforth.h"
@@ -38,8 +41,8 @@
 #endif
 
 #ifdef __MWERKS__
-    #include <console.h>
-    #include <sioux.h>
+#include <console.h>
+#include <sioux.h>
 #endif
 
 #ifndef TRUE
@@ -48,104 +51,146 @@
 #endif
 
 #ifdef PF_EMBEDDED
-int main( void )
-{
-    char IfInit = 0;
-    const char *DicName = NULL;
-    const char *SourceName = NULL;
-    pfMessage("\npForth Embedded\n");
-    return pfDoForth( DicName, SourceName, IfInit);
+int main(void) {
+  char IfInit = 0;
+  const char *DicName = NULL;
+  const char *SourceName = NULL;
+  pfMessage("\npForth Embedded\n");
+  return pfDoForth(DicName, SourceName, IfInit);
 }
 #else
 
-int main( int argc, char **argv )
-{
+int main(int argc, char **argv) {
 #ifdef PF_STATIC_DIC
-    const char *DicName = NULL;
-#else /* PF_STATIC_DIC */
-    const char *DicName = PF_DEFAULT_DICTIONARY;
+  const char *DicName = NULL;
+#else  /* PF_STATIC_DIC */
+  const char *DicName = PF_DEFAULT_DICTIONARY;
 #endif /* !PF_STATIC_DIC */
 
-    const char *SourceName = NULL;
-    char IfInit = FALSE;
-    char *s;
-    cell_t i;
-    ThrowCode Result;
+  const char *SourceName = NULL;
+  char IfInit = FALSE;
+  ThrowCode Result;
+#if (defined(PF_NO_STDIO) || defined(PF_EMBEDDED))
+  char *s;
+  cell_t i;
+#else
+  int ch;
+#endif
 
 /* For Metroworks on Mac */
 #ifdef __MWERKS__
-    argc = ccommand(&argv);
+  argc = ccommand(&argv);
 #endif
 
-    pfSetQuiet( FALSE );
+  pfSetQuiet(FALSE);
 /* Parse command line. */
-    for( i=1; i<argc; i++ )
-    {
-        s = argv[i];
+#if (defined(PF_NO_STDIO) || defined(PF_EMBEDDED))
+  for (i = 1; i < argc; i++) {
+    s = argv[i];
 
-        if( *s == '-' )
-        {
-            char c;
-            s++; /* past '-' */
-            c = *s++;
-            switch(c)
-            {
-            case 'i':
-                IfInit = TRUE;
-                DicName = NULL;
-                break;
+    if (*s == '-') {
+      char c;
+      s++; /* past '-' */
+      c = *s++;
+      switch (c) {
+        case 'i':
+          IfInit = TRUE;
+          DicName = NULL;
+          break;
 
-            case 'q':
-                pfSetQuiet( TRUE );
-                break;
+        case 'q':
+          pfSetQuiet(TRUE);
+          break;
 
-            case 'd':
-                if( *s != '\0' ) DicName = s;
-                /* Allow space after -d (Thanks Aleksej Saushev) */
-                /* Make sure there is another argument. */
-                else if( (i+1) < argc )
-                {
-                    DicName = argv[++i];
-                }
-                if (DicName == NULL || *DicName == '\0')
-                {
-                    DicName = PF_DEFAULT_DICTIONARY;
-                }
-                break;
+        case 'd':
+          if (*s != '\0')
+            DicName = s;
+          /* Allow space after -d (Thanks Aleksej Saushev) */
+          /* Make sure there is another argument. */
+          else if ((i + 1) < argc) {
+            DicName = argv[++i];
+          }
+          if (DicName == NULL || *DicName == '\0') {
+            DicName = PF_DEFAULT_DICTIONARY;
+          }
+          break;
 
-            default:
-                ERR(("Unrecognized option!\n"));
-                ERR(("pforth {-i} {-q} {-dfilename.dic} {sourcefilename}\n"));
-                Result = 1;
-                goto on_error;
-                break;
-            }
-        }
-        else
-        {
-            SourceName = s;
-        }
+        default:
+          ERR(("Unrecognized option!\n"));
+          ERR(("pforth {-i} {-q} {-dfilename.dic} {sourcefilename}\n"));
+          Result = 1;
+          goto on_error;
+          break;
+      }
     }
+    else {
+      SourceName = s;
+    }
+  }
+#else
+  while ((ch = getopt(argc, argv, "hiqd:")) != -1) {
+    switch (ch) {
+      case 'i':
+        IfInit = TRUE;
+        DicName = NULL;
+        break;
+      case 'q':
+        pfSetQuiet(TRUE);
+        break;
+      case 'd':
+        if (optarg == NULL) {
+          DicName = PF_DEFAULT_DICTIONARY;
+        }
+        else {
+          printf("DIC %s\n", optarg);
+          DicName = strdup(optarg);
+        }
+        break;
+      case '?':
+      case 'h':
+        ERR(("Usage:\n"));
+        ERR(("\tpforth {-i} {-q} {-d filename.dic} {sourcefilename}\n"));
+        Result = 1;
+        goto on_error;
+        break;
+      default:
+        ERR(("Unrecognized option! (%c)\n", ch));
+        ERR(("\tpforth {-i} {-q} {-dfilename.dic} {sourcefilename}\n"));
+        Result = 1;
+        goto on_error;
+        break;
+    }
+  }
+  argc -= optind;
+  argv += optind;
+  if (argc > 1) {
+    ERR(("*** One sourcefilename allowed!\n"));
+    ERR(("Usage:\n"));
+    ERR(("\tpforth {-i} {-q} {-d filename.dic} {sourcefilename}\n"));
+    Result = 1;
+    goto on_error;
+  }
+  if (argc == 1) {
+    SourceName = strdup(argv[0]);
+  }
+#endif
 /* Force Init */
 #ifdef PF_INIT_MODE
-    IfInit = TRUE;
-    DicName = NULL;
+  IfInit = TRUE;
+  DicName = NULL;
 #endif
 
 #ifdef PF_UNIT_TEST
-    if( (Result = pfUnitTest()) != 0 )
-    {
-        ERR(("pForth stopping on unit test failure.\n"));
-        goto on_error;
-    }
+  if ((Result = pfUnitTest()) != 0) {
+    ERR(("pForth stopping on unit test failure.\n"));
+    goto on_error;
+  }
 #endif
 
-    Result = pfDoForth( DicName, SourceName, IfInit);
+  Result = pfDoForth(DicName, SourceName, IfInit);
 
 on_error:
-    return (int)Result;
+  return (int)Result;
 }
 
-#endif  /* PF_EMBEDDED */
-
-
+#endif /* PF_EMBEDDED */
