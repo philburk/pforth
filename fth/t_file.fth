@@ -98,7 +98,7 @@ T{ LINE1 FID1 @ WRITE-LINE -> 0 }T
 T{ FID1 @ CLOSE-FILE -> 0 }T
 
 \ ----------------------------------------------------------------------------
-TESTING R/O FILE-POSITION (simple)  READ-LINE 
+TESTING R/O FILE-POSITION (simple)  READ-LINE
 
 200 CONSTANT BSIZE
 CREATE BUF BSIZE ALLOT
@@ -259,14 +259,12 @@ T{ 0 INCLUDE t_required_helper2.fth
      -> 2 }T
 
 \ ----------------------------------------------------------------------------
-TESTING two buffers available for S" and/or S\" (Forth 2012)
 
-: SSQ12 S" abcd" ;   : SSQ13 S" 1234" ;
-T{ S" abcd"  S" 1234" SSQ13  S= ROT ROT SSQ12 S= -> TRUE TRUE }T
-\ nyi T{ S\" abcd" S\" 1234" SSQ13 S= ROT ROT SSQ12 S= -> TRUE TRUE }T
-\ nyi T{ S" abcd"  S\" 1234" SSQ13 S= ROT ROT SSQ12 S= -> TRUE TRUE }T
-\ nyi T{ S\" abcd" S" 1234" SSQ13  S= ROT ROT SSQ12 S= -> TRUE TRUE }T
-
+T{ : GC4 S" XY" ; }T{   }T
+T{ GC4 SWAP DROP   }T{  2 }T
+T{ GC4 DROP DUP C@ SWAP CHAR+ C@  }T{  $ 58  $ 59 }T
+: GC5 S" A String"2DROP ; \ There is no space between the " and 2DROP
+T{ GC5 }T{ }T
 
 \ -----------------------------------------------------------------------------
 TESTING SAVE-INPUT and RESTORE-INPUT with a file source
@@ -312,7 +310,7 @@ VARIABLE SI_INC 0 SI_INC !
 
 : S$ S" SAVE-INPUT SI1 RESTORE-INPUT 12345" ;
 
-CREATE 2RES -1 , -1 ,   \ Don't use 2VARIABLE from Double number word set 
+CREATE 2RES -1 , -1 ,   \ Don't use 2VARIABLE from Double number word set
 
 : SI2
    READ_A_LINE
