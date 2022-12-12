@@ -1763,6 +1763,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             {
                 ERR("' could not find ");
                 ioType( (char *) CharPtr+1, *CharPtr );
+                EMIT_CR;
                 M_THROW(-13);
             }
             else
