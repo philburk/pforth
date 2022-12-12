@@ -26,10 +26,13 @@
 #if (defined(PF_NO_STDIO) || defined(PF_EMBEDDED))
 #define NULL ((void *)0)
 #define ERR(msg) /* { printf msg; } */
-#else
-#include <stdio.h>
+#elif !defined(WIN32)
+#define NULL ((void *)0)
+#define ERR(msg) /* { printf msg; } */
 #include <unistd.h>
 #include <string.h>
+#else
+#include <stdio.h>
 #define ERR(msg) \
   { printf msg; }
 #endif
@@ -84,7 +87,7 @@ int main(int argc, char **argv) {
 
   pfSetQuiet(FALSE);
 /* Parse command line. */
-#if (defined(PF_NO_STDIO) || defined(PF_EMBEDDED))
+#if (defined(PF_NO_STDIO) || defined(PF_EMBEDDED) || defined(WIN32))
   for (i = 1; i < argc; i++) {
     s = argv[i];
 
@@ -142,7 +145,6 @@ int main(int argc, char **argv) {
           DicName = PF_DEFAULT_DICTIONARY;
         }
         else {
-          printf("DIC %s\n", optarg);
           DicName = strdup(optarg);
         }
         break;
