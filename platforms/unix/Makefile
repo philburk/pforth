@@ -140,6 +140,7 @@ test: $(PFORTHAPP)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_alloc.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_floats.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_file.fth)
+	@echo "PForth Tests PASSED"
 
 clean:
 	rm -f $(PFOBJS) $(PFEMBOBJS)
