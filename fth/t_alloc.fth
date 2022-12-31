@@ -3,6 +3,8 @@
 \
 \ Copyright 1994 3DO, Phil Burk
 
+INCLUDE? }T{  t_tools.fth
+
 anew task-t_alloc.fth
 decimal
 
@@ -85,7 +87,7 @@ NUM_TAF_SLOTS array TAF-SIZES
         THEN
 ;
 
-: TAF.TERM
+: TAF.TERM ( -- error , 0 if PASSED )
         NUM_TAF_SLOTS 0
         DO
                 i taf-addresses @
@@ -96,7 +98,9 @@ NUM_TAF_SLOTS array TAF-SIZES
 \
         taf.max.alloc? dup ." Final    MAX = " . cr
         ." Original MAX = " taf-max-alloc @ dup . cr
-        = IF ." Test PASSED." ELSE ." Test FAILED!" THEN cr
+        = IF ." Test PASSED." 0
+        ELSE ." Test FAILED!" 1
+        THEN cr
 
 ;
 
@@ -112,5 +116,10 @@ NUM_TAF_SLOTS array TAF-SIZES
 ;
 
 .( Testing ALLOCATE and FREE) cr
-10000 taf.test
+
+TEST{
+
+T{ 10000 taf.test }T{ 0 }T
+
+}TEST
 

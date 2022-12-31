@@ -26,9 +26,9 @@ variable TEST-FAILED
 : }TEST
     test-passed @ 4 .r ."  passed, "
     test-failed @ 4 .r ."  failed." cr
-\    test-failed @ 0> IF
-\        TEST_EXIT_FAILURE bye-code !
-\    THEN
+    test-failed @ 0> IF
+        TEST_EXIT_FAILURE bye-code !
+    THEN
 ;
 
 
