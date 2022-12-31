@@ -59,7 +59,8 @@ cell_t          gDepthAtColon;
 cell_t          gVarContext;      /* Points to last name field. */
 cell_t          gVarState;        /* 1 if compiling. */
 cell_t          gVarBase;         /* Numeric Base. */
-cell_t          gVarEcho;           /* Echo input. */
+cell_t          gVarByeCode;      /* Echo input. */
+cell_t          gVarEcho;         /* Echo input. */
 cell_t          gVarTraceLevel;   /* Trace Level for Inner Interpreter. */
 cell_t          gVarTraceStack;   /* Dump Stack each time if true. */
 cell_t          gVarTraceFlags;   /* Enable various internal debug messages. */
@@ -572,7 +573,7 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
     PF_USER_TERM;
 #endif
 
-    return Result;
+    return Result ? Result : gVarByeCode;
 
 error2:
     MSG("pfDoForth: Error occured.\n");

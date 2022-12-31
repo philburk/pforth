@@ -135,6 +135,8 @@ T{  6.6 FROUND   7.0  0.0 F~ }T{ true }T
 T{ -3.2 FROUND  -3.0  0.0 F~ }T{ true }T
 T{ -8.8 FROUND  -9.0  0.0 F~ }T{ true }T
 
+T{ 23 }T{ 78 }T   \ force failure
+
 \  ----------------------------------------------------- FFIELD:
 BEGIN-STRUCTURE ABCS
     field:  abc.w1
