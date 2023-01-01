@@ -361,6 +361,7 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_TO_R, ">R", 0 );
     CreateDicEntryC( ID_TYPE, "TYPE", 0 );
     CreateDicEntryC( ID_VAR_BASE, "BASE", 0 );
+    CreateDicEntryC( ID_VAR_BYE_CODE, "BYE-CODE", 0 );
     CreateDicEntryC( ID_VAR_CODE_BASE, "CODE-BASE", 0 );
     CreateDicEntryC( ID_VAR_CODE_LIMIT, "CODE-LIMIT", 0 );
     CreateDicEntryC( ID_VAR_CONTEXT, "CONTEXT", 0 );

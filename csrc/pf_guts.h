@@ -289,12 +289,12 @@ enum cforth_primitive_ids
     ID_FILE_RENAME,    /* (RENAME-FILE) */
     ID_FILE_RESIZE,    /* RESIZE-FILE */
     ID_SLEEP_P,        /* (SLEEP) V2.0.0 */
-/* If you add a word here, take away one reserved word below. */
+    ID_VAR_BYE_CODE,   /* BYE-CODE */
+    /* If you add a word here, take away one reserved word below. */
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
 ** unsupported primitives when loading dictionary.
 */
-    ID_RESERVED01,
     ID_RESERVED02,
     ID_RESERVED03,
     ID_RESERVED04,
@@ -491,6 +491,7 @@ extern cell_t         gDepthAtColon;
 extern cell_t        gVarContext;    /* Points to last name field. */
 extern cell_t        gVarState;      /* 1 if compiling. */
 extern cell_t        gVarBase;       /* Numeric Base. */
+extern cell_t        gVarByeCode;    /* BYE-CODE returned on exit */
 extern cell_t        gVarEcho;       /* Echo input from file. */
 extern cell_t        gVarEchoAccept; /* Echo input from ACCEPT. */
 extern cell_t        gVarTraceLevel;

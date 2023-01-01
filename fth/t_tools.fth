@@ -14,17 +14,21 @@ decimal
 variable TEST-DEPTH
 variable TEST-PASSED
 variable TEST-FAILED
+40 constant TEST_EXIT_FAILURE \ returned form pForth to shell
 
 : TEST{
-        depth test-depth !
-        0 test-passed !
-        0 test-failed !
+    depth test-depth !
+    0 test-passed !
+    0 test-failed !
 ;
 
 
 : }TEST
-        test-passed @ 4 .r ."  passed, "
-        test-failed @ 4 .r ."  failed." cr
+    test-passed @ 4 .r ."  passed, "
+    test-failed @ 4 .r ."  failed." cr
+    test-failed @ 0> IF
+        TEST_EXIT_FAILURE bye-code !
+    THEN
 ;
 
 

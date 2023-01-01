@@ -1787,6 +1787,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_VAR_BASE: DO_VAR(gVarBase); endcase;
+        case ID_VAR_BYE_CODE: DO_VAR(gVarByeCode); endcase;
         case ID_VAR_CODE_BASE: DO_VAR(gCurrentDictionary->dic_CodeBase); endcase;
         case ID_VAR_CODE_LIMIT: DO_VAR(gCurrentDictionary->dic_CodeLimit); endcase;
         case ID_VAR_CONTEXT: DO_VAR(gVarContext); endcase;
