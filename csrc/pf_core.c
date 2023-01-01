@@ -55,7 +55,9 @@ ExecToken       gAcceptP_XT;         /* XT of ACCEPT */
 /* Depth of data stack when colon called. */
 cell_t          gDepthAtColon;
 
-/* Global Forth variables. */
+/* Global Forth variables.
+* These must be initialized in pfInit below.
+*/
 cell_t          gVarContext;      /* Points to last name field. */
 cell_t          gVarState;        /* 1 if compiling. */
 cell_t          gVarBase;         /* Numeric Base. */
@@ -98,7 +100,8 @@ static void pfInit( void )
     gLocalCompiler_XT = 0;
     gVarContext = (cell_t)NULL;   /* Points to last name field. */
     gVarState = 0;        /* 1 if compiling. */
-    gVarEcho = 0;       /* Echo input. */
+    gVarByeCode = 0;      /* BYE-CODE */
+    gVarEcho = 0;         /* Echo input. */
     gVarTraceLevel = 0;   /* Trace Level for Inner Interpreter. */
     gVarTraceFlags = 0;   /* Enable various internal debug messages. */
     gVarReturnCode = 0;   /* Returned to caller of Forth, eg. UNIX shell. */
