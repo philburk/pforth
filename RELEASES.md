@@ -4,10 +4,20 @@ PForth hosted at https://github.com/philburk/pforth
 
 Documentation at http://www.softsynth.com/pforth/
 
-## V2.0.0 #29 - unreleased
+## V2.0.0 #29 - Jan 1, 2023
+
+### Breaking API change!
 
 * Fixed FROUND, was leaving result on data stack instead of float stack, [#69](https://github.com/philburk/pforth/issues/69)
-* Added standard version numbering, eg. "2.0.0".
+
+### Other changes
+
+* Added standard version numbering, eg. "2.0.0"
+* Add BYE-CODE variable, which will be returned to the shell when pForth exits.
+* Set BYE-CODE when a test fails to simplify continuous integration tests.
+* Add ANS structure support
+* Add [DEFINED] and [UNDEFINED]
+* Implement MSEC using usleep() to avoid busy wait.
 * Added VERSION_CODE for software version checks.
 * Added S\"
 * Terminal is unbuffered on posix systems
@@ -21,7 +31,7 @@ Documentation at http://www.softsynth.com/pforth/
 * Change license to 0BSD
 * Added privatize to history.fth
 
-## V28 - 4/24/2018
+## V28 - April 24, 2018, tagged as V1.28.0 to conform to standard version format
 
 * remove off_t
 * too many changes to list, see commit history (TODO add changes)
