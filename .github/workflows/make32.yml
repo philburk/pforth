@@ -1,0 +1,27 @@
+name: Make32
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  # Customize the Make build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    # This uses a Unix Makefile and should run on Linux and Mac
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install MultiLib to support 32-bit builds
+      run: sudo apt-get install gcc-multilib
+
+    - name: Build and Test
+      working-directory: ${{github.workspace}}/platforms/unix
+      run: make test WIDTHOPT=-m32
