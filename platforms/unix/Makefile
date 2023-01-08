@@ -14,13 +14,14 @@ SRCDIR       = ../..
 PFORTHDIR    = $(SRCDIR)
 CSRCDIR      = $(PFORTHDIR)/csrc
 FTHDIR       = $(PFORTHDIR)/fth
+UNIXDIR      = platforms/unix
 
 PFDICAPP     = pforth
 PFORTHDIC    = pforth.dic
 PFDICDAT     = pfdicdat.h
 PFORTHAPP    = pforth_standalone
 
-# This is needed to get pForth to build on Snow Leopard and other 64 bit platforms.
+# Set this parameter to -m32 if you want to compile a 32-bit binary.
 WIDTHOPT=
 
 FULL_WARNINGS =  \
@@ -134,12 +135,12 @@ help:
 	@echo "   It allows pForth to work as a standalone image that does not need to load a dictionary file."
 
 test: $(PFORTHAPP)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_corex.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_strings.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_locals.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_alloc.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_floats.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $${wd}/$(PFORTHAPP) -q t_file.fth)
+	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_corex.fth
+	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_strings.fth
+	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_locals.fth
+	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_alloc.fth
+	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_floats.fth
+	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_file.fth
 	@echo "PForth Tests PASSED"
 
 clean:
