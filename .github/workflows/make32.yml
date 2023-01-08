@@ -19,6 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install MultiLib to support 32-bit builds
+      run: sudo apt-get install gcc-multilib
 
     - name: Build and Test
       working-directory: ${{github.workspace}}/platforms/unix
