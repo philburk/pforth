@@ -144,8 +144,8 @@ END-STRUCTURE
 
 T{ 0 abc.w1 }T{ 0 }T
 T{ 0 abc.f1 }T{ 1 floats }T  \ aligns to next float boundary
-T{ 0 abc.w2 }T{ 2 cells }T
-T{ abcs }T{ cell  1 floats +  cell + }T
+T{ 0 abc.w2 }T{ 2 floats }T  \ f1 adds a float
+T{ abcs }T{ 2 floats cell + }T  \ w2 adds a cell
 
 CREATE MY-ABCS ABCS ALLOT
 6543 my-abcs abc.w1 !
