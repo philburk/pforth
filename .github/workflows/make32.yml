@@ -1,4 +1,4 @@
-name: Make
+name: Make32
 
 on:
   push:
@@ -22,4 +22,4 @@ jobs:
 
     - name: Build and Test
       working-directory: ${{github.workspace}}/platforms/unix
-      run: make test
+      run: make test WIDTHOPT=-m32
