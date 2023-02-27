@@ -200,15 +200,18 @@ static void TraceNames( ExecToken Token, cell_t Level )
 /* Truncate the unsigned double cell integer LO/HI to an uint64_t. */
 static uint64_t UdToUint64( ucell_t Lo, ucell_t Hi )
 {
-    return (( 2 * sizeof(ucell_t) == sizeof(uint64_t) )
-        ? (((uint64_t)Lo) | (((uint64_t)Hi) >> (sizeof(ucell_t) * 8)))
-        : Lo);
+#if (PF_SIZEOF_CELL == 4)
+    return (((uint64_t)Lo) | (((uint64_t)Hi) >> (sizeof(ucell_t) * 8)));
+#else
+    (void)Hi;
+    return Lo;
+#endif
 }
 
 /* Return TRUE if the unsigned double cell integer LO/HI is not greater
  * then the greatest uint64_t.
  */
-static int UdIsUint64( ucell_t Lo, ucell_t Hi )
+static int UdIsUint64( ucell_t Hi )
 {
     return (( 2 * sizeof(ucell_t) == sizeof(uint64_t) )
         ? TRUE
@@ -1158,7 +1161,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		FileStream *File = (FileStream *) TOS;
 		ucell_t SizeHi = (ucell_t) M_POP;
 		ucell_t SizeLo = (ucell_t) M_POP;
-		TOS = ( UdIsUint64( SizeLo, SizeHi )
+		TOS = ( UdIsUint64( SizeHi )
 			? sdResizeFile( File, UdToUint64( SizeLo, SizeHi ))
 			: THROW_RESIZE_FILE );
 	    }

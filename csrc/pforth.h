@@ -32,6 +32,7 @@ typedef void *PForthDictionary;
 #include <stdint.h>
 /* Integer types for Forth cells, signed and unsigned: */
 typedef intptr_t cell_t;
+#define PF_SIZEOF_CELL __SIZEOF_INTPTR__
 typedef uintptr_t ucell_t;
 
 typedef ucell_t ExecToken;              /* Execution Token */

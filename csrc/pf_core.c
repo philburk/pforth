@@ -472,14 +472,12 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
 #elif PF_LITTLE_ENDIAN_DIC
             MSG("/LE");
 #endif
-            if (sizeof(cell_t) == 8)
-            {
+
+#if (PF_SIZEOF_CELL == 8)
                 MSG("/64");
-            }
-            else if (sizeof(cell_t) == 4)
-            {
+#elif (PF_SIZEOF_CELL  == 4)
                 MSG("/32");
-            }
+#endif
 
             MSG( ", built "__DATE__" "__TIME__ );
         }
