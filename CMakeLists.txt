@@ -37,10 +37,12 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     message("Warning: _CRT_SECURE_NO_WARNINGS")
     set(PFORTH_EXE Debug/pforth.exe)
+	set(PFORTH_EXTRA_LIBS )
 endif(WIN32)
 
 if(UNIX OR APPLE)
     set(PFORTH_EXE pforth)
+	set(PFORTH_EXTRA_LIBS m)
 endif(UNIX OR APPLE)
 
 add_subdirectory(csrc)
@@ -60,7 +62,7 @@ endif(UNISTD)
 
 # 1. Build pforth executable
 add_executable(pforth csrc/pf_main.c)
-target_link_libraries(pforth ${PROJECT_NAME}_lib)
+target_link_libraries(pforth ${PROJECT_NAME}_lib ${PFORTH_EXTRA_LIBS})
 
 # 2. Build pforth.dic by compiling system.fth
 set(PFORTH_DIC "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pforth.dic")
@@ -89,6 +91,6 @@ add_dependencies(${PROJECT_NAME}_lib_sd pforth_dic_header)
 
 # 4. Build pforth_standalone using the precompiled dictionary.
 add_executable(pforth_standalone csrc/pf_main.c)
-target_link_libraries(pforth_standalone ${PROJECT_NAME}_lib_sd)
+target_link_libraries(pforth_standalone ${PROJECT_NAME}_lib_sd ${PFORTH_EXTRA_LIBS})
 target_compile_definitions(pforth_standalone PRIVATE PF_STATIC_DIC)
 add_dependencies(pforth_standalone pforth_dic_header)
