@@ -301,7 +301,7 @@
         break;
 
     case ID_FP_FLNP1: /* ( -- ) ( F: r1 -- r2 ) */
-        FP_TOS = (PF_FLOAT) (fp_log(FP_TOS) + 1.0);
+        FP_TOS = (PF_FLOAT) fp_log1p(FP_TOS); /* log(x+1) */
         break;
 
     case ID_FP_FLOG: /* ( -- ) ( F: r1 -- r2 ) */

@@ -36,6 +36,7 @@ typedef double PF_FLOAT;
 #define fp_floor  floor
 #define fp_log    log
 #define fp_log10  log10
+#define fp_log1p  log1p
 #define fp_pow    pow
 #define fp_sin    sin
 #define fp_sinh   sinh
