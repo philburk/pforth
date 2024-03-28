@@ -23,11 +23,11 @@
 ***************************************************************/
 
 /*
-** PFORTH_VERSION changes when PForth is modified and released.
+** PFORTH_VERSION changes when PForth is modified.
 ** See README file for version info.
 */
-#define PFORTH_VERSION_CODE 30
-#define PFORTH_VERSION_NAME "2.0.1"
+#define PFORTH_VERSION_CODE 31
+#define PFORTH_VERSION_NAME "2.0.2"
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
