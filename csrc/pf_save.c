@@ -299,6 +299,33 @@ int IsHostLittleEndian( void )
     return (int) (*bp); /* Return byte pointed to by address. If LSB then == 1 */
 }
 
+/* Convert dictionary info chunk between native and on-disk (big-endian). */
+static void
+convertDictionaryInfoWrite (DictionaryInfoChunk *sd)
+{
+/* Convert all fields in DictionaryInfoChunk from Native to BigEndian.
+ * This assumes they are all 32-bit integers.
+ */
+    int   i;
+    uint32_t *p = (uint32_t *) sd;
+    for (i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++)
+    {
+        Write32BigEndian( (uint8_t *)&p[i], p[i] );
+    }
+}
+
+static void
+convertDictionaryInfoRead (DictionaryInfoChunk *sd)
+{
+/* Convert all fields in structure from BigEndian to Native. */
+    int   i;
+    uint32_t *p = (uint32_t *) sd;
+    for (i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++)
+    {
+        p[i] = Read32BigEndian( (uint8_t *)&p[i] );
+    }
+}
+
 #if defined(PF_NO_FILEIO) || defined(PF_NO_SHELL)
 
 cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize, cell_t CodeSize)
@@ -345,33 +372,6 @@ static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t 
 error:
     pfReportError("WriteChunkToFile", PF_ERR_WRITE_FILE);
     return -1;
-}
-
-/* Convert dictionary info chunk between native and on-disk (big-endian). */
-static void
-convertDictionaryInfoWrite (DictionaryInfoChunk *sd)
-{
-/* Convert all fields in DictionaryInfoChunk from Native to BigEndian.
- * This assumes they are all 32-bit integers.
- */
-    int   i;
-    uint32_t *p = (uint32_t *) sd;
-    for (i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++)
-    {
-        Write32BigEndian( (uint8_t *)&p[i], p[i] );
-    }
-}
-
-static void
-convertDictionaryInfoRead (DictionaryInfoChunk *sd)
-{
-/* Convert all fields in structure from BigEndian to Native. */
-    int   i;
-    uint32_t *p = (uint32_t *) sd;
-    for (i=0; i<((int)(sizeof(*sd)/sizeof(uint32_t))); i++)
-    {
-        p[i] = Read32BigEndian( (uint8_t *)&p[i] );
-    }
 }
 
 /****************************************************************

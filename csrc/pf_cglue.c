@@ -100,4 +100,6 @@ Err CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t 
 
     return 0;
 }
+#else
+#warning "CreateGlueToC() not compiled. OK"
 #endif
