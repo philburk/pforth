@@ -20,13 +20,11 @@ There are no GUI tools for developing desktop applications. PForth is lean and m
 PForth has a tool for compiling code on a desktop, then exporting the dictionary in big or little endian format as 'C' source code.
 This lets you compile tests for an embedded system that does not have file I/O.
 
-PForth is based on ANSI-Forth but is not 100% compatible.
+PForth is based on ANSI-Forth but is not 100% compatible. https://forth-standard.org/standard/words
 
-Code for pForth is maintained on GitHub at:
-  https://github.com/philburk/pforth
+Code for pForth is maintained on GitHub at: https://github.com/philburk/pforth
 
-Documentation for pForth at:
-  http://www.softsynth.com/pforth/
+Documentation for pForth at: http://www.softsynth.com/pforth/
 
 To report bugs or request features please file a GitHub Issue.
   
