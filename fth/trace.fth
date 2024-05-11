@@ -21,6 +21,7 @@
 \
 \ Modifications:
 \      19990930 John Providenza - Fixed stack bugs in GD
+\      20240511 Phil Burk - Fix 2>R and 2R> and 2R@
 
 anew task-trace.fth
 
@@ -272,9 +273,9 @@ variable TRACE-LOCALS-PTR  \ point to top of local frame
         ['] R>         OF trace.r> ENDOF
         ['] R@         OF trace.r@ ENDOF
         ['] RDROP      OF trace.rdrop ENDOF
-        ['] 2>R        OF trace.>r trace.>r ENDOF
-        ['] 2R>        OF trace.r> trace.r> ENDOF
-        ['] 2R@        OF trace.r@ 1 trace.rpick ENDOF
+        ['] 2>R        OF swap trace.>r trace.>r ENDOF
+        ['] 2R>        OF trace.r> trace.r> swap ENDOF
+        ['] 2R@        OF 1 trace.rpick trace.r@  ENDOF
         ['] i          OF 1 trace.rpick ENDOF
         ['] j          OF 3 trace.rpick ENDOF
         ['] (LEAVE)    OF trace.rdrop trace.rdrop  ip @ +-> ip ENDOF
