@@ -231,4 +231,11 @@ void sdTerminalInit( void )
 void sdTerminalTerm( void )
 {
 }
+
+cell_t sdSleepMillis(cell_t msec)
+{
+    Sleep(msec);
+    return 0;
+}
+
 #endif
