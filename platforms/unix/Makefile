@@ -7,6 +7,8 @@
 
 .POSIX:
 
+UNAME := $(shell uname -s)
+
 # Options include: PF_SUPPORT_FP PF_NO_MALLOC PF_NO_INIT PF_DEBUG
 # See "docs/pf_ref.htm" file for more info.
 
@@ -44,6 +46,11 @@ IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
 #IO_SOURCE = pf_io_stdio.c
 
 EMBCCOPTS = -DPF_STATIC_DIC #-DPF_NO_FILEIO
+
+# c99 on macOS doesn't handle the command line options properly
+ifeq "$(UNAME)" "Darwin"
+	CC=clang
+endif
 
 #######################################
 PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
