@@ -749,6 +749,9 @@ read_error:
 error:
     sdCloseFile( fid );
 xt_error:
+    MSG("Error loading dictionary from: ");
+    MSG(FileName);
+    EMIT_CR;
     return NULL;
 }
 

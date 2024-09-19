@@ -488,7 +488,6 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
             pfDebugMessage("SourceName = "); pfDebugMessage(SourceName); pfDebugMessage("\n");
         }
 
-
 #ifdef PF_NO_GLOBAL_INIT
         if( LoadCustomFunctionTable() < 0 ) goto error2; /* Init custom 'C' call array. */
 #endif
