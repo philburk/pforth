@@ -1141,7 +1141,7 @@ DBUGX(("readLineFromStream(0x%x, 0x%x, 0x%x)\n", buffer, len, stream ));
     }
 
 /* NUL terminate line to simplify printing when debugging. */
-    if( (len >= 0) && (len < maxChars) ) p[len] = '\0';
+    if( (len >= 0) && (len < maxChars) ) *p = '\0';
 
     return len;
 }
