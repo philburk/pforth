@@ -63,10 +63,10 @@
 #define FTRUE (-1)
 #define BLANK (' ')
 
-#define FLAG_PRECEDENCE (0x80)
+/* #define FLAG_PRECEDENCE (0x80) */
 #define FLAG_IMMEDIATE  (0x40)
-#define FLAG_SMUDGE     (0x20)
-#define MASK_NAME_SIZE  (0x1F)
+#define FLAG_SMUDGE     (0x80)
+#define MASK_NAME_SIZE  (0x3F)
 
 /* Debug TRACE flags */
 #define TRACE_INNER     (0x0002)

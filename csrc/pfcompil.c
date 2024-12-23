@@ -99,7 +99,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 */
 void CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags )
 {
-    ForthString FName[40];
+    ForthString FName[70];
     CStringToForth( FName, CName, sizeof(FName) );
     CreateDicEntry( XT, FName, Flags );
 }
@@ -460,7 +460,7 @@ cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
     cell_t Searching = TRUE;
     cell_t Result = 0;
 
-    WordLen = (uint8_t) ((ucell_t)*WordName & 0x1F);
+    WordLen = (uint8_t) ((ucell_t)*WordName & MASK_NAME_SIZE);
     WordChar = WordName+1;
 
     NameField = (ForthString *) gVarContext;
@@ -653,7 +653,7 @@ void ffStringDefer( const ForthStringPtr FName, ExecToken DefaultXT )
 /* Convert name then create deferred dictionary entry. */
 static void CreateDeferredC( ExecToken DefaultXT, const char *CName )
 {
-    char FName[40];
+    char FName[70];
     CStringToForth( FName, CName, sizeof(FName) );
     ffStringDefer( FName, DefaultXT );
 }

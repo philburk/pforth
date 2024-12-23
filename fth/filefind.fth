@@ -56,7 +56,7 @@ ANEW TASK-FILEFIND.FTH
                 OF
                     dpth 0=
                     IF
-                        nfa count 31 and
+                        nfa count 63 and
                         4 - swap 4 + swap
                         true -> stoploop
                     ELSE

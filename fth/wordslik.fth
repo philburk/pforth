@@ -25,7 +25,7 @@ decimal
 
 
 : PARTIAL.MATCH.NAME  ( $str1 nfa  -- flag , is $str1 in nfa ??? )
-    count $ 1F and
+    count $ 3F and
     rot count
     search
     >r 2drop r>

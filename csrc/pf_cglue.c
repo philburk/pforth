@@ -86,7 +86,7 @@ DBUG(("CallUserFunction: Index = %d, ReturnMode = %d, NumParams = %d\n",
 Err CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t NumParams )
 {
     ucell_t Packed;
-    char FName[40];
+    char FName[70];
 
     CStringToForth( FName, CName, sizeof(FName) );
     Packed = (Index & 0xFFFF) | 0 | (NumParams << 24) |
