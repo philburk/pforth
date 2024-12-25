@@ -67,9 +67,6 @@ static bool_t CopyFile( FileStream *From, FileStream *To, long Size)
  * not part of C89 but it's in C99. It does not work on NetBSD though.
  */
 
-#include<errno.h>
-
-
 #if defined(__NetBSD__) || defined(_NETBSD_SOURCE)
 /*	Tested on NetBSD 10.1.
 		"F_GETPATH" is not defined on Linux (Kernel 6.6.63), FreeBSD (13.2) or MSYS-Cygwin (MSYS_NT-10.0-22631), so we restrict this function to NetBSD.
