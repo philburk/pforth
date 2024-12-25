@@ -64,8 +64,37 @@ static bool_t CopyFile( FileStream *From, FileStream *To, long Size)
  *
  * We call freopen with NULL as path argument, because we don't know
  * the actual file-name.  It seems that the trick with path=NULL is
- * not part of C89 but it's in C99.
+ * not part of C89 but it's in C99. It does not work on NetBSD though.
  */
+
+#include<errno.h>
+
+
+#if defined(__NetBSD__) || defined(_NETBSD_SOURCE)
+/*	Tested on NetBSD 10.1.
+		"F_GETPATH" is not defined on Linux (Kernel 6.6.63), FreeBSD (13.2) or MSYS-Cygwin (MSYS_NT-10.0-22631), so we restrict this function to NetBSD.
+		It might also work on "Mac OS X" but that needs to be verified.  */
+
+#include<fcntl.h>
+
+static char getFilePathFromStreamData[PATH_MAX];       /* note: we do not malloc this, so we need not to free it after use! */
+
+static char* getFilePathFromStream( FileStream* File)
+{
+	char* result = NULL;
+	int fd;
+	if( (fd=fileno(File)) != -1 )
+	{
+		if( fcntl(fd, F_GETPATH, getFilePathFromStreamData) != -1 )
+			result = getFilePathFromStreamData;
+	}
+	return result;
+}
+
+#else
+static char* getFilePathFromStream( FileStream* File) { return NULL; }
+#endif
+
 static bool_t TruncateFile( FileStream *File, long Newsize )
 {
     bool_t Error = TRUE;
@@ -76,7 +105,7 @@ static bool_t TruncateFile( FileStream *File, long Newsize )
 	{
 	    if( CopyFile( File, TmpFile, Newsize )) goto cleanup;
 	    if( fseek( TmpFile, 0, SEEK_SET ) != 0 ) goto cleanup;
-	    if( freopen( NULL, "w+b", File ) == NULL ) goto cleanup;
+	    if( freopen( getFilePathFromStream(File), "w+b", File ) == NULL ) goto cleanup; /* gub: NetBSD fails here :-/ */
 	    if( CopyFile( TmpFile, File, Newsize )) goto cleanup;
 	    Error = FALSE;
 
