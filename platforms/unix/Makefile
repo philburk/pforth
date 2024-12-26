@@ -42,6 +42,17 @@ FULL_WARNINGS =  \
 DEBUGOPTS = -g
 CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
+# Enable Address Sanitization when debugging crashes.
+# Default to empty if not set
+ASAN ?= 0
+
+# Set ASANOPTS based on ASAN value
+ifeq ($(ASAN),1)
+    ASANOPTS = -fsanitize=address
+else
+    ASANOPTS =
+endif
+
 IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
 #IO_SOURCE = pf_io_stdio.c
 
@@ -72,8 +83,8 @@ CPPFLAGS = -I. $(XCPPFLAGS)
 CFLAGS = $(XCFLAGS)
 LDFLAGS = $(XLDFLAGS)
 
-COMPILE = $(CC) $(CFLAGS) $(CPPFLAGS)
-LINK = $(CC) $(LDFLAGS)
+COMPILE = $(CC) $(CFLAGS) $(CPPFLAGS) $(ASANOPTS)
+LINK = $(CC) $(LDFLAGS) $(ASANOPTS)
 
 .SUFFIXES: .c .o .eo
 
