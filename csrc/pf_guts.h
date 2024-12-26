@@ -41,8 +41,9 @@
 ** FV8 - 980818 - Added Endian flag.
 ** FV9 - 20100503 - Added support for 64-bit CELL.
 ** FV10 - 20170103 - Added ID_FILE_FLUSH ID_FILE_RENAME ID_FILE_RESIZE
+** FV11 - 20241226 - Added ID_SLEEP_P, ID_VAR_BYE_CODE, ID_VERSION_CODE
 */
-#define PF_FILE_VERSION (10)   /* Bump this whenever primitives added. */
+#define PF_FILE_VERSION (11)   /* Bump this whenever primitives added. */
 #define PF_EARLIEST_FILE_VERSION (9)  /* earliest one still compatible */
 
 /***************************************************************
@@ -292,7 +293,10 @@ enum cforth_primitive_ids
     ID_SLEEP_P,        /* (SLEEP) V2.0.0 */
     ID_VAR_BYE_CODE,   /* BYE-CODE */
     ID_VERSION_CODE,
-/* If you add a word here, take away one reserved word below. */
+/* If you add a word above here,
+**   1. update PF_FILE_VERSION
+**   2. take away one reserved word below
+*/
 #ifdef PF_SUPPORT_FP
 /* Only reserve space if we are adding FP so that we can detect
 ** unsupported primitives when loading dictionary.
