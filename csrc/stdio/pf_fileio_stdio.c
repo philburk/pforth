@@ -21,7 +21,7 @@
 
 #ifndef PF_NO_FILEIO
 
-#include <limits.h>		/* For LONG_MAX */
+#include <limits.h>     /* For LONG_MAX */
 
 typedef int bool_t;
 
@@ -34,17 +34,17 @@ static bool_t CopyFile( FileStream *From, FileStream *To, long Size)
     char *Buffer = pfAllocMem( BufSize );
     if( Buffer != 0 )
     {
-	while( Diff > 0 )
-	{
-	    size_t N = MIN( Diff, BufSize );
-	    if( fread( Buffer, 1, N, From ) < N ) goto cleanup;
-	    if( fwrite( Buffer, 1, N, To ) < N ) goto cleanup;
-	    Diff -= N;
-	}
-	Error = FALSE;
+        while( Diff > 0 )
+        {
+            size_t N = MIN( Diff, BufSize );
+            if( fread( Buffer, 1, N, From ) < N ) goto cleanup;
+            if( fwrite( Buffer, 1, N, To ) < N ) goto cleanup;
+            Diff -= N;
+        }
+        Error = FALSE;
 
-      cleanup:
-	pfFreeMem( Buffer );
+cleanup:
+        pfFreeMem( Buffer );
     }
     return Error;
 }
@@ -68,47 +68,52 @@ static bool_t CopyFile( FileStream *From, FileStream *To, long Size)
  */
 
 #if defined(__NetBSD__) || defined(_NETBSD_SOURCE)
-/*	Tested on NetBSD 10.1.
-		"F_GETPATH" is not defined on Linux (Kernel 6.6.63), FreeBSD (13.2) or MSYS-Cygwin (MSYS_NT-10.0-22631), so we restrict this function to NetBSD.
-		It might also work on "Mac OS X" but that needs to be verified.  */
+/*  Tested on NetBSD 10.1.
+    "F_GETPATH" is not defined on Linux (Kernel 6.6.63), FreeBSD (13.2) or MSYS-Cygwin
+    (MSYS_NT-10.0-22631), so we restrict this function to NetBSD.
+    It might also work on "Mac OS X" but that needs to be verified.
+*/
 
 #include<fcntl.h>
 
-static char getFilePathFromStreamData[PATH_MAX];       /* note: we do not malloc this, so we need not to free it after use! */
+/* note: we do not malloc this, so we need not to free it after use! */
+static char getFilePathFromStreamData[PATH_MAX];
 
 static char* getFilePathFromStream( FileStream* File)
 {
-	char* result = NULL;
-	int fd;
-	if( (fd=fileno(File)) != -1 )
-	{
-		if( fcntl(fd, F_GETPATH, getFilePathFromStreamData) != -1 )
-			result = getFilePathFromStreamData;
-	}
-	return result;
+    char* result = NULL;
+    int fd;
+    if( (fd=fileno(File)) != -1 )
+    {
+        if( fcntl(fd, F_GETPATH, getFilePathFromStreamData) != -1 )
+        {
+            result = getFilePathFromStreamData;
+        }
+    }
+    return result;
 }
 
 #else
 static char* getFilePathFromStream( FileStream* File) { return NULL; }
-#endif
+#endif  /* NetBSD */
 
 static bool_t TruncateFile( FileStream *File, long Newsize )
 {
     bool_t Error = TRUE;
     if( fseek( File, 0, SEEK_SET ) == 0)
     {
-	FileStream *TmpFile = tmpfile();
-	if( TmpFile != NULL )
-	{
-	    if( CopyFile( File, TmpFile, Newsize )) goto cleanup;
-	    if( fseek( TmpFile, 0, SEEK_SET ) != 0 ) goto cleanup;
-	    if( freopen( getFilePathFromStream(File), "w+b", File ) == NULL ) goto cleanup;
-	    if( CopyFile( TmpFile, File, Newsize )) goto cleanup;
-	    Error = FALSE;
+        FileStream *TmpFile = tmpfile();
+        if( TmpFile != NULL )
+        {
+            if( CopyFile( File, TmpFile, Newsize )) goto cleanup;
+            if( fseek( TmpFile, 0, SEEK_SET ) != 0 ) goto cleanup;
+            if( freopen( getFilePathFromStream(File), "w+b", File ) == NULL ) goto cleanup;
+            if( CopyFile( TmpFile, File, Newsize )) goto cleanup;
+            Error = FALSE;
 
-	  cleanup:
-	    fclose( TmpFile );
-	}
+cleanup:
+            fclose( TmpFile );
+        }
     }
     return Error;
 }
@@ -121,16 +126,17 @@ static bool_t ExtendFile( FileStream *File, size_t Diff )
     char * Buffer = pfAllocMem( BufSize );
     if( Buffer != 0 )
     {
-	pfSetMemory( Buffer, 0, BufSize );
-	while( Diff > 0 )
-	{
-	    size_t N = MIN( Diff, BufSize );
-	    if( fwrite( Buffer, 1, N, File ) < N ) goto cleanup;
-	    Diff -= N;
-	}
-	Error = FALSE;
-      cleanup:
-	pfFreeMem( Buffer );
+        pfSetMemory( Buffer, 0, BufSize );
+        while( Diff > 0 )
+        {
+            size_t N = MIN( Diff, BufSize );
+            if( fwrite( Buffer, 1, N, File ) < N ) goto cleanup;
+            Diff -= N;
+        }
+        Error = FALSE;
+
+cleanup:
+        pfFreeMem( Buffer );
     }
     return Error;
 }
@@ -140,17 +146,17 @@ ThrowCode sdResizeFile( FileStream *File, uint64_t Size )
     bool_t Error = TRUE;
     if( Size <= LONG_MAX )
     {
-	long Newsize = (long) Size;
-	if( fseek( File, 0, SEEK_END ) == 0 )
-	{
-	    long Oldsize = ftell( File );
-	    if( Oldsize != -1L )
-	    {
-		Error = ( Oldsize <= Newsize
-			  ? ExtendFile( File, Newsize - Oldsize )
-			  : TruncateFile( File, Newsize ));
-	    }
-	}
+        long Newsize = (long) Size;
+        if( fseek( File, 0, SEEK_END ) == 0 )
+        {
+            long Oldsize = ftell( File );
+            if( Oldsize != -1L )
+            {
+                Error = (Oldsize <= Newsize)
+                        ? ExtendFile( File, Newsize - Oldsize )
+                        : TruncateFile( File, Newsize );
+            }
+        }
     }
     return Error ? THROW_RESIZE_FILE : 0;
 }
