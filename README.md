@@ -4,8 +4,6 @@ by Phil Burk
 with Larry Polansky, David Rosenboom and Darren Gibbs.
 Support for 64-bit cells by Aleksej Saushev.
 
-Last updated: November 27, 2022
-
 Portable Forth written in 'C' for most 32 and 64-bit platforms.
 
 PForth is written in 'C' and can be easily ported to new 32 and 64-bit platforms. 
