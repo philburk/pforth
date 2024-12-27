@@ -29,13 +29,14 @@
 #define PFORTH_VERSION_CODE 33
 #define PFORTH_VERSION_NAME "2.1.1"
 
-// Most Forth word names are short - so 31 characters should be enough.
-// However if you are integrating with other systems - for example libSDL
-// some names are longer than 31 characters. This provides up to 63 characters 
-// for a word names.
-//
-// Long term this can become the default since there is no storage penalty
-// when not using them.
+/* Most Forth word names are short - so 31 characters should be enough.
+ * However if you are integrating with other systems - for example libSDL
+ * some names are longer than 31 characters. This provides up to 63 characters 
+ * for a word names.
+ *
+ * Long term this can become the default since there is no storage penalty
+ * when not using them.
+ */
 #define LONG_NAME_SUPPORT
 
 /*
@@ -51,7 +52,7 @@
 ** FV9 - 20100503 - Added support for 64-bit CELL.
 ** FV10 - 20170103 - Added ID_FILE_FLUSH ID_FILE_RENAME ID_FILE_RESIZE
 ** FV11 - 20241226 - Added ID_SLEEP_P, ID_VAR_BYE_CODE, ID_VERSION_CODE
-** FV12 - 20241227 - Added Long name support, ID_FLAG_SMUDGE, ID_NAME_MASK_SIZE
+** FV12 - 20241227 - Added Long name support, ID_FLAG_SMUDGE, ID_MASK_NAME_SIZE
 */
 
 #define PF_FILE_VERSION (12)   /* Bump this whenever primitives added. */
@@ -90,7 +91,7 @@
 #define MASK_NAME_SIZE  (0x1F)
 #endif
 
-// these the same, but have different names for clarity
+/* these the same, but have different names for clarity */
 #define LONGEST_WORD_NAME MASK_NAME_SIZE
 
 /* Debug TRACE flags */
@@ -319,7 +320,7 @@ enum cforth_primitive_ids
     ID_VAR_BYE_CODE,   /* BYE-CODE */
     ID_VERSION_CODE,
     ID_FLAG_SMUDGE,
-    ID_NAME_MASK_SIZE,
+    ID_MASK_NAME_SIZE,
 /* If you add a word above here,
 **   1. update PF_FILE_VERSION
 **   2. take away one reserved word below
