@@ -99,7 +99,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 */
 void CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags )
 {
-    ForthString FName[70];
+    ForthString FName[LONGEST_WORD_NAME+9];    // +1 for length, up to +9 should not be used, but is here for safety
     CStringToForth( FName, CName, sizeof(FName) );
     CreateDicEntry( XT, FName, Flags );
 }
@@ -384,6 +384,8 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_WORD_STORE, "W!", 0 );
     CreateDicEntryC( ID_XOR, "XOR", 0 );
     CreateDicEntryC( ID_ZERO_BRANCH, "0BRANCH", 0 );
+    CreateDicEntryC( ID_FLAG_SMUDGE, "FLAG_SMUDGE", 0 );
+    CreateDicEntryC( ID_NAME_MASK_SIZE, "MASK_NAME_SIZE", 0 );
 
     pfDebugMessage("pfBuildDictionary: FindSpecialXTs\n");
     if( FindSpecialXTs() < 0 ) goto error;
@@ -653,7 +655,7 @@ void ffStringDefer( const ForthStringPtr FName, ExecToken DefaultXT )
 /* Convert name then create deferred dictionary entry. */
 static void CreateDeferredC( ExecToken DefaultXT, const char *CName )
 {
-    char FName[70];
+    char FName[LONGEST_WORD_NAME+9];    // +1 for length, up to +9 should not be used, but is here for safety
     CStringToForth( FName, CName, sizeof(FName) );
     ffStringDefer( FName, DefaultXT );
 }

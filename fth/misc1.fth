@@ -100,8 +100,6 @@ variable TAB-WIDTH  8 TAB-WIDTH !
     tab-width @   swap - spaces
 ;
 
-$80 constant FLAG_SMUDGE
-
 \ Vocabulary listing
 : WORDS  ( -- )
     0 latest

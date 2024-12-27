@@ -32,7 +32,7 @@ private{
 
 decimal
 16 constant LV_MAX_VARS    \ maximum number of local variables
-63 constant LV_MAX_CHARS   \ maximum number of letters in name
+mask_name_size constant LV_MAX_CHARS   \ maximum number of letters in name
 
 lv_max_vars lv_max_chars $array LV-NAMES
 variable LV-#NAMES   \ number of names currently defined

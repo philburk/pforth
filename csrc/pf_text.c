@@ -340,7 +340,7 @@ void TypeName( const char *Name )
     cell_t Len;
 
     FirstChar = Name+1;
-    Len = *Name & 0x3F;
+    Len = *Name & MASK_NAME_SIZE;
 
     ioType( FirstChar, Len );
 }
