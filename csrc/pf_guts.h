@@ -26,8 +26,8 @@
 ** PFORTH_VERSION changes when PForth is modified.
 ** See README file for version info.
 */
-#define PFORTH_VERSION_CODE 31
-#define PFORTH_VERSION_NAME "2.0.2"
+#define PFORTH_VERSION_CODE 32
+#define PFORTH_VERSION_NAME "2.1.0"
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
