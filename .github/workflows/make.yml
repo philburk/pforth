@@ -21,4 +21,4 @@ jobs:
 
     - name: Build and Test
       working-directory: ${{github.workspace}}/platforms/unix
-      run: make test
+      run: make test ASAN=1
