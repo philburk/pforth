@@ -218,13 +218,12 @@ void WriteCellBigEndian( uint8_t *addr, ucell_t data )
 {
     /* Write should be in order of increasing address
      * to optimize for burst writes to DRAM. */
-    if( sizeof(ucell_t) == 8 )
-    {
+	#if (LONG_MAX > 2147483647)  /* LONG_MAX from limits.h: values > 2^31-1 indicates 64bit ints */
         *addr++ = (uint8_t) (data>>56);
         *addr++ = (uint8_t) (data>>48);
         *addr++ = (uint8_t) (data>>40);
         *addr++ = (uint8_t) (data>>32);
-    }
+	#endif
     *addr++ = (uint8_t) (data>>24);
     *addr++ = (uint8_t) (data>>16);
     *addr++ = (uint8_t) (data>>8);
