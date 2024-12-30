@@ -127,6 +127,9 @@ static void pfTerm( void )
 void pfDeleteTask( PForthTask task )
 {
     pfTaskData_t *cftd = (pfTaskData_t *)task;
+#ifdef PF_SUPPORT_FP
+    FREE_VAR( cftd->td_FloatStackLimit );
+#endif
     FREE_VAR( cftd->td_ReturnLimit );
     FREE_VAR( cftd->td_StackLimit );
     pfFreeMem( cftd );

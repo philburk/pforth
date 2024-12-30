@@ -24,4 +24,5 @@ jobs:
 
     - name: Build and Test
       working-directory: ${{github.workspace}}/platforms/unix
-      run: make test WIDTHOPT=-m32
+      run: make test WIDTHOPT=-m32 ASAN=1
+
