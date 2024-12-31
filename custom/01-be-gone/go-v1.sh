@@ -6,26 +6,18 @@
 # Warning: This patches the existing source tree and might create confusion when not used on separate Git branch in case an error occurs.
 # Tested on MSYS2-Cygwin, Linux, FreeBSD (X86_64 architecture each), NetBSD (i386 architecture)
 
-os=`uname -o 2>/dev/null`
-if test -z "$os" ; then
-  # NetBSD-uname does not implement '-o' option
-  os=`uname -s`
-fi
-case "$os" in
-  "FreeBSD" | "NetBSD")
-    MAKE_CMD="gmake"
-    ;;
-  *) # e.g. "Msys" | "GNU/Linux"
-    MAKE_CMD="make"
-    ;;
-esac
-
 # copy demo sources. Thus we do not need to change the make file.
+
 cp ../cf_helpers.h  ../../csrc/
 cp cf_demo1.c       ../../csrc/
 
-# make pforth (skip standalone executable)
+echo
+echo "----------------------------------------"
+echo "make pforth (skip standalone executable)"
+echo "----------------------------------------"
+MAKE_CMD=`./get-make-cmd.sh`
 cd ../../platforms/unix/
+
 CF_SOURCES="cf_demo1.c" $MAKE_CMD clean pforth.dic
 
 # create a nuisance to delete
