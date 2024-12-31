@@ -12,18 +12,12 @@ if test -z "$os" ; then
   os=`uname -s`
 fi
 case "$os" in
-  "FreeBSD")
-    # TODO: remove next line once Makefile has been updated accordingly (pull request pending)
-    CC="clang"
-	export CC
+  "FreeBSD" | "NetBSD")
     MAKE_CMD="gmake"
     ;;
-  "NetBSD")
-    MAKE_CMD="gmake"
-	;;
   *) # e.g. "Msys" | "GNU/Linux"
     MAKE_CMD="make"
-	;;
+    ;;
 esac
 
 # save original C sources and copy demo sources. Thus we do not need to change the make file.
