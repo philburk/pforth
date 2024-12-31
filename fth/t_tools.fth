@@ -64,17 +64,6 @@ CREATE the-test 128 CHARS ALLOT
 ;
 
 
-: int>str s>d swap over dabs <# #s rot sign #> ;
-: concat { addr1 len1 addr2 len2 | addr3 len3 -- addr3 len3 }
-  \ concatenates string at addr2 to string at addr1
-  len1 len2 + dup -> len3
-  chars allocate abort" panic: can not allocate result buffer in concat" -> addr3
-  addr1 addr3        len1 cmove
-  addr2 addr3 len1 + len2 cmove
-  addr3 len3
-  ;
-: concat+free { addr1 len1 addr2 len2  -- addr3 len3 }
-  addr1 len1 addr2 len2 concat addr1 free abort" panic: can not free temporary buffer-1 in concat+free" ;
 : }T    \ ( ... -- ) Compare stack (expected) contents with saved
         \ (actual) contents.
     DEPTH
@@ -89,12 +78,11 @@ CREATE the-test 128 CHARS ALLOT
             if
                 2drop
             else
-                >R >R
                 -1 test-passed +!
                 1 test-failed +!
-                s" INCORRECT RESULT (expected=" R> int>str concat
-                s" , got="         concat+free  R> int>str concat+free
-                s" ): "            concat+free
+                ." INCORRECT RESULT (got=" . 
+                ." , expected=" .
+                 s" ) from "
                 error
                 LEAVE
             THEN
