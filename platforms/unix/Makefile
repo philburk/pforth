@@ -62,6 +62,10 @@ EMBCCOPTS = -DPF_STATIC_DIC #-DPF_NO_FILEIO
 ifeq "$(UNAME)" "Darwin"
 	CC=clang
 endif
+# c99 on FreeBSD does not accept '-x' option
+ifeq "$(UNAME)" "FreeBSD"
+	CC=clang
+endif
 
 #######################################
 PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
