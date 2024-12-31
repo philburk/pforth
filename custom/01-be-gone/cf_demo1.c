@@ -28,7 +28,7 @@ static cell_t be_gone( cell_t fileName, cell_t fnLen )
     int res;
     char* buf = to_C_string( fileName, fnLen );
     res = remove(buf);  /* delete file in file system */
-    if( res!=0 )
+    if( res!=0 && errno!=0 )
         res = errno;
     free(buf);
     return res;

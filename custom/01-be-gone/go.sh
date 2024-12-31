@@ -1,16 +1,33 @@
 #!/bin/sh
 
-MAKE_CMD="make"    # on Linux, MSYS2-Cygwin
-#MAKE_CMD="gmake"  # on FreeBSD?, NetBSD
-
-
-# Compile pForth with custom code and show that this works.
+# Compile pForth with custom code and show that this works. 
 # We assume a posix shell and system (but adaption should be easy to others).
-# This patches the existing source tree and might create confusion when not used on separate Git branch in case an error occurs.
+# Note: This is the easiest solution but ignores PForths best practices set up in pfcustom.c
+# Warning: This patches the existing source tree and might create confusion when not used on separate Git branch in case an error occurs.
+# Tested on MSYS2-Cygwin, Linux, FreeBSD (X86_64 architecture each), NetBSD (i386 architecture)
+
+os=`uname -o 2>/dev/null`
+if test -z "$os" ; then
+  # NetBSD-uname does not implement '-o' option
+  os=`uname -s`
+fi
+case "$os" in
+  "FreeBSD")
+    CC="clang"
+	export CC
+    MAKE_CMD="gmake"
+    ;;
+  "NetBSD")
+    MAKE_CMD="gmake"
+	;;
+  *) # e.g. "Msys" | "GNU/Linux"
+    MAKE_CMD="make"
+	;;
+esac
 
 # save original C sources and copy demo sources. Thus we do not need to change the make file.
 mv ../../csrc/pfcustom.c ../../csrc/pfcustom_c.original
-cp cf_helpers.h ../../csrc/
+cp ../cf_helpers.h ../../csrc/
 cp cf_demo1.c   ../../csrc/pfcustom.c # 
 
 # make pforth (skip standalone executable)
@@ -25,25 +42,12 @@ echo
 echo "---------------------------"
 echo "show that custom code works"
 echo "---------------------------"
-cat >demo1.fth << EOF
-." f4711( 0, 100 ) = "
-0 f4711 .
-100 f4711 .
-CR
+./pforth -q ../../custom/01-be-gone/demo.fth
 
-." be-gone: "
-s" terrible_nuisance.asm" be-gone 0= dup 
-if 
-  ." works."
-  drop
-else
-  ." returns error=" .
-then CR
-EOF
-./pforth -q demo1.fth
-
-# restore original source tree
-rm demo1.fth
+echo
+echo "----------------------------"
+echo "restore original source tree"
+echo "----------------------------"
 mv ../../csrc/pfcustom_c.original ../../csrc/pfcustom.c 
 $MAKE_CMD clean
 
