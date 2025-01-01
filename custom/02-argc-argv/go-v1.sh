@@ -8,8 +8,10 @@
 
 # copy demo sources. Thus we do not need to change the make file.
 
-cp ../cf_helpers.h  ../../csrc/
-cp cf_demo1.c       ../../csrc/
+cp cf_demo2.c  ../../csrc/
+patch -bcN ../../csrc/pf_main.c diff-pf_main.c
+# patch was created via: diff -c old-pf_main.c new-pf_main.c > diff-pf_main.c
+# patch options: -b=backup, -c=context-diff (same as in diff), -N=ignore reversed or already applied patches
 
 echo
 echo "----------------------------------------"
@@ -17,24 +19,21 @@ echo "make pforth (skip standalone executable)"
 echo "----------------------------------------"
 MAKE_CMD=`../get-make-cmd.sh`
 cd ../../platforms/unix/
-
-CF_SOURCES="cf_demo1.c" $MAKE_CMD clean pforth.dic
-
-# create a nuisance to delete
-mv ../../csrc/cf_helpers.h ./terrible_nuisance.asm
+CF_SOURCES="cf_demo2.c" $MAKE_CMD pforth.dic
 
 echo
 echo "---------------------------"
 echo "show that custom code works"
 echo "---------------------------"
-./pforth -q ../../custom/01-be-gone/demo.fth
+./pforth -q ../../custom/02-argc-argv/demo.fth -- "01: icke dette" 02:kieke 03:mal
 
 echo
 echo "----------------------------"
 echo "restore original source tree"
 echo "----------------------------"
-rm ../../csrc/cf_demo1.c
-CF_SOURCES="cf_demo1.c" $MAKE_CMD clean
+rm ../../csrc/cf_demo2.c
+mv ../../csrc/pf_main.c.orig ../../csrc/pf_main.c
+CF_SOURCES="cf_demo2.c" $MAKE_CMD clean
 
 echo
 echo "-----------------"
