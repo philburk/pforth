@@ -82,10 +82,7 @@ CREATE the-test 128 CHARS ALLOT
                 1 test-failed +!
                 ." (got=" (.) type
                 ." , expected=" (.) type ." ) "
-                .S INCORRECT RESULT: " error
-                ." , expected=" (.) type
-                s" ) from "
-                error
+                S" INCORRECT RESULT: " error
                 LEAVE
             THEN
         LOOP
