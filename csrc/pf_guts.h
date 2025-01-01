@@ -32,7 +32,7 @@
 /* Most Forth word names are short - so 31 characters should be enough.
  * However if you are integrating with other systems - for example libSDL
  * some names are longer than 31 characters. This provides up to 63 characters 
- * for a word names.
+ * for word names.
  *
  * Long term this can become the default since there is no storage penalty
  * when not using them.
