@@ -25,7 +25,7 @@ echo
 echo "---------------------------"
 echo "show that custom code works"
 echo "---------------------------"
-(./pforth -q ../../custom/02-argc-argv/demo.fth -- "01: icke dette" 02:kieke 03:mal) | tee cf-demo.output
+(./pforth -q ../../custom/02-argc-argv/demo.fth -- "01: One FORTH to" 02:find 03:them) | tee cf-demo.output
 echo "- - - - - - - - - - - - - -"
 echo "is this the expected output?"
 diff -s cf-demo.output ../../custom/02-argc-argv/demo.correct_output
