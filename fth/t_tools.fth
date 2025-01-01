@@ -80,9 +80,9 @@ CREATE the-test 128 CHARS ALLOT
             else
                 -1 test-passed +!
                 1 test-failed +!
-                ." INCORRECT RESULT (got=" . 
-                ." , expected=" .
-                 s" ) from "
+                ." INCORRECT RESULT (got=" (.) type
+                ." , expected=" (.) type
+                s" ) from "
                 error
                 LEAVE
             THEN
