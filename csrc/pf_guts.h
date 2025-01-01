@@ -29,7 +29,9 @@
 #define PFORTH_VERSION_CODE 33
 #define PFORTH_VERSION_NAME "2.1.1"
 
-/* Most Forth word names are short - so 31 characters should be enough.
+/* 
+ * NOTES about PF_SUPPORT_LONG_NAMES
+ * Most Forth word names are short - so 31 characters should be enough.
  * However if you are integrating with other systems - for example libSDL
  * some names are longer than 31 characters. This provides up to 63 characters 
  * for word names.
@@ -37,7 +39,6 @@
  * Long term this can become the default since there is no storage penalty
  * when not using them.
  */
-#define LONG_NAME_SUPPORT
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
@@ -57,7 +58,7 @@
 
 #define PF_FILE_VERSION (12)   /* Bump this whenever primitives added. */
 
-#if defined(LONG_NAME_SUPPORT)
+#if defined(PF_SUPPORT_LONG_NAMES)
 #define PF_EARLIEST_FILE_VERSION (12)  /* earliest one still compatible */
 #else
 #define PF_EARLIEST_FILE_VERSION (9)  /* earliest one still compatible */
@@ -80,10 +81,11 @@
 #define FTRUE (-1)
 #define BLANK (' ')
 
-/* #define FLAG_PRECEDENCE (0x80) */
+ /* The IMMEDIATE flag is known as the "precedence bit" on some other Forth systems. */
+ /* #define FLAG_PRECEDENCE (0x80) */
 #define FLAG_IMMEDIATE  (0x40)
 
-#ifdef LONG_NAME_SUPPORT
+#ifdef PF_SUPPORT_LONG_NAMES
 #define FLAG_SMUDGE     (0x80)
 #define MASK_NAME_SIZE  (0x3F)
 #else
