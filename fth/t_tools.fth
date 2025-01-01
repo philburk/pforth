@@ -80,7 +80,9 @@ CREATE the-test 128 CHARS ALLOT
             else
                 -1 test-passed +!
                 1 test-failed +!
-                ." INCORRECT RESULT (got=" (.) type
+                ." (got=" (.) type
+                ." , expected=" (.) type ." ) "
+                .S INCORRECT RESULT: " error
                 ." , expected=" (.) type
                 s" ) from "
                 error
