@@ -26,8 +26,19 @@
 ** PFORTH_VERSION changes when PForth is modified.
 ** See README file for version info.
 */
-#define PFORTH_VERSION_CODE 32
-#define PFORTH_VERSION_NAME "2.1.0"
+#define PFORTH_VERSION_CODE 33
+#define PFORTH_VERSION_NAME "2.1.1"
+
+/* 
+ * NOTES about PF_SUPPORT_LONG_NAMES
+ * Most Forth word names are short - so 31 characters should be enough.
+ * However if you are integrating with other systems - for example libSDL
+ * some names are longer than 31 characters. This provides up to 63 characters 
+ * for word names.
+ *
+ * Long term this can become the default since there is no storage penalty
+ * when not using them.
+ */
 
 /*
 ** PFORTH_FILE_VERSION changes when incompatible changes are made
@@ -42,9 +53,16 @@
 ** FV9 - 20100503 - Added support for 64-bit CELL.
 ** FV10 - 20170103 - Added ID_FILE_FLUSH ID_FILE_RENAME ID_FILE_RESIZE
 ** FV11 - 20241226 - Added ID_SLEEP_P, ID_VAR_BYE_CODE, ID_VERSION_CODE
+** FV12 - 20241227 - Added Long name support, ID_FLAG_SMUDGE, ID_MASK_NAME_SIZE
 */
-#define PF_FILE_VERSION (11)   /* Bump this whenever primitives added. */
+
+#define PF_FILE_VERSION (12)   /* Bump this whenever primitives added. */
+
+#if defined(PF_SUPPORT_LONG_NAMES)
+#define PF_EARLIEST_FILE_VERSION (12)  /* earliest one still compatible */
+#else
 #define PF_EARLIEST_FILE_VERSION (9)  /* earliest one still compatible */
+#endif
 
 /***************************************************************
 ** Sizes and other constants
@@ -63,10 +81,20 @@
 #define FTRUE (-1)
 #define BLANK (' ')
 
-#define FLAG_PRECEDENCE (0x80)
+ /* The IMMEDIATE flag is known as the "precedence bit" on some other Forth systems. */
+ /* #define FLAG_PRECEDENCE (0x80) */
 #define FLAG_IMMEDIATE  (0x40)
+
+#ifdef PF_SUPPORT_LONG_NAMES
+#define FLAG_SMUDGE     (0x80)
+#define MASK_NAME_SIZE  (0x3F)
+#else
 #define FLAG_SMUDGE     (0x20)
 #define MASK_NAME_SIZE  (0x1F)
+#endif
+
+/* these the same, but have different names for clarity */
+#define LONGEST_WORD_NAME MASK_NAME_SIZE
 
 /* Debug TRACE flags */
 #define TRACE_INNER     (0x0002)
@@ -293,6 +321,8 @@ enum cforth_primitive_ids
     ID_SLEEP_P,        /* (SLEEP) V2.0.0 */
     ID_VAR_BYE_CODE,   /* BYE-CODE */
     ID_VERSION_CODE,
+    ID_FLAG_SMUDGE,
+    ID_MASK_NAME_SIZE,
 /* If you add a word above here,
 **   1. update PF_FILE_VERSION
 **   2. take away one reserved word below
@@ -301,8 +331,6 @@ enum cforth_primitive_ids
 /* Only reserve space if we are adding FP so that we can detect
 ** unsupported primitives when loading dictionary.
 */
-    ID_RESERVED03,
-    ID_RESERVED04,
     ID_RESERVED05,
     ID_RESERVED06,
     ID_RESERVED07,
