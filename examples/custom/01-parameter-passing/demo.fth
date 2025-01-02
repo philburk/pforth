@@ -8,11 +8,10 @@
 CR
 
 \ example of passing passing strings from PForth to custom C code
-." be-gone: "
-s" terrible_nuisance.asm" be-gone dup 0= 
-if 
-  ." works."
-  drop
-else
-  ." returns error=" .
-then CR
+: SHOW-FILE-INFO 
+  FILE-INFO type cr 
+  ;
+." FILE-INFO: " cr
+s" Makefile"       SHOW-FILE-INFO
+s" ../../examples" SHOW-FILE-INFO
+s" fileNotHere"    SHOW-FILE-INFO

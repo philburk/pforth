@@ -1,6 +1,10 @@
 #include "pf_all.h"      /* lots of stuff */
 #include "cf_helpers.h"  /* panic, safeAlloc, to_C_string, <stdio.h->{fprintf, stderr, ...}  */
-#include <errno.h>       /* errno         */
+#include<errno.h>        /* errno         */
+#include<limits.h>       /* PATH_MAX */
+#include<stdlib.h>       /* malloc */
+#include<string.h>       /* strerror */
+#include<sys/stat.h>     /* struct stat, stat */
 
 /* 
  * put forward declarations here if necessary
@@ -20,18 +24,36 @@ static cell_t f4711( cell_t Val )
     return 11 + 47*Val;
 }
 
-static cell_t be_gone( cell_t fileName, cell_t fnLen )
-{/* Demonstrates passing strings from PForth to C.
-    Interprets the passed strings as file name and tries to delete the file.
-	Returns 0 or errno 
- */
-    int res;
-    char* buf = to_C_string( fileName, fnLen );
-    res = remove(buf);  /* delete file in file system */
-    if( res!=0 && errno!=0 )
-        res = errno;
-    free(buf);
-    return res;
+static cell_t FileInfo( cell_t path_caddr, cell_t path_len ) {
+	char* path = to_C_string( path_caddr, path_len );
+	struct stat info;
+	const char* fmtErr  = "error{ id=%i, desc='%s', path='%s' }";
+	const char* fmtDir  = "directory{ path='%s' }";
+	const char* fmtFile = "file{ size=%i, path='%s' }";
+	char* result;
+#if defined(__MSYS__) || defined(__CYGWIN__)
+    /* work around the sad fact that MSYS/Cygwin do not provide asprintf() */
+	result = malloc(PATH_MAX+128);   /* let's be save */
+	if( stat(path, &info) == -1 )
+		sprintf( result, fmtErr, errno, strerror(errno), path );
+	else {
+		if( S_ISDIR(info.st_mode) )
+			sprintf( result, fmtDir, path );
+		else
+			sprintf( result, fmtFile, info.st_size, path );
+	}
+#else  /* __MSYS__ */
+	if( stat(path, &info) == -1 )
+		asprintf( &result, fmtErr, errno, strerror(errno), path );
+	else {
+		if( S_ISDIR(info.st_mode) )
+			asprintf( &result, fmtDir, path );
+		else
+			asprintf( &result, fmtFile, info.st_size, path );
+	}
+#endif  /* __MSYS__ */
+    PUSH_DATA_STACK( (cell_t) result );
+	return (cell_t)strlen(result);
 }
 
 
@@ -55,7 +77,7 @@ CFunc0 CustomFunctionTable[NUM_CUSTOM_FUNCTIONS];
 Err LoadCustomFunctionTable( void )
 {
     CustomFunctionTable[0] = f4711;
-    CustomFunctionTable[1] = be_gone;
+    CustomFunctionTable[1] = FileInfo;
     return 0;
 }
 
@@ -67,7 +89,7 @@ Err LoadCustomFunctionTable( void )
 CFunc0 CustomFunctionTable[] =
 {
     (CFunc0) f4711,
-    (CFunc0) be_gone
+    (CFunc0) FileInfo
 };
 #endif
 
@@ -87,9 +109,9 @@ Err CompileCustomFunctions( void )
 ** Make sure order of functions matches that in LoadCustomFunctionTable().
 ** Parameters are: Name in UPPER CASE, Function, Index, Mode, NumParams
 */
-    err = CreateGlueToC( "F4711"  , i++, C_RETURNS_VALUE, 1 );
+    err = CreateGlueToC( "F4711"    , i++, C_RETURNS_VALUE, 1 );
     if( err < 0 ) return err;
-    err = CreateGlueToC( "BE-GONE", i++, C_RETURNS_VALUE, 2 );
+    err = CreateGlueToC( "FILE-INFO", i++, C_RETURNS_VALUE, 2 );
     if( err < 0 ) return err;
 
     return 0;
