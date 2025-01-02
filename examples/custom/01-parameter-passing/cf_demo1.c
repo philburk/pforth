@@ -1,8 +1,9 @@
 #include "pf_all.h"      /* lots of stuff */
-#include "cf_helpers.h"  /* panic, safeAlloc, to_C_string, <stdio.h->{fprintf, stderr, ...}  */
+#include "cf_helpers.h"  /* to_C_string */
 #include<errno.h>        /* errno         */
 #include<limits.h>       /* PATH_MAX */
 #include<stdlib.h>       /* malloc */
+#include<stdio.h>        /* asprintf, sprintf */
 #include<string.h>       /* strerror */
 #include<sys/stat.h>     /* struct stat, stat */
 

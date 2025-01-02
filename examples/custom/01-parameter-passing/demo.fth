@@ -9,7 +9,7 @@ CR
 
 \ example of passing passing strings from PForth to custom C code
 : SHOW-FILE-INFO 
-  FILE-INFO type cr 
+  ."    " FILE-INFO type cr 
   ;
 ." FILE-INFO: " cr
 s" Makefile"       SHOW-FILE-INFO
