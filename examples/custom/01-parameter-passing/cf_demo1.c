@@ -20,7 +20,7 @@
 /* exported functions */
 
 static cell_t f4711( cell_t Val )
-{/* a quick way to check that custom worlds are available
+{/* a quick way to check that custom words are available
  */
     return 11 + 47*Val;
 }
