@@ -108,6 +108,7 @@ static bool_t TruncateFile( FileStream *File, long Newsize )
             if( CopyFile( File, TmpFile, Newsize )) goto cleanup;
             if( fseek( TmpFile, 0, SEEK_SET ) != 0 ) goto cleanup;
             if( freopen( getFilePathFromStream(File), "w+b", File ) == NULL ) goto cleanup;
+            if( ftell(File)!=0 ) goto cleanup;  /* Cygwin reopens File BEHIND the content */
             if( CopyFile( TmpFile, File, Newsize )) goto cleanup;
             Error = FALSE;
 
