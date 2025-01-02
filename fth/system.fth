@@ -102,7 +102,7 @@
 \ --------------------------------------------------------------------
 
 : ID.   ( nfa -- )
-    count 31 and type
+    count mask_name_size and type
 ;
 
 : DECIMAL   10 base !  ;
@@ -143,7 +143,7 @@
 \ Dictionary conversions ------------------------------------------
 
 : N>NEXTLINK  ( nfa -- nextlink , traverses name field )
-        dup c@ 31 and 1+ + aligned
+        dup c@ mask_name_size and 1+ + aligned
 ;
 
 : NAMEBASE  ( -- base-of-names )

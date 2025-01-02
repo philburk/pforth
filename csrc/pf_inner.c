@@ -1867,6 +1867,16 @@ DBUGX(("Before 0Branch: IP = 0x%x\n", InsPtr ));
 DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
             endcase;
 
+        case ID_FLAG_SMUDGE:
+            M_PUSH( TOS );
+            TOS = FLAG_SMUDGE;
+            endcase;
+
+        case ID_MASK_NAME_SIZE:
+            PUSH_TOS;
+            TOS = (cell_t) MASK_NAME_SIZE;
+            endcase;
+
         default:
             ERR("pfCatch: Unrecognised token = 0x");
             ffDotHex(Token);

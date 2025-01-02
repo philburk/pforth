@@ -63,6 +63,7 @@ CREATE the-test 128 CHARS ALLOT
     LOOP \ save them
 ;
 
+
 : }T    \ ( ... -- ) Compare stack (expected) contents with saved
         \ (actual) contents.
     DEPTH
@@ -72,10 +73,15 @@ CREATE the-test 128 CHARS ALLOT
         DEPTH 0
         ?DO             \ for each stack item
             actual-results I CELLS + @ \ compare actual with expected
-            <>
-            IF
+            2dup
+            =
+            if
+                2drop
+            else
                 -1 test-passed +!
                 1 test-failed +!
+                ." (got=" (.) type
+                ." , expected=" (.) type ." ) "
                 S" INCORRECT RESULT: " error
                 LEAVE
             THEN
