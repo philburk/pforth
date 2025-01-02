@@ -32,18 +32,7 @@ static cell_t FileInfo( cell_t path_caddr, cell_t path_len ) {
 	const char* fmtDir  = "directory{ path='%s' }";
 	const char* fmtFile = "file{ size=%i, path='%s' }";
 	char* result;
-#if defined(__MSYS__) || defined(__CYGWIN__)
-    /* work around the sad fact that MSYS/Cygwin do not provide asprintf() */
-	result = malloc(PATH_MAX+128);   /* let's be save */
-	if( stat(path, &info) == -1 )
-		sprintf( result, fmtErr, errno, strerror(errno), path );
-	else {
-		if( S_ISDIR(info.st_mode) )
-			sprintf( result, fmtDir, path );
-		else
-			sprintf( result, fmtFile, info.st_size, path );
-	}
-#else  /* __MSYS__ */
+	/* MSYS/Cygwin may warn than asprintf() is not defined but compile and run just fine :-/ */
 	if( stat(path, &info) == -1 )
 		asprintf( &result, fmtErr, errno, strerror(errno), path );
 	else {
@@ -52,7 +41,6 @@ static cell_t FileInfo( cell_t path_caddr, cell_t path_len ) {
 		else
 			asprintf( &result, fmtFile, info.st_size, path );
 	}
-#endif  /* __MSYS__ */
     PUSH_DATA_STACK( (cell_t) result );
 	return (cell_t)strlen(result);
 }
