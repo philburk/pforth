@@ -8,8 +8,10 @@
 
 # copy demo sources. Thus we do not need to change the make file.
 
-cp ../cf_helpers.h  ../../../csrc/
-cp cf_demo1.c       ../../../csrc/
+cp ../cf_helpers.h               ../../../csrc/
+cp              cf_demo1.c       ../../../csrc/
+CUSTOM_SOURCES="cf_demo1.c" 
+export CUSTOM_SOURCES
 
 echo
 echo "----------------------------------------"
@@ -18,7 +20,7 @@ echo "----------------------------------------"
 MAKE_CMD=`../get-make-cmd.sh`
 cd ../../../platforms/unix/
 
-CF_SOURCES="cf_demo1.c" $MAKE_CMD clean pforth.dic
+$MAKE_CMD clean pforth.dic
 
 echo
 echo "---------------------------"
@@ -32,7 +34,7 @@ echo "restore original source tree"
 echo "----------------------------"
 rm ../../csrc/cf_helpers.h
 rm ../../csrc/cf_demo1.c
-CF_SOURCES="cf_demo1.c" $MAKE_CMD clean
+$MAKE_CMD clean
 
 echo
 echo "-----------------"
