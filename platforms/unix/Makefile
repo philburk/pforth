@@ -53,8 +53,10 @@ else
     ASANOPTS =
 endif
 
-IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
-#IO_SOURCE = pf_io_stdio.c
+ifndef IO_SOURCE
+  IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
+  #IO_SOURCE = pf_io_stdio.c
+endif
 
 EMBCCOPTS = -DPF_STATIC_DIC #-DPF_NO_FILEIO
 
