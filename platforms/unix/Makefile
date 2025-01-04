@@ -23,12 +23,15 @@ ifndef CC
     CC=clang
   endif
 endif
+ifndef WIDTHOPT
+  # Set this parameter to -m32 if you want to compile a 32-bit binary. Leave empty for 64-bit binary.
+  WIDTHOPT=
+endif
 ifndef IO_SOURCE
   IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
   #IO_SOURCE = pf_io_stdio.c
   #            TODO: add demo what else is needed for this to work
 endif
-
 
 SRCDIR       = ../..
 PFORTHDIR    = $(SRCDIR)
@@ -40,9 +43,6 @@ PFDICAPP     = pforth
 PFORTHDIC    = pforth.dic
 PFDICDAT     = pfdicdat.h
 PFORTHAPP    = pforth_standalone
-
-# Set this parameter to -m32 if you want to compile a 32-bit binary.
-WIDTHOPT=
 
 FULL_WARNINGS =  \
         --std=c89 \
