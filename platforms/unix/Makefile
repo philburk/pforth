@@ -16,7 +16,7 @@ SRCDIR       = ../..
 PFORTHDIR    = $(SRCDIR)
 CSRCDIR      = $(PFORTHDIR)/csrc
 FTHDIR       = $(PFORTHDIR)/fth
-UNIXDIR      = platforms/unix
+BUILDDIR     = $(shell pwd)
 
 PFDICAPP     = pforth
 PFORTHDIC    = pforth.dic
@@ -157,12 +157,12 @@ help:
 	@echo "   It allows pForth to work as a standalone image that does not need to load a dictionary file."
 
 test: $(PFORTHAPP)
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_corex.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_strings.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_locals.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_alloc.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_floats.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_file.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_corex.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_strings.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_locals.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_alloc.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_floats.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_file.fth
 	@echo "PForth Tests PASSED"
 
 clean:
