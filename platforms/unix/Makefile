@@ -6,6 +6,7 @@
 # See "help" target below.
 
 .POSIX:
+# Please note that this requires gnu make and Posix shell tools (cat, echo, rm, uname...).
 
 UNAME := $(shell uname -s)
 
