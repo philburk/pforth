@@ -74,6 +74,7 @@ On Unix and MacOS using Makefile:
     ./pforth_standalone
     
 For more details, see the [Wiki](https://github.com/philburk/pforth/wiki/Compiling-on-Unix)
+Please note that this can help with other platforms as well, see platforms/zig-crossbuild/ for an example.
 
 Using CMake:
 
