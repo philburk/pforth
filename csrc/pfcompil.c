@@ -337,6 +337,7 @@ PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize )
     CreateDicEntryC( ID_R_FROM, "R>",  0 );
     CreateDicEntryC( ID_RP_FETCH, "RP@",  0 );
     CreateDicEntryC( ID_RP_STORE, "RP!",  0 );
+    CreateDicEntryC( ID_R_ZERO, "R0",  0 );
     CreateDicEntryC( ID_SEMICOLON, ";",  FLAG_IMMEDIATE );
     CreateDicEntryC( ID_SP_FETCH, "SP@",  0 );
     CreateDicEntryC( ID_SP_STORE, "SP!",  0 );
