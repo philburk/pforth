@@ -323,6 +323,7 @@ enum cforth_primitive_ids
     ID_VERSION_CODE,
     ID_FLAG_SMUDGE,
     ID_MASK_NAME_SIZE,
+    ID_R_ZERO,             /* R0 , base of return stack */
 /* If you add a word above here,
 **   1. update PF_FILE_VERSION
 **   2. take away one reserved word below
@@ -331,7 +332,6 @@ enum cforth_primitive_ids
 /* Only reserve space if we are adding FP so that we can detect
 ** unsupported primitives when loading dictionary.
 */
-    ID_RESERVED05,
     ID_RESERVED06,
     ID_RESERVED07,
     ID_RESERVED08,
