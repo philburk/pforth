@@ -26,23 +26,23 @@ static cell_t f4711( cell_t Val )
 }
 
 static cell_t FileInfo( cell_t path_caddr, cell_t path_len ) {
-	char* path = to_C_string( path_caddr, path_len );
-	struct stat info;
-	const char* fmtErr  = "error{ id=%i, desc='%s', path='%s' }";
-	const char* fmtDir  = "directory{ path='%s' }";
-	const char* fmtFile = "file{ size=%i, path='%s' }";
-	char* result;
-	/* MSYS/Cygwin may warn than asprintf() is not defined but compile and run just fine :-/ */
-	if( stat(path, &info) == -1 )
-		asprintf( &result, fmtErr, errno, strerror(errno), path );
-	else {
-		if( S_ISDIR(info.st_mode) )
-			asprintf( &result, fmtDir, path );
-		else
-			asprintf( &result, fmtFile, info.st_size, path );
-	}
+    char* path = to_C_string( path_caddr, path_len );
+    struct stat info;
+    const char* fmtErr  = "error{ id=%i, desc='%s', path='%s' }";
+    const char* fmtDir  = "directory{ path='%s' }";
+    const char* fmtFile = "file{ size=%i, path='%s' }";
+    char* result;
+    /* MSYS/Cygwin may warn than asprintf() is not defined but compile and run just fine :-/ */
+    if( stat(path, &info) == -1 )
+        asprintf( &result, fmtErr, errno, strerror(errno), path );
+    else {
+        if( S_ISDIR(info.st_mode) )
+            asprintf( &result, fmtDir, path );
+        else
+            asprintf( &result, fmtFile, info.st_size, path );
+    }
     PUSH_DATA_STACK( (cell_t) result );
-	return (cell_t)strlen(result);
+    return (cell_t)strlen(result);
 }
 
 

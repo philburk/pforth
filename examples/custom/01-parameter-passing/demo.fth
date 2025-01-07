@@ -7,7 +7,7 @@
 1000 f4711 . ." )"
 CR
 
-\ example of passing passing strings from PForth to custom C code
+\ example of passing strings from PForth to custom C code
 : SHOW-FILE-INFO 
   ."    " FILE-INFO type cr 
   ;
