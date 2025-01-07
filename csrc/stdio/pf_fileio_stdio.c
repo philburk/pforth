@@ -41,7 +41,8 @@ static bool_t TruncateFile( FileStream *File, long Newsize )
 {
 	bool_t Error = TRUE;
 	int fd;
-	if(  -1  !=  ( fd = fileno(File) )  ) {
+	if(  -1  !=  ( fd = fileno(File) )  )
+	{
 		if( 0 == ftruncate(fd, Newsize) )
 			Error = FALSE;
 	}
