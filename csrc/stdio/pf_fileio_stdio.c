@@ -1,5 +1,6 @@
 /***************************************************************
-** File access routines based on ANSI C (no Unix stuff).
+** File access routines based on ANSI C
+**   (no more Unix stuff than strictly necessary).
 **
 ** This file is part of pForth
 **
@@ -25,6 +26,48 @@
 
 typedef int bool_t;
 
+static bool_t TruncateFile( FileStream *File, long Newsize );  /* Shrink the file FILE to NEWSIZE.  Return non-FALSE on error. */
+
+#if defined( __CYGWIN__) || defined( __FreeBSD__) || defined(__NetBSD__) || defined(__linux__)  /* __unix__ */
+/*  Cygwin, FreeBSD, NetBSD and (Manjaro)Linux all define "__unix__", 
+      which might also be defined on incompatible platforms as well (so we do not use it).
+	This uses Unix specific APIs to work around problems with the portable implementation.
+*/
+
+#include<stdio.h>   /* fileno()  */
+#include<unistd.h>  /* ftruncate */
+
+static bool_t TruncateFile( FileStream *File, long Newsize )
+{
+	bool_t Error = TRUE;
+	int fd;
+	if(  -1  !=  ( fd = fileno(File) )  ) {
+		if( 0 == ftruncate(fd, Newsize) )
+			Error = FALSE;
+	}
+	return Error;
+}
+
+#else   /* __unix__ */
+
+/*
+ * There's no direct way to do this in ANSI C.  The closest thing we
+ * have is freopen(3), which truncates a file to zero length if we use
+ * "w+b" as mode argument.  So we do this:
+ *
+ *   1. copy original content to temporary file
+ *   2. re-open and truncate FILE
+ *   3. copy the temporary file to FILE
+ *
+ * Unfortunately, "w+b" may not be the same mode as the original mode
+ * of FILE.  I don't see a away to avoid this, though.
+ *
+ * We call freopen with NULL as path argument, because we don't know
+ * the actual file-name.  It seems that the trick with path=NULL is
+ * not part of C89 but it's in C99.
+ * It does not work on NetBSD and Cygwin though.
+*/
+
 /* Copy SIZE bytes from File FROM to File TO.  Return non-FALSE on error. */
 static bool_t CopyFile( FileStream *From, FileStream *To, long Size)
 {
@@ -49,54 +92,6 @@ cleanup:
     return Error;
 }
 
-/* Shrink the file FILE to NEWSIZE.  Return non-FALSE on error.
- *
- * There's no direct way to do this in ANSI C.  The closest thing we
- * have is freopen(3), which truncates a file to zero length if we use
- * "w+b" as mode argument.  So we do this:
- *
- *   1. copy original content to temporary file
- *   2. re-open and truncate FILE
- *   3. copy the temporary file to FILE
- *
- * Unfortunately, "w+b" may not be the same mode as the original mode
- * of FILE.  I don't see a away to avoid this, though.
- *
- * We call freopen with NULL as path argument, because we don't know
- * the actual file-name.  It seems that the trick with path=NULL is
- * not part of C89 but it's in C99. It does not work on NetBSD though.
- */
-
-#if defined(__NetBSD__) || defined(_NETBSD_SOURCE)
-/*  Tested on NetBSD 10.1.
-    "F_GETPATH" is not defined on Linux (Kernel 6.6.63), FreeBSD (13.2) or MSYS-Cygwin
-    (MSYS_NT-10.0-22631), so we restrict this function to NetBSD.
-    It might also work on "Mac OS X" but that needs to be verified.
-*/
-
-#include<fcntl.h>
-
-/* note: we do not malloc this, so we need not to free it after use! */
-static char getFilePathFromStreamData[PATH_MAX];
-
-static char* getFilePathFromStream( FileStream* File)
-{
-    char* result = NULL;
-    int fd;
-    if( (fd=fileno(File)) != -1 )
-    {
-        if( fcntl(fd, F_GETPATH, getFilePathFromStreamData) != -1 )
-        {
-            result = getFilePathFromStreamData;
-        }
-    }
-    return result;
-}
-
-#else
-static char* getFilePathFromStream( FileStream* File) { return NULL; }
-#endif  /* NetBSD */
-
 static bool_t TruncateFile( FileStream *File, long Newsize )
 {
     bool_t Error = TRUE;
@@ -117,6 +112,9 @@ cleanup:
     }
     return Error;
 }
+
+#endif  /* __unix__ */
+
 
 /* Write DIFF 0 bytes to FILE. Return non-FALSE on error. */
 static bool_t ExtendFile( FileStream *File, size_t Diff )
