@@ -25,7 +25,11 @@ static cell_t f4711( cell_t Val )
     return 11 + 47*Val;
 }
 
-static cell_t FileInfo( cell_t path_caddr, cell_t path_len ) {
+static cell_t file_info( cell_t path_caddr, cell_t path_len )
+{
+    /* takes one filePath (string) as argument and returns some info on it (as a new string)
+         Note that you need to use FREE-C on the result buffer (FREE does not work).
+    */
     char* path = to_C_string( path_caddr, path_len );
     struct stat info;
     const char* fmtErr  = "error{ id=%i, desc='%s', path='%s' }";
@@ -75,7 +79,7 @@ CFunc0 CustomFunctionTable[NUM_CUSTOM_FUNCTIONS];
 Err LoadCustomFunctionTable( void )
 {
     CustomFunctionTable[0] = f4711;
-    CustomFunctionTable[1] = FileInfo;
+    CustomFunctionTable[1] = file_info;
     CustomFunctionTable[1] = free_c;
     return 0;
 }
@@ -88,7 +92,7 @@ Err LoadCustomFunctionTable( void )
 CFunc0 CustomFunctionTable[] =
 {
     (CFunc0) f4711,
-    (CFunc0) FileInfo,
+    (CFunc0) file_info,
     (CFunc0) free_c
 };
 #endif
