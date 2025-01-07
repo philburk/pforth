@@ -29,7 +29,6 @@ ifndef WIDTHOPT
   WIDTHOPT=
 endif
 ifndef IO_SOURCE
-  # for POSIX systems:
   IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
   #IO_SOURCE = pf_io_stdio.c
   #            TODO: add demo what else is needed for this to work
