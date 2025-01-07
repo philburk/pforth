@@ -45,6 +45,15 @@ static cell_t FileInfo( cell_t path_caddr, cell_t path_len ) {
     return (cell_t)strlen(result);
 }
 
+static void free_c( cell_t c_allocate_buffer )
+{
+    /* Using FREE on a c_allocate_buffer is not possible (due to extra information stored),
+         using pfAllocMem() / pfFreeMem() does not help either.
+       So we need a separate word to free C-allocated buffers.
+    */
+    free( (void*) c_allocate_buffer );
+}
+
 
 /****************************************************************
 ** Step 2: Create CustomFunctionTable.
@@ -60,13 +69,14 @@ static cell_t FileInfo( cell_t path_caddr, cell_t path_len ) {
 ** Do not change the name of LoadCustomFunctionTable()!
 ** It is called by the pForth kernel.
 */
-#define NUM_CUSTOM_FUNCTIONS  (2)
+#define NUM_CUSTOM_FUNCTIONS  (3)
 CFunc0 CustomFunctionTable[NUM_CUSTOM_FUNCTIONS];
 
 Err LoadCustomFunctionTable( void )
 {
     CustomFunctionTable[0] = f4711;
     CustomFunctionTable[1] = FileInfo;
+    CustomFunctionTable[1] = free_c;
     return 0;
 }
 
@@ -78,7 +88,8 @@ Err LoadCustomFunctionTable( void )
 CFunc0 CustomFunctionTable[] =
 {
     (CFunc0) f4711,
-    (CFunc0) FileInfo
+    (CFunc0) FileInfo,
+    (CFunc0) free_c
 };
 #endif
 
@@ -101,6 +112,8 @@ Err CompileCustomFunctions( void )
     err = CreateGlueToC( "F4711"    , i++, C_RETURNS_VALUE, 1 );
     if( err < 0 ) return err;
     err = CreateGlueToC( "FILE-INFO", i++, C_RETURNS_VALUE, 2 );
+    if( err < 0 ) return err;
+    err = CreateGlueToC( "FREE-C"   , i++, C_RETURNS_VOID , 1 );
     if( err < 0 ) return err;
 
     return 0;
