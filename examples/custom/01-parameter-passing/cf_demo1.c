@@ -36,17 +36,18 @@ static cell_t file_info( cell_t path_caddr, cell_t path_len )
     const char* fmtDir  = "directory{ path='%s' }";
     const char* fmtFile = "file{ size=%i, path='%s' }";
     char* result;
+	cell_t res_len = -1;
     /* MSYS/Cygwin may warn than asprintf() is not defined but compile and run just fine :-/ */
     if( stat(path, &info) == -1 )
-        asprintf( &result, fmtErr, errno, strerror(errno), path );
+        res_len = asprintf( &result, fmtErr, errno, strerror(errno), path );
     else {
         if( S_ISDIR(info.st_mode) )
-            asprintf( &result, fmtDir, path );
+            res_len = asprintf( &result, fmtDir, path );
         else
-            asprintf( &result, fmtFile, info.st_size, path );
+            res_len = asprintf( &result, fmtFile, info.st_size, path );
     }
     PUSH_DATA_STACK( (cell_t) result );
-    return (cell_t)strlen(result);
+    return res_len;
 }
 
 static void free_c( cell_t c_allocate_buffer )
