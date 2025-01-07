@@ -6,25 +6,44 @@
 # See "help" target below.
 
 .POSIX:
+# Please note that this requires gnu make and Posix shell tools (cat, echo, rm, uname...).
 
 UNAME := $(shell uname -s)
 
 # Options include: PF_SUPPORT_FP PF_NO_MALLOC PF_NO_INIT PF_DEBUG
 # See "docs/pf_ref.htm" file for more info.
 
+# you can set these from outside, defaults are provided otherwise.
+ifndef CC
+  # c99 on macOS doesn't handle the command line options properly
+  ifeq "$(UNAME)" "Darwin"
+     CC=clang
+  endif
+  # c99 on FreeBSD does not accept '-x' option
+  ifeq "$(UNAME)" "FreeBSD"
+    CC=clang
+  endif
+endif
+ifndef WIDTHOPT
+  # Set this parameter to -m32 if you want to compile a 32-bit binary. Leave empty for 64-bit binary.
+  WIDTHOPT=
+endif
+ifndef IO_SOURCE
+  IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
+  #IO_SOURCE = pf_io_stdio.c
+  #            TODO: add demo what else is needed for this to work
+endif
+
 SRCDIR       = ../..
 PFORTHDIR    = $(SRCDIR)
 CSRCDIR      = $(PFORTHDIR)/csrc
 FTHDIR       = $(PFORTHDIR)/fth
-UNIXDIR      = platforms/unix
+BUILDDIR     = $(shell pwd)
 
 PFDICAPP     = pforth
 PFORTHDIC    = pforth.dic
 PFDICDAT     = pfdicdat.h
 PFORTHAPP    = pforth_standalone
-
-# Set this parameter to -m32 if you want to compile a 32-bit binary.
-WIDTHOPT=
 
 FULL_WARNINGS =  \
         --std=c89 \
@@ -53,19 +72,7 @@ else
     ASANOPTS =
 endif
 
-IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
-#IO_SOURCE = pf_io_stdio.c
-
 EMBCCOPTS = -DPF_STATIC_DIC #-DPF_NO_FILEIO
-
-# c99 on macOS doesn't handle the command line options properly
-ifeq "$(UNAME)" "Darwin"
-	CC=clang
-endif
-# c99 on FreeBSD does not accept '-x' option
-ifeq "$(UNAME)" "FreeBSD"
-	CC=clang
-endif
 
 #######################################
 PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
@@ -157,12 +164,12 @@ help:
 	@echo "   It allows pForth to work as a standalone image that does not need to load a dictionary file."
 
 test: $(PFORTHAPP)
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_corex.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_strings.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_locals.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_alloc.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_floats.fth
-	cd $(FTHDIR) && ../$(UNIXDIR)/$(PFORTHAPP) -q t_file.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_corex.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_strings.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_locals.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_alloc.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_floats.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_file.fth
 	@echo "PForth Tests PASSED"
 
 clean:
