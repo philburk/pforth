@@ -28,7 +28,7 @@ typedef int bool_t;
 
 static bool_t TruncateFile( FileStream *File, long Newsize );  /* Shrink the file FILE to NEWSIZE.  Return non-FALSE on error. */
 
-#if defined( __CYGWIN__) || defined( __FreeBSD__) || defined(__NetBSD__)  /* __unix__ */
+#if defined( __CYGWIN__) || defined( __FreeBSD__) || defined(__NetBSD__)  || defined(__minix__) /* __unix__ */
 /*  Cygwin, FreeBSD, NetBSD and (Manjaro)Linux all define "__unix__", 
       which might also be defined on incompatible platforms as well (so we do not use it).
       Linux is excluded from the if statement in order to test the portable code on build.
