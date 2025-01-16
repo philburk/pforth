@@ -23,22 +23,6 @@
 
 ANEW TASK-FLOATS.FTH
 
-: debug-flog
-  fdup fdup f0< F0= or
-  if
-    ." ------> invalid parameter in debug-flog: " 
-    fdup f0=
-    if
-      ." x is zero!"
-    else
-      ." negative x!"
-    then
-	cr
-  else
-    flog
-  then
-;
-
 : safe-flog
   fdup fdup f0< F0= or not
   if
@@ -160,7 +144,7 @@ fvariable FVAR-REP  \ scratch var for represent
         0 -> n
     ELSE
         fvar-rep f@
-        debug-flog
+        safe-flog
         fdup f0< not
         IF
             1 s>f f+ \ round up exponent
@@ -349,7 +333,7 @@ variable FP-OUTPUT-PTR            \ points into FP-OUTPUT-PAD
 : (F.)  ( F: r -- , normal or scientific ) { | n n3 ndiff prec' -- }
     fp-output-pad fp-output-ptr !  \ setup pointer
     fp-represent-pad  \ place to put number
-    fdup debug-flog 1 s>f f+ f>s precision max
+    fdup safe-flog 1 s>f f+ f>s precision max
     fp_precision_max min dup -> prec'
     represent
     ( -- n flag1 flag2 )
