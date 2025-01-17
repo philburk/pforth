@@ -11,10 +11,10 @@ echo "--------------------"
 mkdir src
 mkdir src/csrc
 mkdir src/fth
-mkdir src/build
 cp -r ../../csrc/ ./src/
 cp -r ../../fth/  ./src/
-cp    ../unix/Makefile ./src/build/
+cp    missing.*   ./src/csrc/
+cp    Makefile.mk ./src/csrc/
 find . | grep -i cmake | xargs rm  # Nobody likes CMake!!!
 mv ./src/csrc/win32_console/ ./src/csrc/win32csl/
 
@@ -44,6 +44,15 @@ else # yMissingRenames
     sed -f yFileNames -i $curFile
   done
   rm yFileNames
+
+  echo
+  echo "4) include missing.h in pf_inner.c"
+  echo "----------------------------------"
+  mv ./src/csrc/pf_inner.c tmp.c
+  cat - tmp.c > ./src/csrc/pf_inner.c << EOF
+#include "missing.h"
+EOF
+  rm tmp.c
 
   echo
   echo "99) done"
