@@ -58,3 +58,7 @@ void sdTerminalTerm( void )
 {
 }
 
+cell_t sdSleepMillis(cell_t msec)
+{
+    return PF_ERR_NOT_SUPPORTED;
+}
