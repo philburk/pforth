@@ -71,6 +71,12 @@ T{ 12.34  -0.0001 T_FE.  }T{  true  }T
 T{ 12.34  -0.0001 T_FG.  }T{  true  }T
 T{ 1234.0  -0.0001 T_F>D  }T{  true  }T
 
+\ Check for https://github.com/philburk/pforth/issues/199
+T{ 123456789.0 0.0001 T_F. }T{  true  }T
+T{ -123456789.0 0.0001 T_F. }T{  true  }T
+T{ 123456789876.0 0.0001 T_F. }T{  true  }T
+T{ -123456789876.0 0.0001 T_F. }T{  true  }T
+
 T{ 2345 S>F  79 S>F  F/  -0.0001 T_F.  }T{  true  }T
 T{ 511 S>F  -294 S>F  F/  -0.0001 T_F.  }T{  true  }T
 

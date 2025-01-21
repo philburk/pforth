@@ -323,11 +323,26 @@ variable FP-OUTPUT-PTR            \ points into FP-OUTPUT-PAD
     (fg.) type space
 ;
 
+: FP.CALC.PRECISION ( F: r -- p , calculate optimal precision )
+\ do not call FLOG if r <= 0.0
+    fdup f0< IF
+        fabs
+    THEN
+    fdup f0= IF
+        1
+        fdrop
+    ELSE
+        flog 1 s>f f+ f>s
+    THEN
+;
+
 : (F.)  ( F: r -- , normal or scientific ) { | n n3 ndiff prec' -- }
     fp-output-pad fp-output-ptr !  \ setup pointer
     fp-represent-pad  \ place to put number
-    fdup flog 1 s>f f+ f>s precision max
-    fp_precision_max min dup -> prec'
+    fdup fp.calc.precision
+    precision max
+    fp_precision_max min
+    dup -> prec'
     represent
     ( -- n flag1 flag2 )
     IF
