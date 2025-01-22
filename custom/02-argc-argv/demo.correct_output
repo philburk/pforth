@@ -1,0 +1,4 @@
+argc=3 
+argv[0] = '01: One FORTH to'
+argv[1] = '02:find'
+argv[2] = '03:them'
