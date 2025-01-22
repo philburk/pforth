@@ -182,3 +182,19 @@ variable CLOSEST-XT
         UNTIL
     THEN
 ;
+
+: UNRAVEL  ( -- , show names of words on return stack )
+    >newline ." Calling sequence:" cr
+    r0 rp@ - cell /
+    1-     \ skip call into unravel
+    0 max   50 min  \ clip to reasonable range
+    0
+    ?DO  4 spaces
+        rp@ i 2+   \ skip over DO LOOP control and call to UNRAVEL
+        cell* + @
+        dup code> >name ?dup
+        IF id. drop
+        ELSE .
+        THEN cr?
+    LOOP cr
+;

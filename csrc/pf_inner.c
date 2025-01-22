@@ -1598,6 +1598,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             M_DROP;
             endcase;
 
+        case ID_R_ZERO:    /* ( -- rbase , base of return stack ) */
+            PUSH_TOS;
+            TOS = (cell_t)gCurrentTask->td_ReturnBase;
+            endcase;
+
         case ID_ROLL: /* ( xu xu-1 xu-1 ... x0 u -- xu-1 xu-1 ... x0 xu ) */
             {
                 cell_t ri;
