@@ -171,6 +171,7 @@ test: $(PFORTHAPP)
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_alloc.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_floats.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_file.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_include.fth
 	@echo "PForth Tests PASSED"
 
 clean:
