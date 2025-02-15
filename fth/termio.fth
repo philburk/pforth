@@ -42,6 +42,11 @@ $ 18 constant ASCII_CTRL_X
     ESC[ ." 2J"
 ;
 
+: PAGE ( -- , clear screen, compatible with Brodie )
+    ESC[ ." H"    \ move to (0,0)
+    cls
+;
+
 : TIO.BACKWARDS ( n -- , move cursor backwards )
     ESC[
     base @ >r decimal
