@@ -42,8 +42,8 @@ $ 18 constant ASCII_CTRL_X
     ESC[ ." 2J"
 ;
 
-: PAGE ( -- , clear screen, compatible with Brodie )
-    ESC[ ." H"    \ move to (0,0)
+: PAGE ( -- , move to top left, clear screen, ANS standard )
+    ESC[ ascii H emit    \ move to (0,0)
     cls
 ;
 
