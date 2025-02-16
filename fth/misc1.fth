@@ -70,13 +70,6 @@ decimal
     THEN
 ;
 
-: CLS ( -- clear screen )
-    40 0 do cr loop
-;
-: PAGE ( -- , clear screen, compatible with Brodie )
-    cls
-;
-
 : $ ( <number> -- N , convert next number as hex )
     base @ hex
     bl lword number? num_type_single = not
