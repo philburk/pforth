@@ -1,0 +1,47 @@
+Build environment
+-----------------
+PForth has been build (and run) under both FreeDos and DosBox.
+Others (DR-DOS, MS-DOS...) might work as well.
+
+
+Preparation steps
+-----------------
+DOS limits file names to 8+3 characters.
+Currently 19 relevant files in the PForth source tree violate this rule (see rename.txt for details).
+It is recommended to perform the following steps on a POSIX system (tested under MSYS2/Cygwin):
+  1) run ./step-1-prepare-sourceTree.sh to rename all files to 8+3 characters convention.
+     It will check that no new files violate the convention and abort if so.
+	 In that case extend rename.txt.
+  2) Select OS-specific routine and run appropriate script, e.g.:
+     ./step-2a-select-stdio.sh
+	 For now only stdio is tested.
+  3) Create an archive and transfer it to the build environment.
+     Both FreeDos and Linux-hosts for DosBox provide tar, so you can:
+     tar cf pf-dos.tar src/	 
+     FreeDos also provides unzip.exe if you want to create a ZIP file instead.
+
+
+Compiler
+--------
+FreeDos developers seem to prefer OpenWatcomC (install it via fdimples on FreeDos).
+It has been used to compile PForth successfully under both FreeDos and DosBox.
+(The latter does not provide a "move" command, so the build needs a bit of help at 1 point after pforth.dic has been created).
+This build targets 386 hardware and and a DOS extender (DOS4GW) since the standard 16-bit build (via owcc) failed.
+OpenWatcomC does not implement two required functions for floating point operation, missing.c fixes that.
+The test suite runs fine except for unimplemtented stuff in t_file.fth.
+
+Potentially you could build pforth using DJGPP (gcc and gnu-make).
+Unfortunately I found it unusable (it crashed way too often).
+
+PForth assumes 32bit several times in the source code. 
+Thus not 16 bit compilers (like Turbo C) were tried.
+
+
+where / how to build?
+---------------------
+Extract the prepared sources to a drive with sufficient free space and execute:
+cd .\src\csrc
+wmake
+
+If that worked fine, try this next:
+wmake test
