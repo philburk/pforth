@@ -76,7 +76,7 @@ TESTING 2* 2/ LSHIFT RSHIFT
 { 0S 2/ -> 0S }
 { 1 2/ -> 0 }
 { 4000 2/ -> 2000 }
-{ 1S 2/ -> 1S }             \ MSB PROPOGATED
+{ 1S 2/ -> 1S }             \ MSB PROPAGATED
 { 1S 1 XOR 2/ -> 1S }
 { MSB 2/ MSB AND -> MSB }
 

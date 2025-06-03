@@ -136,7 +136,7 @@ create CRLF$    \ -- addr ; CR/LF as counted string
 ;
 
 create pocket  \ -- addr
-\ *G A tempory buffer to hold processed string.
+\ *G A temporary buffer to hold processed string.
 \    This would normally be an internal system buffer.
 
 s" /COUNTED-STRING" environment? 0= [if] 256 [then]

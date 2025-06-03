@@ -29,7 +29,7 @@ private{
 ;
 
 \ Read the next available char from file FILEID and if it is a \n then
-\ skip it; otherwise unread it.  IOR is non-zero if an error occured.
+\ skip it; otherwise unread it.  IOR is non-zero if an error occurred.
 \ C-ADDR is a buffer that can hold at least one char.
 : SKIP-\N { c-addr fileid -- ior }
     c-addr 1 fileid read-file     ( u ior )

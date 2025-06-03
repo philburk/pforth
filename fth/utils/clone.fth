@@ -468,7 +468,7 @@ create VAR1 567 ,
     IF
         ." TCL4 failed!" cr
     ELSE
-        ." TCL4 succeded! Yay!" cr
+        ." TCL4 succeeded! Yay!" cr
     THEN
 ;
 

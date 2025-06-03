@@ -69,7 +69,7 @@ Documentation at http://www.softsynth.com/pforth/
 ## V24 2/20/09
 
 * Fixed Posix IO on Mac. ?TERMINAL was always returning true.
-* ACCCEPT now emits a space at end of line before output.
+* ACCEPT now emits a space at end of line before output.
 * Fixed RESIZE because it was returning the wrong address.
 
 ## V23 8/4/2008
@@ -127,7 +127,7 @@ Documentation at http://www.softsynth.com/pforth/
 * TO -> and +-> now parse input stream. No longer use to-flag.
 * TO -> and +-> now give error if used with non-immediate word.
 * Added (FLITERAL) support to SEE.
-* Aded TRACE facility for single step debugging of Forth words.
+* Added TRACE facility for single step debugging of Forth words.
 * Added stub for ?TERMINAL and KEY? for embedded systems.
 * Added PF_NO_GLOBAL_INIT for no reliance on global initialization.
 * Added PF_USER_FLOAT for customization of FP support.

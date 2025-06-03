@@ -580,7 +580,7 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
     return Result ? Result : gVarByeCode;
 
 error2:
-    MSG("pfDoForth: Error occured.\n");
+    MSG("pfDoForth: Error occurred.\n");
     pfDeleteTask( cftd );
     /* Terminate so we restore normal shell tty mode. */
     pfTerm();

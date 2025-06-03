@@ -184,7 +184,7 @@
     body_offset - code>
 ;
 
-\ convert between addresses useable by @, and relocatable addresses.
+\ convert between addresses usable by @, and relocatable addresses.
 : USE->REL  ( useable_addr -- rel_addr )
         codebase -
 ;

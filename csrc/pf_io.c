@@ -29,7 +29,7 @@
 */
 void ioInit( void )
 {
-    /* System dependant terminal initialization. */
+    /* System dependent terminal initialization. */
     sdTerminalInit();
 }
 void ioTerm( void )

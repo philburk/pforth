@@ -5,7 +5,7 @@
 #include <conio.h>
 
 /***************************************************************
-** WIN32 dependant include file for PForth, a Forth based on 'C'
+** WIN32 dependent include file for PForth, a Forth based on 'C'
 **
 ** Author: Phil Burk
 ** Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom

@@ -487,7 +487,7 @@ variable FP-IF-INIT
     THEN
 ;
 
-: FP.INIT  ( -- , install FP converion )
+: FP.INIT  ( -- , install FP conversion )
     fp.term
     what's number? is fp.old.number?
     ['] (fp.number?) is number?

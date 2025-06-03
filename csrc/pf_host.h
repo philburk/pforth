@@ -3,7 +3,7 @@
 #define _pf_system_h
 
 /***************************************************************
-** System Dependant Includes for PForth based on 'C'
+** System Dependent Includes for PForth based on 'C'
 **
 ** Author: Phil Burk
 ** Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom

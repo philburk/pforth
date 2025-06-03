@@ -120,7 +120,7 @@ exists? F* [IF]
     see.get.inline 0>
     IF  \ forward branch
         ." IF or WHILE "
-        see.get.target \ calculate adress of target
+        see.get.target \ calculate address of target
         1 +-> see_level
     ELSE
         ." UNTIL=>" see.get.target .hex

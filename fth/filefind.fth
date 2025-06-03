@@ -90,7 +90,7 @@ ANEW TASK-FILEFIND.FTH
     r> context !
 ;
 
-\ Search entire dictionary for all occurences of named word.
+\ Search entire dictionary for all occurrences of named word.
 : FILE? {  | $word nfa done? -- , take name from input }
     0 -> done?
     bl word -> $word
