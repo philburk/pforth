@@ -137,13 +137,7 @@ create (LINE-TERMINATOR) \n c,
 ;
 
 : (  ( "comment<rparen>"  -- )
-    source-id
-    CASE
-        -1 OF postpone ( ENDOF
-        0  OF postpone ( ENDOF
-        \ for input from files
-        multi-line-comment
-    ENDCASE
+	multi-line-comment
 ; immediate
 
 \ We basically try to open the file in read-only mode.  That seems to
