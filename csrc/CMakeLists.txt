@@ -17,7 +17,7 @@ if (MSVC)
     add_compile_options(/W4)
 else()
     # lots of warnings and all warnings as errors
-    add_compile_options(
+    set(PFORTH_COMPILE_OPTIONS
 #        --std=c89
         -fsigned-char
         -fno-builtin
@@ -31,6 +31,10 @@ else()
         -Wmissing-prototypes
         -Wmissing-declarations
         )
+    if(APPLE)
+        list(REMOVE_ITEM PFORTH_COMPILE_OPTIONS "-fno-builtin")
+    endif()
+    add_compile_options(${PFORTH_COMPILE_OPTIONS})
 endif()
 
 add_library(${PROJECT_NAME}_lib ${SOURCES} ${PLATFORM})
