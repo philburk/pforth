@@ -34,7 +34,7 @@
 #include <sys/int_types.h> /* Needed on Solaris for uint32_t in termio.h */
 #endif
 #include <termios.h>
-#include <sys/poll.h>
+#include <poll.h>
 
 static struct termios save_termios;
 static int stdin_is_tty;
