@@ -59,6 +59,13 @@ FULL_WARNINGS =  \
         -Wmissing-prototypes \
         -Wmissing-declarations
 
+# custom code options
+ifndef CF_SOURCES
+  # note: setting CF_PARAM does not help: It only deactivates all definitions in pfcustom.c, which we only include when no custom code is compiled!
+  #       We do not remove CF_PARAM from code and documentation until we can verify that Makefiles continue to work.
+  CF_SOURCES=pfcustom.c
+endif
+
 DEBUGOPTS = -g
 CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
@@ -82,7 +89,7 @@ PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
 	pfcompil.h pfinnrfp.h pforth.h
 PFBASESOURCE = pf_cglue.c pf_clib.c pf_core.c pf_inner.c \
 	pf_io.c pf_io_none.c pf_main.c pf_mem.c pf_save.c \
-	pf_text.c pf_words.c pfcompil.c pfcustom.c
+	pf_text.c pf_words.c pfcompil.c $(CF_SOURCES)
 PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 
 VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32_console:$(CSRCDIR)/win32
