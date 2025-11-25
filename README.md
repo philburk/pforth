@@ -6,7 +6,7 @@ Support for 64-bit cells by Aleksej Saushev.
 
 Portable Forth written in 'C' for most 32 and 64-bit platforms.
 
-PForth is written in 'C' and can be easily ported to new 32 and 64-bit platforms. 
+PForth is written in 'C' and can be easily ported to new 32 and 64-bit platforms.
 It only needs character input and output functions to operate and, therefore, does not require an operating system.
 This makes it handy for bringing up and testing embedded systems.
 
@@ -25,7 +25,7 @@ Code for pForth is maintained on GitHub at: https://github.com/philburk/pforth
 Documentation for pForth at: http://www.softsynth.com/pforth/
 
 To report bugs or request features please file a GitHub Issue.
-  
+
 For questions or general discussion please use the pForth forum at:
   http://groups.google.com/group/pforthdev
 
@@ -72,7 +72,7 @@ On Unix and MacOS using Makefile:
     cd platforms/unix
     make all
     ./pforth_standalone
-    
+
 For more details, see the [Wiki](https://github.com/philburk/pforth/wiki/Compiling-on-Unix)
 Please note that this can help with other platforms as well, see platforms/zig-crossbuild/ for an example.
 
@@ -92,7 +92,7 @@ For embedded systems, see the pForth reference manual at:
 To run the all-in-one pForth enter:
 
     ./pforth_standalone
-    
+
 OR, to run using the dictionary file, enter:
 
     ./pforth
@@ -110,7 +110,7 @@ To compile source code files use:
 To create a custom dictionary enter in pForth:
 
     c" newfilename.dic" SAVE-FORTH
-    
+
 The name must end in ".dic".
 
 To run PForth with the new dictionary enter in the shell:
@@ -119,7 +119,7 @@ To run PForth with the new dictionary enter in the shell:
 
 To run PForth and automatically include a forth file:
     pforth myprogram.fth
-    
+
 ## How to Test pForth
 
 PForth comes with a small test suite.  To test the Core words,
@@ -138,13 +138,14 @@ Using CMake:
     ./pforth
     include tester.fth
     include coretest.fth
+    bye
 
 To run the other tests, enter:
 
-    pforth t_corex.fth
-    pforth t_strings.fth
-    pforth t_locals.fth
-    pforth t_alloc.fth
+    ./pforth t_corex.fth
+    ./pforth tstrings.fth
+    ./pforth t_locals.fth
+    ./pforth t_alloc.fth
 
 They will report the number of tests that pass or fail.
 

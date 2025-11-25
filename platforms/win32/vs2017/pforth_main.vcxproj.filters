@@ -10,7 +10,7 @@
     <ClCompile Include="..\..\..\csrc\pf_core.c">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\csrc\stdio\pf_fileio_stdio.c">
+    <ClCompile Include="..\..\..\csrc\stdio\fiostdio.c">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\csrc\pf_inner.c">
@@ -19,10 +19,10 @@
     <ClCompile Include="..\..\..\csrc\pf_io.c">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\csrc\pf_io_none.c">
+    <ClCompile Include="..\..\..\csrc\ionone.c">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\csrc\win32_console\pf_io_win32_console.c">
+    <ClCompile Include="..\..\..\csrc\win32csl\iowin32c.c">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\csrc\pf_mem.c">

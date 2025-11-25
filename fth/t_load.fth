@@ -2,6 +2,6 @@
 \
 \ Copyright 2001Phil Burk
 
-\ include t_load_undef.fth
-\ include t_load_semi.fth
-include t_load_defer.fth
+\ include tldundef.fth
+\ include tldsemi.fth
+include tlddefer.fth

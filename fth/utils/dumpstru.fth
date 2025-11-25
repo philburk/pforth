@@ -1,4 +1,4 @@
-\ @(#) dump_struct.fth 97/12/10 1.1
+\ @(#) dumpstru.fth 97/12/10 1.1
 \ Dump contents of structure showing values and member names.
 \
 \ Author: Phil Burk

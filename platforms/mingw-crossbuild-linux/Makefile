@@ -43,9 +43,9 @@ FULL_WARNINGS =  \
 DEBUGOPTS = -g
 CCOPTS = $(WIDTHOPT) -x c -O2 $(FULL_WARNINGS) $(EXTRA_CCOPTS) $(DEBUGOPTS)
 
-#IO_SOURCE = pf_io_posix.c
-#IO_SOURCE = pf_io_stdio.c
-IO_SOURCE = pf_io_win32_console.c pf_fileio_stdio.c
+#IO_SOURCE = ioposix.c
+#IO_SOURCE = iostdio.c
+IO_SOURCE = iowin32c.c fiostdio.c
 
 EMBCCOPTS = -DPF_STATIC_DIC
 
@@ -55,11 +55,11 @@ PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
 	pf_text.h pf_types.h pf_win32.h pf_words.h pfcompfp.h \
 	pfcompil.h pfdicdat_arm.h pfinnrfp.h pforth.h
 PFBASESOURCE = pf_cglue.c pf_clib.c pf_core.c pf_inner.c \
-	pf_io.c pf_io_none.c pf_main.c pf_mem.c pf_save.c \
+	pf_io.c ionone.c pf_main.c pf_mem.c pf_save.c \
 	pf_text.c pf_words.c pfcompil.c pfcustom.c
 PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 
-VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32_console:$(CSRCDIR)/win32
+VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32csl:$(CSRCDIR)/win32
 
 XCFLAGS = $(CCOPTS)
 #XCPPFLAGS = -DPF_SUPPORT_FP -DWIN32
@@ -136,7 +136,7 @@ help:
 
 test: $(PFORTHAPP)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_corex.fth)
-	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_strings.fth)
+	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q tstrings.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_locals.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_alloc.fth)
 	wd=$$(pwd); (cd $(FTHDIR); $(WINE) $${wd}/$(PFORTHAPP) -q t_floats.fth)

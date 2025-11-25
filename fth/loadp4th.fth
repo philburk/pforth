@@ -20,7 +20,7 @@ include? forget  forget.fth
 include? >number numberio.fth
 include? task-misc1.fth   misc1.fth
 include? case    case.fth
-include? +field  structure.fth
+include? +field  structur.fth
 include? $=      strings.fth
 include? privatize   private.fth
 include? (local) ansilocs.fth
@@ -28,7 +28,7 @@ include? {       locals.fth
 include? fm/mod  math.fth
 include? [if]    condcomp.fth
 include? task-misc2.fth misc2.fth
-include? save-input save-input.fth
+include? save-input savinput.fth
 include? read-line  file.fth
 include? require    require.fth
 include? s\"     slashqt.fth

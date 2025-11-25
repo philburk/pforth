@@ -3,7 +3,7 @@
 \ Author: Phil Burk
 \ Copyright 3DO 1995
 
-anew task-load_file.fth
+anew task-loadfile.fth
 
 : $LOAD.FILE { $filename | fid numbytes numread err data -- data-addr 0 | 0 err }
     0 -> data

@@ -1,11 +1,11 @@
-\ @(#) t_strings.fth 97/12/10 1.1
+\ @(#) tstrings.fth 97/12/10 1.1
 \ Test ANS Forth String Word Set
 \
 \ Copyright 1994 3DO, Phil Burk
 
 include? }T{  t_tools.fth
 
-marker task-t_string.fth
+marker task-tstrings.fth
 
 decimal
 
