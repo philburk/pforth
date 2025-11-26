@@ -30,9 +30,9 @@ ifndef WIDTHOPT
 endif
 ifndef IO_SOURCE
   # for POSIX systems:
-  IO_SOURCE = pf_io_posix.c pf_fileio_stdio.c
+  IO_SOURCE = ioposix.c fiostdio.c
   # for generic / any system supporting stdio:
-  #   IO_SOURCE = pf_io_stdio.c pf_fileio_stdio.c
+  #   IO_SOURCE = iostdio.c fiostdio.c
 endif
 
 SRCDIR       = ../..
@@ -81,11 +81,11 @@ PFINCLUDES = pf_all.h pf_cglue.h pf_clib.h pf_core.h pf_float.h \
 	pf_text.h pf_types.h pf_win32.h pf_words.h pfcompfp.h \
 	pfcompil.h pfinnrfp.h pforth.h
 PFBASESOURCE = pf_cglue.c pf_clib.c pf_core.c pf_inner.c \
-	pf_io.c pf_io_none.c pf_main.c pf_mem.c pf_save.c \
+	pf_io.c ionone.c pf_main.c pf_mem.c pf_save.c \
 	pf_text.c pf_words.c pfcompil.c pfcustom.c
 PFSOURCE = $(PFBASESOURCE) $(IO_SOURCE)
 
-VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32_console:$(CSRCDIR)/win32
+VPATH = .:$(CSRCDIR):$(CSRCDIR)/posix:$(CSRCDIR)/stdio:$(CSRCDIR)/win32csl:$(CSRCDIR)/win32
 
 XCFLAGS = $(CCOPTS)
 XCPPFLAGS = -DPF_SUPPORT_FP -D_DEFAULT_SOURCE -D_GNU_SOURCE
@@ -155,6 +155,7 @@ pforthapp: $(PFORTHAPP)
 
 help:
 	@echo "Use 'make all' to build standalone pForth executable."
+	@echo "Use 'make test' to build and run tests."
 	@echo "PForth can be built in several stages using these targets:"
 	@echo "   pfdicapp = executable pForth with minimal dictionary. All from 'C'."
 	@echo "   pforthdic = executable pforth plus pforth.dic file"
@@ -166,12 +167,12 @@ help:
 
 test: $(PFORTHAPP)
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_corex.fth
-	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_strings.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q tstrings.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_locals.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_alloc.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_floats.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_file.fth
-	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_include.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q tinclude.fth
 	@echo "PForth Tests PASSED"
 
 clean:

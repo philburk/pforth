@@ -155,14 +155,14 @@
     <ClCompile Include="..\..\..\csrc\pf_core.c" />
     <ClCompile Include="..\..\..\csrc\pf_inner.c" />
     <ClCompile Include="..\..\..\csrc\pf_io.c" />
-    <ClCompile Include="..\..\..\csrc\pf_io_none.c" />
+    <ClCompile Include="..\..\..\csrc\ionone.c" />
     <ClCompile Include="..\..\..\csrc\pf_main.c" />
     <ClCompile Include="..\..\..\csrc\pf_mem.c" />
     <ClCompile Include="..\..\..\csrc\pf_save.c" />
     <ClCompile Include="..\..\..\csrc\pf_text.c" />
     <ClCompile Include="..\..\..\csrc\pf_words.c" />
-    <ClCompile Include="..\..\..\csrc\stdio\pf_fileio_stdio.c" />
-    <ClCompile Include="..\..\..\csrc\win32_console\pf_io_win32_console.c" />
+    <ClCompile Include="..\..\..\csrc\stdio\fiostdio.c" />
+    <ClCompile Include="..\..\..\csrc\win32csl\iowin32c.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\csrc\pfcompfp.h" />

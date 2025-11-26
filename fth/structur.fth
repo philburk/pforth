@@ -14,7 +14,7 @@
 \ CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 \ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-anew task-structure.fth
+anew task-structur.fth
 
 : BEGIN-STRUCTURE ( "<spaces>name" -- struct-sys 0 , start the definition of a structure )
     CREATE

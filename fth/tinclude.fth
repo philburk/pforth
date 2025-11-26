@@ -4,7 +4,7 @@
 
 include? }T{  t_tools.fth
 
-marker task-t_string.fth
+marker task-tinclude.fth
 
 decimal
 
@@ -24,7 +24,7 @@ T{
 }T
 
 ." Intentional error! Test whether INCLUDE can catch an unrecognized word error." cr
-: F_UNDEF " t_load_undef.fth" ;
+: F_UNDEF " tldundef.fth" ;
 T{ F_UNDEF ' $include catch }T{ F_UNDEF -13 }T
 
 }test

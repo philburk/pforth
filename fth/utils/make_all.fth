@@ -1,4 +1,4 @@
-\ @(#) make_all256.fth 97/12/10 1.1
+\ @(#) make_all.fth 97/12/10 1.1
 \ Make a file with all possible 256 bytes in random order.
 \
 \ Author: Phil Burk

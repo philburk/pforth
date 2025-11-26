@@ -5,11 +5,11 @@
 file(STRINGS sources.cmake SOURCES)
 
 if(WIN32)
-set(PLATFORM stdio/pf_fileio_stdio.c win32_console/pf_io_win32_console.c )
+set(PLATFORM stdio/fiostdio.c win32csl/iowin32c.c )
 endif(WIN32)
 
 if(UNIX OR APPLE)
-set(PLATFORM posix/pf_io_posix.c stdio/pf_fileio_stdio.c)
+set(PLATFORM posix/ioposix.c stdio/fiostdio.c)
 endif(UNIX OR APPLE)
 
 if (MSVC)
