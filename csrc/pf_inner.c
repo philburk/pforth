@@ -547,7 +547,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 TOS = TOS * sizeof(cell_t);
                 endcase;
 
-        case ID_CFETCH:   TOS = *((uint8_t *) TOS); endcase;
+        case ID_CFETCH:   TOS = DP_FETCH_U8(TOS); endcase;
 
         case ID_CMOVE: /* ( src dst n -- ) */
             {
@@ -647,7 +647,8 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
             endcase;
 
         case ID_CSTORE: /* ( c caddr -- ) */
-            *((uint8_t *) TOS) = (uint8_t) M_POP;
+                /* *((uint8_t *) TOS) = (uint8_t) M_POP; */
+            DP_STORE_U8(TOS, M_POP);
             M_DROP;
             endcase;
 
@@ -959,10 +960,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else
             {
-                TOS = *((cell_t *)TOS);
+                TOS = DP_FETCH_CELL(TOS);
             }
 #else
-            TOS = *((cell_t *)TOS);
+            TOS = DP_FETCH_CELL(TOS);
 #endif
             endcase;
 
@@ -1460,10 +1461,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else
             {
-                *((cell_t *)TOS) += M_POP;
+                Scratch = DP_FETCH_CELL(TOS);
+                Scratch += M_POP;
+                DP_STORE_CELL(TOS, Scratch);
             }
 #else
-            *((cell_t *)TOS) += M_POP;
+            Scratch = DP_FETCH_CELL(TOS);
+            Scratch += M_POP;
+            DP_STORE_CELL(TOS, Scratch);
 #endif
             M_DROP;
             endcase;
@@ -1665,10 +1670,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else
             {
-                *((cell_t *)TOS) = M_POP;
+                DP_STORE_CELL(TOS, M_POP);
             }
 #else
-            *((cell_t *)TOS) = M_POP;
+            DP_STORE_CELL(TOS, M_POP);
 #endif
             M_DROP;
             endcase;
@@ -1830,10 +1835,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else
             {
-                TOS = *((uint16_t *)TOS);
+                TOS = DP_FETCH_U16(TOS);
             }
 #else
-            TOS = *((uint16_t *)TOS);
+            TOS = DP_FETCH_U16(TOS);
 #endif
             endcase;
 
@@ -1846,10 +1851,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else
             {
-                *((uint16_t *)TOS) = (uint16_t) M_POP;
+                DP_STORE_U16(TOS, (uint16_t) M_POP);
             }
 #else
-            *((uint16_t *)TOS) = (uint16_t) M_POP;
+            DP_STORE_U16(TOS, (uint16_t) M_POP);
 #endif
             M_DROP;
             endcase;
@@ -1913,3 +1918,4 @@ DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
 
     return ExceptionReturnCode;
 }
+
