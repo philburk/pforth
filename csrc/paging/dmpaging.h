@@ -54,14 +54,14 @@ typedef cell_t vm_address_t;
  * A physical address will be passed through.
  * @return physical address that can be used by normal C code as “const” memory.
  */
-#define DP_LOCK_READ_ONLY(virtual_address, numbytes)
+#define DP_LOCK_READ_ONLY(address, numbytes) ((const uint8_t *)(address))
 
 /**
  * Lock a read-write region of demand paging in physical memory.
  * Load the data from demand paging if not already loaded.
  * @return physical address that can be used by normal C code as “const” memory.
  */
-#define DP_LOCK_READ_WRITE(virtual_address, numbytes)
+#define DP_LOCK_READ_WRITE(address, numbytes) ((uint8_t *)(address))
 
 /**
  * Release a previously locked region of memory.
@@ -69,7 +69,7 @@ typedef cell_t vm_address_t;
  * Regions may be kept in physical memory on an LRU basis
  * to improve performance.
  */
-#define DP_UNLOCK(virtual_address)
+#define DP_UNLOCK(address) ((void)(address))
 
 /* Serial Memory Access
  * A demand paging simulator is provided for testing the framework on a host.

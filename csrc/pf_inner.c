@@ -446,8 +446,10 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
             endcase;
 
         case ID_ACCEPT_P: /* ( c-addr +n1 -- +n2 ) */
-            CharPtr = (char *) M_POP;
+            Temp = M_POP;
+            CharPtr = (char *) DP_LOCK_READ_WRITE((vm_address_t) Temp, TOS);
             TOS = ioAccept( CharPtr, TOS );
+            DP_UNLOCK((vm_address_t) Temp);
             endcase;
 
 #ifndef PF_NO_SHELL
@@ -588,11 +590,16 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
         case ID_COMPARE:
             {
                 const char *s1, *s2;
+                vm_address_t v1, v2;
                 cell_t len1;
-                s2 = (const char *) M_POP;
+                v2 = (vm_address_t) M_POP;
                 len1 = M_POP;
-                s1 = (const char *) M_POP;
+                v1 = (vm_address_t) M_POP;
+                s2 = (const char *) DP_LOCK_READ_ONLY(v2, TOS);
+                s1 = (const char *) DP_LOCK_READ_ONLY(v1, len);
                 TOS = ffCompare( s1, len1, s2, TOS );
+                DP_UNLOCK(v1);
+                DP_UNLOCK(v2);
             }
             endcase;
 
@@ -898,7 +905,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_DUMP:
             Scratch = M_POP;
-            DumpMemory( (char *) Scratch, TOS );
+            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Scratch, TOS);
+            DumpMemory( (char *) CharPtr, TOS );
+            DP_UNLOCK((vm_address_t) Scratch);
             M_DROP;
             endcase;
 
@@ -1790,7 +1799,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_TYPE:
             Scratch = M_POP; /* addr */
-            ioType( (char *) Scratch, TOS );
+            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Scratch, TOS);
+            ioType( (char *) CharPtr, TOS );
+            DP_UNLOCK((vm_address_t) Scratch);
             M_DROP;
             endcase;
 
