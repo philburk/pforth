@@ -1,5 +1,8 @@
 /***************************************************************
 ** Demand Paged Memory Simulator
+** This should be replaced by a hardware specific implementation
+** when doing actual demand paging. The real code may, for example,
+** access SPI RAM.
 **
 ** Author: Phil Burk
 ** Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom

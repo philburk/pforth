@@ -447,9 +447,10 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
 
         case ID_ACCEPT_P: /* ( c-addr +n1 -- +n2 ) */
             Temp = M_POP;
-            CharPtr = (char *) DP_LOCK_READ_WRITE((vm_address_t) Temp, TOS);
+            CharPtr = (char *) pfLockMemoryReadWrite((vm_address_t) Temp, TOS);
             TOS = ioAccept( CharPtr, TOS );
-            DP_UNLOCK((vm_address_t) Temp);
+            printf("Call pfUnlockMemory from ID_ACCCEPT\n");
+            pfUnlockMemory((vm_address_t) Temp, CharPtr);
             endcase;
 
 #ifndef PF_NO_SHELL
@@ -595,11 +596,12 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 v2 = (vm_address_t) M_POP;
                 len1 = M_POP;
                 v1 = (vm_address_t) M_POP;
-                s2 = (const char *) DP_LOCK_READ_ONLY(v2, TOS);
-                s1 = (const char *) DP_LOCK_READ_ONLY(v1, len);
+                s2 = (const char *) pfLockMemoryReadOnly(v2, TOS);
+                s1 = (const char *) pfLockMemoryReadOnly(v1, len1);
                 TOS = ffCompare( s1, len1, s2, TOS );
-                DP_UNLOCK(v1);
-                DP_UNLOCK(v2);
+                printf("Call pfUnlockMemory from ID_COMPARE\n");
+                pfUnlockMemory(v1, s1);
+                pfUnlockMemory(v2, s2);
             }
             endcase;
 
@@ -905,9 +907,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_DUMP:
             Scratch = M_POP;
-            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Scratch, TOS);
+            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
             DumpMemory( (char *) CharPtr, TOS );
-            DP_UNLOCK((vm_address_t) Scratch);
+            printf("Call pfUnlockMemory from ID_DUMP\n");
+            pfUnlockMemory((vm_address_t) Scratch, CharPtr);
             M_DROP;
             endcase;
 
@@ -1192,20 +1195,36 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 #ifndef PF_NO_SHELL
         case ID_FIND:  /* ( $addr -- $addr 0 | xt +-1 ) */
-            Scratch = DP_FETCH_U8((vm_address_t) TOS) + 1; /* length including count */
-            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) TOS, Scratch);
-            TOS = ffFind( (char *) CharPtr, (ExecToken *) &Temp );
-            DP_UNLOCK((vm_address_t) TOS);
-            M_PUSH( Temp );
+            {
+                vm_address_t vaddr = (vm_address_t) TOS;
+                Scratch = DP_FETCH_U8(vaddr) + 1; /* length including count */
+                CharPtr = (char *) pfLockMemoryReadOnly(vaddr, Scratch);
+                TOS = ffFind( (char *) CharPtr, (ExecToken *) &Temp );
+                printf("Call pfUnlockMemory from ID_FIND\n");
+                pfUnlockMemory(vaddr, CharPtr);
+                if (TOS != 0) {
+                    M_PUSH( Temp ); /* xt */
+                } else {
+                    M_PUSH( vaddr ); /* $addr */
+                }
+            }
             endcase;
 
-        case ID_FINDNFA:
-            Scratch = DP_FETCH_U8((vm_address_t) TOS) + 1; /* length including count */
-            Temp = (cell_t) DP_LOCK_READ_ONLY((vm_address_t) TOS, Scratch);
-            TOS = ffFindNFA( (const ForthString *) Temp, (const ForthString **) &CellPtr );
-            DP_UNLOCK((vm_address_t) TOS);
-            Temp = (cell_t) CellPtr;
-            M_PUSH( (cell_t) Temp );
+        case ID_FINDNFA: /* ( $name -- $addr 0 | nfa -1 | nfa 1 , find NFA in dictionary ) */
+            {
+                vm_address_t nfa = NULL;
+                vm_address_t name = (vm_address_t) TOS;
+                Scratch = DP_FETCH_U8(name) + 1; /* length including count */
+                CharPtr = (char *) pfLockMemoryReadOnly(name, Scratch);
+                TOS = ffFindNFA( (const ForthString *) CharPtr, (const ForthString **) &nfa );
+                printf("Call pfUnlockMemory from ID_FINDNFA\n");
+                pfUnlockMemory(name, CharPtr);
+                if (TOS != 0) {
+                    M_PUSH( nfa );
+                } else {
+                    M_PUSH( name ); /* $addr */
+                }
+            }
             endcase;
 #endif  /* !PF_NO_SHELL */
 
@@ -1249,9 +1268,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 ** Only supports single precision for bootstrap.
 */
             Scratch = MASK_NAME_SIZE & DP_FETCH_U8((vm_address_t) TOS); /* Length of string. */
-            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) TOS, Scratch);
+            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) TOS, Scratch);
             TOS = (cell_t) ffNumberQ( (char *) CharPtr, &Temp );
-            DP_UNLOCK((vm_address_t) TOS);
+            printf("Call pfUnlockMemory from ID_NUMBERQ_P\n");
+            pfUnlockMemory((vm_address_t) TOS, CharPtr);
             if( TOS == NUM_TYPE_SINGLE)
             {
                 M_PUSH( Temp );   /* Push single number */
@@ -1700,12 +1720,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_SCAN: /* ( addr cnt char -- addr' cnt' ) */
             {
                 Scratch = M_POP; /* cnt */
-                Temp = M_POP;    /* addr */
-                CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Temp, Scratch);
-                TOS = ffScan( (char *) CharPtr, Scratch, (char) TOS, &CharPtr );
-                vm_address_t vaddr = DP_LOCKED_ADDRESS_TO_VIRTUAL(CharPtr);
-                DP_UNLOCK((vm_address_t) Temp);
-                M_PUSH((cell_t) vaddr);
+                Temp = M_POP;    /* virtual address */
+                char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
+                TOS = ffScan( lockedMemory, Scratch, (char) TOS, &CharPtr );
+                printf("Call pfUnlockMemory from ID_SCAN\n");
+                pfUnlockMemory((vm_address_t) Temp, lockedMemory);
+                M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
             }
             endcase;
 
@@ -1722,11 +1742,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             {
                 Scratch = M_POP; /* cnt */
                 Temp = M_POP;    /* addr */
-                CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Temp, Scratch);
-                TOS = ffSkip( (char *) CharPtr, Scratch, (char) TOS, &CharPtr );
-                vm_address_t vaddr = DP_LOCKED_ADDRESS_TO_VIRTUAL(CharPtr);
-                DP_UNLOCK((vm_address_t) Temp);
-                M_PUSH((cell_t) vaddr);
+                char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
+                TOS = ffSkip( lockedMemory, Scratch, (char) TOS, &CharPtr );
+                printf("Call pfUnlockMemory from ID_SKIP\n");
+                pfUnlockMemory((vm_address_t) Temp, lockedMemory);
+                M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
             }
             endcase;
 
@@ -1819,9 +1839,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_TYPE:
             Scratch = M_POP; /* addr */
-            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Scratch, TOS);
+            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
             ioType( (char *) CharPtr, TOS );
-            DP_UNLOCK((vm_address_t) Scratch);
+            printf("Call pfUnlockMemory from ID_TYPE\n");
+            pfUnlockMemory((vm_address_t) Scratch, CharPtr);
             M_DROP;
             endcase;
 

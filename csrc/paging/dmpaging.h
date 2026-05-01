@@ -25,6 +25,10 @@
 extern "C" {
 #endif
 
+#ifndef PF_DEMAND_PAGING
+#define PF_DEMAND_PAGING 1
+#endif
+
 typedef uint8_t *vm_address_t;
 
 /* Basic memory access macros. */
@@ -37,7 +41,8 @@ typedef uint8_t *vm_address_t;
 #define DP_STORE_U16(address, value)  *((uint16_t *)(address)) = (uint16_t)(value)
 
 /* Memory region locking and unlocking
- * A maximum of DP_MAX_REGIONS can be locked at one time. The regions cannot overlap.
+ * A maximum of DP_MAX_REGIONS can be locked at one time.
+ * The regions cannot overlap.
  * Adjacent virtual regions will not be adjacent in physical memory!
  */
 
@@ -46,36 +51,37 @@ typedef uint8_t *vm_address_t;
 /* maximum number of bytes per region */
 #define DP_MAX_REGION_SIZE  (256)
 
+
+void pfResetLockedMemory(void);
+
 /**
  * Lock a read-only region of demand paging in physical memory.
  * Load the data from demand paging if not already loaded.
  * A region should only be locked temporarily, for example within
  * a single primitive.
- * A physical address will be passed through.
+ * If the virtual memory address is not in paged memory then it will be passed through.
  * @return physical address that can be used by normal C code as “const” memory.
  */
-#define DP_LOCK_READ_ONLY(address, numbytes) ((const uint8_t *)(address))
+const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, cell_t numBytes);
 
 /**
  * Lock a read-write region of demand paging in physical memory.
  * Load the data from demand paging if not already loaded.
+ * If the virtual memory address is not in paged memory then it will be passed through.
  * @return physical address that can be used by normal C code as “const” memory.
  */
-#define DP_LOCK_READ_WRITE(address, numbytes) ((uint8_t *)(address))
-
-/**
- * Convert a physical address to a virtual address within the locked region.
- * @return virtual address
- */
-#define DP_LOCKED_ADDRESS_TO_VIRTUAL(address) ((vm_address_t)(address))
+uint8_t *pfLockMemoryReadWrite(vm_address_t vp, cell_t numBytes);
 
 /**
  * Release a previously locked region of memory.
  * Writable regions will be written back to serial memory.
  * Regions may be kept in physical memory on an LRU basis
  * to improve performance.
+ * @param vp virtual memory address
+ * @param pp physical memory address
+ * @return negative code if an error occured
  */
-#define DP_UNLOCK(address) ((void)(address))
+int pfUnlockMemory(vm_address_t vp, const uint8_t *pp);
 
 /* Serial Memory Access
  * A demand paging simulator is provided for testing the framework on a host.
@@ -83,7 +89,7 @@ typedef uint8_t *vm_address_t;
  */
 #define DP_ALIGNMENT_SIZE    (16)
 
-/** Is the given address associated in the paged memory.
+/** Is the given address associated in the paged memory?
  * @return 1 if in paged memory, else 0
  */
 int pfIsAddressInPagedMemory(void *p);

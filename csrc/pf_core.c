@@ -113,6 +113,7 @@ static void pfInit( void )
     gVarTraceStack = 1;
 
     pfInitMemoryAllocator();
+    pfResetLockedMemory();
     ioInit();
 }
 static void pfTerm( void )

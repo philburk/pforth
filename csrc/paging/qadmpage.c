@@ -47,7 +47,8 @@ static int pfQaTestReadWrite(void) {
     uint8_t buffer1[73];
     uint8_t buffer2[sizeof(buffer1)];
     const int kBufferSize = sizeof(buffer1);
-    for (int i = 0; i < kBufferSize; i++) {
+    int i;
+    for (i = 0; i < kBufferSize; i++) {
         buffer1[i] = i;
     }
     pfResetPagedMemory();
@@ -57,9 +58,46 @@ static int pfQaTestReadWrite(void) {
     ASSERT_EQ(written, kBufferSize);
     cell_t numRead = pfReadPagedMemory(buffer2, vm1, kBufferSize, 0);
     ASSERT_EQ(numRead, kBufferSize);
-    for (int i = 0; i < kBufferSize; i++) {
+    for (i = 0; i < kBufferSize; i++) {
         ASSERT_EQ(buffer2[i], buffer1[i]);
     }
+
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestRegionLock(void) {
+    printf("pfQaDemandPaging : pfQaTestRegionLock\n");
+    pfResetLockedMemory();
+    const int kBufferSize = 123;
+    int result = 0;
+    int i;
+    pfResetPagedMemory();
+    vm_address_t vm1 = pfAllocatePagedMemory(kBufferSize);
+    ASSERT_NE(0, vm1);
+
+    uint8_t *pm1 = pfLockMemoryReadWrite(vm1, kBufferSize);
+    ASSERT_NE(pm1, NULL);
+    for (i = 0; i < kBufferSize; i++) {
+        pm1[i] = i;
+    }
+    result = pfUnlockMemory(vm1, pm1);
+    ASSERT_EQ(0, result);
+
+    const uint8_t *pm2 = pfLockMemoryReadOnly(vm1, kBufferSize);
+    ASSERT_NE(pm2, NULL);
+    for (i = 0; i < kBufferSize; i++) {
+        ASSERT_EQ(pm2[i], i);
+    }
+    result = pfUnlockMemory(vm1 + 8, pm2); /* Pass bad virtual address! */
+    ASSERT_GE(0, result);
+    result = pfUnlockMemory(vm1, pm2 + 8); /* Pass bad physical address! */
+    ASSERT_GE(0, result);
+    result = pfUnlockMemory(vm1, pm2); /* GOOD */
+    ASSERT_EQ(0, result);
+    result = pfUnlockMemory(vm1, pm2); /* Unlock twice! */
+    ASSERT_GE(0, result);
 
     return 0;
 error:
@@ -76,6 +114,7 @@ int pfQaDemandPaging(void) {
 
     ASSERT_EQ(pfQaTestAllocate(), 0);
     ASSERT_EQ(pfQaTestReadWrite(), 0);
+    ASSERT_EQ(pfQaTestRegionLock(), 0);
 
     printf("pfQaDemandPaging ended\n");
 
