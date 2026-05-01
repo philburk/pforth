@@ -449,7 +449,7 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
             Temp = M_POP;
             CharPtr = (char *) pfLockMemoryReadWrite((vm_address_t) Temp, TOS);
             TOS = ioAccept( CharPtr, TOS );
-            printf("Call pfUnlockMemory from ID_ACCCEPT\n");
+            // printf("Call pfUnlockMemory from ID_ACCCEPT\n");
             pfUnlockMemory((vm_address_t) Temp, CharPtr);
             endcase;
 
@@ -599,7 +599,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 s2 = (const char *) pfLockMemoryReadOnly(v2, TOS);
                 s1 = (const char *) pfLockMemoryReadOnly(v1, len1);
                 TOS = ffCompare( s1, len1, s2, TOS );
-                printf("Call pfUnlockMemory from ID_COMPARE\n");
+                // printf("Call pfUnlockMemory from ID_COMPARE\n");
                 pfUnlockMemory(v1, s1);
                 pfUnlockMemory(v2, s2);
             }
@@ -1200,7 +1200,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Scratch = DP_FETCH_U8(vaddr) + 1; /* length including count */
                 CharPtr = (char *) pfLockMemoryReadOnly(vaddr, Scratch);
                 TOS = ffFind( (char *) CharPtr, (ExecToken *) &Temp );
-                printf("Call pfUnlockMemory from ID_FIND\n");
+                // printf("Call pfUnlockMemory from ID_FIND\n");
                 pfUnlockMemory(vaddr, CharPtr);
                 if (TOS != 0) {
                     M_PUSH( Temp ); /* xt */
@@ -1217,7 +1217,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Scratch = DP_FETCH_U8(name) + 1; /* length including count */
                 CharPtr = (char *) pfLockMemoryReadOnly(name, Scratch);
                 TOS = ffFindNFA( (const ForthString *) CharPtr, (const ForthString **) &nfa );
-                printf("Call pfUnlockMemory from ID_FINDNFA\n");
+                // printf("Call pfUnlockMemory from ID_FINDNFA\n");
                 pfUnlockMemory(name, CharPtr);
                 if (TOS != 0) {
                     M_PUSH( nfa );
@@ -1270,7 +1270,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = MASK_NAME_SIZE & DP_FETCH_U8((vm_address_t) TOS); /* Length of string. */
             CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) TOS, Scratch);
             TOS = (cell_t) ffNumberQ( (char *) CharPtr, &Temp );
-            printf("Call pfUnlockMemory from ID_NUMBERQ_P\n");
+            // printf("Call pfUnlockMemory from ID_NUMBERQ_P\n");
             pfUnlockMemory((vm_address_t) TOS, CharPtr);
             if( TOS == NUM_TYPE_SINGLE)
             {
@@ -1723,7 +1723,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Temp = M_POP;    /* virtual address */
                 char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
                 TOS = ffScan( lockedMemory, Scratch, (char) TOS, &CharPtr );
-                printf("Call pfUnlockMemory from ID_SCAN\n");
+                // printf("Call pfUnlockMemory from ID_SCAN\n");
                 pfUnlockMemory((vm_address_t) Temp, lockedMemory);
                 M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
             }
@@ -1841,7 +1841,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = M_POP; /* addr */
             CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
             ioType( (char *) CharPtr, TOS );
-            printf("Call pfUnlockMemory from ID_TYPE\n");
+            // printf("Call pfUnlockMemory from ID_TYPE\n");
             pfUnlockMemory((vm_address_t) Scratch, CharPtr);
             M_DROP;
             endcase;

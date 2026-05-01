@@ -29,13 +29,23 @@ static uint8_t sFakeSerialRAM[PF_DP_AVAILABLE_SPACE];
 static cell_t sDpNextAvailable = 0;
 #define DP_ALIGNMENT_MASK (DP_ALIGNMENT_SIZE - 1)
 
+#if (PF_64BIT)
+#define PF_DP_MUNGE_KEY  (0x005A000000000000)
+#elif (PF_32BIT)
+#define PF_DP_MUNGE_KEY  (0x5A000000)
+#endif
+
+#define PF_DP_MUNGE(vaddr) ((vm_address_t)(((cell_t)vaddr) ^ PF_DP_MUNGE_KEY))
+#define PF_DP_UNMUNGE(vaddr) ((vm_address_t)(((cell_t)vaddr) ^ PF_DP_MUNGE_KEY))
 
 void pfResetPagedMemory(void) {
+    printf("pfResetPagedMemory: cell = %d\n", (int)sizeof(cell_t));
     sDpNextAvailable = 0;
 }
 
 int pfIsAddressInPagedMemory(void * p) {
-    cell_t offset = (uint8_t *)p - sFakeSerialRAM;
+    vm_address_t vaddr = PF_DP_UNMUNGE(p);
+    cell_t offset = (uint8_t *)vaddr - sFakeSerialRAM;
     return (offset >= 0) && (offset < PF_DP_AVAILABLE_SPACE);
 }
 
@@ -48,7 +58,7 @@ vm_address_t pfAllocatePagedMemory(const cell_t numBytes) {
     }
     vm_address_t virtualAddress = (vm_address_t) &sFakeSerialRAM[sDpNextAvailable];
     sDpNextAvailable = finalAvailable;
-    return virtualAddress;
+    return PF_DP_MUNGE(virtualAddress);
 }
 
 void pfFreePagedMemory(vm_address_t p) {}
@@ -57,8 +67,13 @@ int pfReadPagedMemory(uint8_t *destination,
                       vm_address_t source,
                       size_t numBytes,
                       int async) {
-    /* TODO check boundaries? */
-    pfCopyMemory(destination, source, numBytes);
+    if (!pfIsAddressInPagedMemory(source)) {
+        printf("ERROR: not a paged address = %p\n", source);
+        return 0;
+    }
+    /* TODO check upper boundary */
+    vm_address_t vaddr = PF_DP_UNMUNGE(source);
+    pfCopyMemory(destination, vaddr, numBytes);
     return numBytes;
 }
 
@@ -70,7 +85,12 @@ int pfWritePagedMemory(vm_address_t destination,
                        uint8_t *source,
                        size_t numBytes,
                        int async) {
-    /* TODO check boundaries? */
-    pfCopyMemory(destination, source, numBytes);
+    if (!pfIsAddressInPagedMemory(destination)) {
+        printf("ERROR: not a paged address = %p\n", destination);
+        return 0;
+    }
+    /* TODO check upper boundary */
+    vm_address_t vaddr = PF_DP_UNMUNGE(destination);
+    pfCopyMemory(vaddr, source, numBytes);
     return numBytes;
  }

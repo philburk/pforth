@@ -1,7 +1,7 @@
 #ifndef _pf_unittest_h
 #define _pf_unittest_h
 /***************************************************************
-** Unit Tests support for pForth
+** Unit Test support for pForth
 **
 ** Author: Phil Burk
 ** Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom

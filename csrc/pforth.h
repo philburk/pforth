@@ -30,9 +30,18 @@ typedef void *PForthTask;
 typedef void *PForthDictionary;
 
 #include <stdint.h>
+#if   INTPTR_MAX == INT64_MAX
+  #define PF_64BIT 1
+  #define PF_32BIT 0
+#elif INTPTR_MAX == INT32_MAX
+  #define PF_64BIT 0
+  #define PF_32BIT 1
+#else
+  #error "Unsupported pointer size"
+#endif
+
 /* Integer types for Forth cells, signed and unsigned: */
 typedef intptr_t cell_t;
-#define PF_SIZEOF_CELL __SIZEOF_INTPTR__
 typedef uintptr_t ucell_t;
 
 typedef ucell_t ExecToken;              /* Execution Token */
