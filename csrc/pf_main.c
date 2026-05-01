@@ -58,6 +58,8 @@ int main( void )
 }
 #else
 
+int pfQaDemandPaging();
+
 int main( int argc, char **argv )
 {
 #ifdef PF_STATIC_DIC
@@ -139,6 +141,8 @@ int main( int argc, char **argv )
         goto on_error;
     }
 #endif
+
+    Result = pfQaDemandPaging();
 
     Result = pfDoForth( DicName, SourceName, IfInit);
 

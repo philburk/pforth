@@ -99,7 +99,7 @@ void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
 */
 void CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags )
 {
-    ForthString FName[LONGEST_WORD_NAME+9];    /* +1 for length, up to +9 should not be used, but is here for safety */
+    ForthString FName[PF_NAME_SIZE_SAFE];
     CStringToForth( FName, CName, sizeof(FName) );
     CreateDicEntry( XT, FName, Flags );
 }
@@ -656,7 +656,7 @@ void ffStringDefer( const ForthStringPtr FName, ExecToken DefaultXT )
 /* Convert name then create deferred dictionary entry. */
 static void CreateDeferredC( ExecToken DefaultXT, const char *CName )
 {
-    char FName[LONGEST_WORD_NAME+9];    /* +1 for length, up to +9 should not be used, but is here for safety */
+    char FName[PF_NAME_SIZE_SAFE];
     CStringToForth( FName, CName, sizeof(FName) );
     ffStringDefer( FName, DefaultXT );
 }

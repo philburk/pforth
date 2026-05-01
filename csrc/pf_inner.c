@@ -1192,12 +1192,19 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 #ifndef PF_NO_SHELL
         case ID_FIND:  /* ( $addr -- $addr 0 | xt +-1 ) */
-            TOS = ffFind( (char *) TOS, (ExecToken *) &Temp );
+            Scratch = DP_FETCH_U8((vm_address_t) TOS) + 1; /* length including count */
+            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) TOS, Scratch);
+            TOS = ffFind( (char *) CharPtr, (ExecToken *) &Temp );
+            DP_UNLOCK((vm_address_t) TOS);
             M_PUSH( Temp );
             endcase;
 
         case ID_FINDNFA:
-            TOS = ffFindNFA( (const ForthString *) TOS, (const ForthString **) &Temp );
+            Scratch = DP_FETCH_U8((vm_address_t) TOS) + 1; /* length including count */
+            Temp = (cell_t) DP_LOCK_READ_ONLY((vm_address_t) TOS, Scratch);
+            TOS = ffFindNFA( (const ForthString *) Temp, (const ForthString **) &CellPtr );
+            DP_UNLOCK((vm_address_t) TOS);
+            Temp = (cell_t) CellPtr;
             M_PUSH( (cell_t) Temp );
             endcase;
 #endif  /* !PF_NO_SHELL */
@@ -1241,7 +1248,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 /* Convert using number converter in 'C'.
 ** Only supports single precision for bootstrap.
 */
-            TOS = (cell_t) ffNumberQ( (char *) TOS, &Temp );
+            Scratch = MASK_NAME_SIZE & DP_FETCH_U8((vm_address_t) TOS); /* Length of string. */
+            CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) TOS, Scratch);
+            TOS = (cell_t) ffNumberQ( (char *) CharPtr, &Temp );
+            DP_UNLOCK((vm_address_t) TOS);
             if( TOS == NUM_TYPE_SINGLE)
             {
                 M_PUSH( Temp );   /* Push single number */
@@ -1688,10 +1698,15 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_SCAN: /* ( addr cnt char -- addr' cnt' ) */
-            Scratch = M_POP; /* cnt */
-            Temp = M_POP;    /* addr */
-            TOS = ffScan( (char *) Temp, Scratch, (char) TOS, &CharPtr );
-            M_PUSH((cell_t) CharPtr);
+            {
+                Scratch = M_POP; /* cnt */
+                Temp = M_POP;    /* addr */
+                CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Temp, Scratch);
+                TOS = ffScan( (char *) CharPtr, Scratch, (char) TOS, &CharPtr );
+                vm_address_t vaddr = DP_LOCKED_ADDRESS_TO_VIRTUAL(CharPtr);
+                DP_UNLOCK((vm_address_t) Temp);
+                M_PUSH((cell_t) vaddr);
+            }
             endcase;
 
 #ifndef PF_NO_SHELL
@@ -1704,10 +1719,15 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #endif /* !PF_NO_SHELL */
 
         case ID_SKIP: /* ( addr cnt char -- addr' cnt' ) */
-            Scratch = M_POP; /* cnt */
-            Temp = M_POP;    /* addr */
-            TOS = ffSkip( (char *) Temp, Scratch, (char) TOS, &CharPtr );
-            M_PUSH((cell_t) CharPtr);
+            {
+                Scratch = M_POP; /* cnt */
+                Temp = M_POP;    /* addr */
+                CharPtr = (char *) DP_LOCK_READ_ONLY((vm_address_t) Temp, Scratch);
+                TOS = ffSkip( (char *) CharPtr, Scratch, (char) TOS, &CharPtr );
+                vm_address_t vaddr = DP_LOCKED_ADDRESS_TO_VIRTUAL(CharPtr);
+                DP_UNLOCK((vm_address_t) Temp);
+                M_PUSH((cell_t) vaddr);
+            }
             endcase;
 
         case ID_SOURCE:  /* ( -- c-addr num ) */

@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-typedef cell_t vm_address_t;
+typedef uint8_t *vm_address_t;
 
 /* Basic memory access macros. */
 #define DP_FETCH_CELL(address) (*((cell_t *)(address)))
@@ -64,6 +64,12 @@ typedef cell_t vm_address_t;
 #define DP_LOCK_READ_WRITE(address, numbytes) ((uint8_t *)(address))
 
 /**
+ * Convert a physical address to a virtual address within the locked region.
+ * @return virtual address
+ */
+#define DP_LOCKED_ADDRESS_TO_VIRTUAL(address) ((vm_address_t)(address))
+
+/**
  * Release a previously locked region of memory.
  * Writable regions will be written back to serial memory.
  * Regions may be kept in physical memory on an LRU basis
@@ -75,32 +81,55 @@ typedef cell_t vm_address_t;
  * A demand paging simulator is provided for testing the framework on a host.
  * The actual demand paging interface must be provided by the user.
  */
+#define DP_ALIGNMENT_SIZE    (16)
 
-/** Free demand paged memory. */
-int pfIsAddressInPagedMemory(vm_address_t p);
+/** Is the given address associated in the paged memory.
+ * @return 1 if in paged memory, else 0
+ */
+int pfIsAddressInPagedMemory(void *p);
+
+/**
+ * Reset the memory allocator.
+ * This may or may not clear the memory.
+ */
+void pfResetPagedMemory(void);
 
 /** Allocate demand paged memory from SPI or other storage.
+ * Memory blocks will be aligned on DP_ALIGNMENT_SIZE byte boundaries.
  */
-vm_address_t pfAllocatePagedMemory(size_t numBytes);
+vm_address_t pfAllocatePagedMemory(cell_t numBytes);
 
-/** Free demand paging */
+/** Free demand paged memory.
+ * This may simply be a NOOP. So just allocate
+ * what you need at the beginning and don't rely on being able to free it.
+ */
 void pfFreePagedMemory(vm_address_t p);
 
 /** Read from virtual to physical memory.
- * Only one async read can be pending at a time.
+ * Only one async read or write can be pending at a time.
+ * @param micros if zero then issue an async transfer, else timeout in micros
+ * @return number of bytes read or 0 if timed out
  */
 int pfReadPagedMemory(uint8_t *destination,
                       vm_address_t source,
                       size_t numBytes,
-                      int sync);
+                      int micros);
 
-/* Wait for asynchronous virtual read to complete.
- * This is useful for read-ahead buffering. */
-int pfWaitPendingVirtualRead(void);
+/* Wait for asynchronous paged memory read or write to complete.
+ * This is useful for read-ahead buffering.
+ * return 0 if finished in under the specified microseconds
+ */
+int pfWaitAsyncPagedMemoryAccess(int micros);
 
+/** Read from virtual to physical memory.
+ * Only one async read or write can be pending at a time.
+ * @param micros if zero then issue an async transfer, else timeout in micros
+ * @return number of bytes written or 0 if timed out
+ */
 int pfWritePagedMemory(vm_address_t destination,
                        uint8_t *source,
-                       size_t numBytes);
+                       size_t numBytes,
+                       int micros);
 
 #ifdef __cplusplus
 }

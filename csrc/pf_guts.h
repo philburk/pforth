@@ -88,14 +88,15 @@
 
 #ifdef PF_SUPPORT_LONG_NAMES
 #define FLAG_SMUDGE     (0x80)
-#define MASK_NAME_SIZE  (0x3F)
+#define PF_NAME_SIZE    (0x40)
 #else
 #define FLAG_SMUDGE     (0x20)
-#define MASK_NAME_SIZE  (0x1F)
+#define PF_NAME_SIZE    (0x20)
 #endif
 
 /* these the same, but have different names for clarity */
-#define LONGEST_WORD_NAME MASK_NAME_SIZE
+#define MASK_NAME_SIZE  (PF_NAME_SIZE - 1)
+#define PF_NAME_SIZE_SAFE    (PF_NAME_SIZE + 8)
 
 /* Debug TRACE flags */
 #define TRACE_INNER     (0x0002)
