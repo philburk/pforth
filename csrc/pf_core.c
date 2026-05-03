@@ -213,7 +213,7 @@ void pfDeleteDictionary( PForthDictionary dictionary )
         FREE_VAR( dic->dic_HeaderBaseUnaligned );
 #if PF_DEMAND_PAGING
         if (dic->dic_CodeBaseUnaligned != 0) {
-            pfFreePagedMemory(dic->dic_CodeBaseUnaligned);
+            pfFreePagedMemory((vm_address_t) dic->dic_CodeBaseUnaligned);
             dic->dic_CodeBaseUnaligned = 0;
         }
 #else

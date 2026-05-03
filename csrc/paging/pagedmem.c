@@ -24,7 +24,10 @@
 #include "../pf_all.h"
 #include "dmpaging.h"
 
-#define PF_DP_AVAILABLE_SPACE   (256*1024)
+#ifndef PF_DP_AVAILABLE_SPACE
+#define PF_DP_AVAILABLE_SPACE   (512*1024)
+#endif
+
 static uint8_t sFakeSerialRAM[PF_DP_AVAILABLE_SPACE];
 static cell_t sDpNextAvailable = 0;
 #define DP_ALIGNMENT_MASK (DP_ALIGNMENT_SIZE - 1)
@@ -53,7 +56,8 @@ vm_address_t pfAllocatePagedMemory(const ucell_t numBytes) {
     cell_t alignedNumBytes = (numBytes + DP_ALIGNMENT_MASK) & (~DP_ALIGNMENT_MASK);
     cell_t finalAvailable = sDpNextAvailable + alignedNumBytes;
     if (finalAvailable > PF_DP_AVAILABLE_SPACE) {
-        printf("ERROR - Out of Demand Paged Memory!\n");
+        printf("ERROR - Out of Demand Paged Memory! need %d, have %d\n",
+               (int)numBytes, (int)(PF_DP_AVAILABLE_SPACE - sDpNextAvailable));
         return 0;
     }
     vm_address_t virtualAddress = (vm_address_t) &sFakeSerialRAM[sDpNextAvailable];

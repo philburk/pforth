@@ -366,7 +366,8 @@ static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t 
     assert(EvenNumW <= UINT32_MAX);
     if( Write32ToFile( fid, (uint32_t)EvenNumW ) < 0 ) goto error;
 
-    numw = sdWriteFile( Data, 1, EvenNumW, fid );
+    /* use demand paging just in case */
+    numw = ffWriteFile( Data, 1, EvenNumW, fid );
     if( numw != EvenNumW ) goto error;
     return 0;
 error:
@@ -474,7 +475,6 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
     CodeSize = MAX( (ucell_t)CodeSize, (CodeChunkSize + 2048) );
     SD.sd_CodeSize = CodeSize;
 
-
     convertDictionaryInfoWrite (&SD);
 
     if( WriteChunkToFile( fid, ID_P4DI, (char *) &SD, sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
@@ -487,8 +487,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
     }
 
 /* Write Code Fields ---------------------------- */
-    if( WriteChunkToFile( fid, ID_P4CD, (char *) CODE_BASE,
-        CodeChunkSize ) < 0 ) goto error;
+    if( WriteChunkToFile( fid, ID_P4CD, (char *) CODE_BASE, CodeChunkSize ) < 0 ) goto error;
 
     FormSize = (uint32_t) sdTellFile( fid ) - 8;
     sdSeekFile( fid, 4, PF_SEEK_SET );
@@ -710,7 +709,8 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
                 pfReportError("pfLoadDictionary", PF_ERR_TOO_BIG);
                 goto error;
             }
-            numr = sdReadFile( (uint8_t *) CODE_BASE, 1, ChunkSize, fid );
+            /* read using demand paging if needed */
+            numr = ffReadFile( (uint8_t *) CODE_BASE, 1, ChunkSize, fid );
             if( numr != ChunkSize ) goto read_error;
             BytesLeft -= ChunkSize;
             break;

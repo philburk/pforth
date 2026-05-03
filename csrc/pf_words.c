@@ -251,3 +251,51 @@ char * ffLWord( char c )
 {
   return Word( c, FALSE );
 }
+
+cell_t ffReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  )
+{
+    if (pfIsAddressInPagedMemory(ptr)) {
+        /* Read file in blocks that will fit in locked regions. */
+        vm_address_t vp = (vm_address_t)ptr;
+        cell_t numBytes = Size * nItems;
+        while (numBytes > 0) {
+            cell_t bytesToRead = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
+            uint8_t *buffer = pfLockMemoryReadWrite(vp, bytesToRead);
+            cell_t numRead = sdReadFile(buffer, 1, bytesToRead, Stream);
+            pfUnlockMemory(vp, buffer); /* writes to backing storage */
+            if (numRead < bytesToRead) {
+                printf("ERROR: failed to read file: %d", (int)numRead);
+                return 0;
+            }
+            numBytes -= bytesToRead;
+            vp += bytesToRead;
+        }
+        return nItems;
+    } else {
+        return sdReadFile( ptr, Size, nItems, Stream);
+    }
+}
+
+cell_t ffWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  )
+{
+    if (pfIsAddressInPagedMemory(ptr)) {
+        /* Write file in blocks that will fit in locked regions. */
+        vm_address_t vp = (vm_address_t)ptr;
+        cell_t numBytes = Size * nItems;
+        while (numBytes > 0) {
+            cell_t bytesToWrite = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
+            const uint8_t *buffer = pfLockMemoryReadOnly(vp, bytesToWrite);
+            cell_t numWritten = sdWriteFile(buffer, 1, bytesToWrite, Stream);
+            pfUnlockMemory(vp, buffer); /* writes to backing storage */
+            if (numWritten < bytesToWrite) {
+                printf("ERROR: failed to write file: %d", (int)numWritten);
+                return 0;
+            }
+            numBytes -= bytesToWrite;
+            vp += bytesToWrite;
+        }
+        return nItems;
+    } else {
+        return sdWriteFile( ptr, Size, nItems, Stream);
+    }
+}

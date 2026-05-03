@@ -589,8 +589,14 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
             LOAD_REGISTERS;
             endcase;
         case ID_COLON_P:  /* ( $name xt -- ) */
-            CreateDicEntry( TOS, (char *) M_POP, 0 );
-            M_DROP;
+            {
+                vm_address_t vp = (vm_address_t) M_POP;
+                Temp = DP_FETCH_U8(vp); /* length */
+                CharPtr = (char *) pfLockMemoryReadOnly(vp, Temp + 1);
+                CreateDicEntry( TOS, CharPtr, 0 );
+                pfUnlockMemory(vp, CharPtr);
+                M_DROP;
+            }
             endcase;
 #endif  /* !PF_NO_SHELL */
 
@@ -986,13 +992,15 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_FILE_CREATE: /* ( c-addr u fam -- fid ior ) */
-/* Build NUL terminated name string. */
             Scratch = M_POP; /* u */
-            Temp = M_POP;    /* caddr */
+            CharPtr = (char *) M_POP;    /* caddr */
             if( Scratch < TIB_SIZE-2 )
             {
                 const char *famText = pfSelectFileModeCreate( TOS );
-                pfCopyMemory( gScratch, (char *) Temp, (ucell_t) Scratch );
+                /* Build NUL terminated name string. */
+                const char *pName = (char *) pfLockMemoryReadOnly(CharPtr, Scratch);
+                pfCopyMemory( gScratch, pName, (ucell_t) Scratch );
+                pfUnlockMemory(CharPtr, pName);
                 gScratch[Scratch] = '\0';
                 DBUG(("Create file = %s with famTxt %s\n", gScratch, famText ));
                 FileID = sdOpenFile( gScratch, famText );
@@ -1012,7 +1020,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Temp = M_POP;    /* caddr */
             if( TOS < TIB_SIZE-2 )
             {
-                pfCopyMemory( gScratch, (char *) Temp, (ucell_t) TOS );
+                pfCopyMemory( gScratch, (char *) Temp, (ucell_t) TOS ); /* FIXME vm */
                 gScratch[TOS] = '\0';
                 DBUG(("Delete file = %s\n", gScratch ));
                 TOS = sdDeleteFile( gScratch );
@@ -1025,13 +1033,15 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_FILE_OPEN: /* ( c-addr u fam -- fid ior ) */
-/* Build NUL terminated name string. */
             Scratch = M_POP; /* u */
-            Temp = M_POP;    /* caddr */
+            CharPtr = (char *) M_POP;    /* caddr */
             if( Scratch < TIB_SIZE-2 )
             {
                 const char *famText = pfSelectFileModeOpen( TOS );
-                pfCopyMemory( gScratch, (char *) Temp, (ucell_t) Scratch );
+                /* Build NUL terminated name string. */
+                const char *pName = (char *) pfLockMemoryReadOnly(CharPtr, Scratch);
+                pfCopyMemory( gScratch, pName, (ucell_t) Scratch );
+                pfUnlockMemory(CharPtr, pName);
                 gScratch[Scratch] = '\0';
                 DBUG(("Open file = %s\n", gScratch ));
                 FileID = sdOpenFile( gScratch, famText );
@@ -1055,7 +1065,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             FileID = (FileStream *) TOS;
             Scratch = M_POP;
             CharPtr = (char *) M_POP;
-            Temp = sdReadFile( CharPtr, 1, Scratch, FileID );
+            Temp = ffReadFile( CharPtr, 1, Scratch, FileID );
             /* TODO check feof() or ferror() */
             M_PUSH(Temp);
             TOS = 0;
@@ -1095,7 +1105,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             FileID = (FileStream *) TOS;
             Scratch = M_POP;
             CharPtr = (char *) M_POP;
-            Temp = sdWriteFile( CharPtr, 1, Scratch, FileID );
+            Temp = ffWriteFile( CharPtr, 1, Scratch, FileID );
             TOS = (Temp != Scratch) ? -3 : 0;
             endcase;
 
@@ -1688,8 +1698,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 CodeSize = TOS;
                 NameSize = M_POP;
                 EntryPoint = M_POP;
-                ForthStringToC( gScratch, (char *) M_POP, sizeof(gScratch) );
+                vm_address_t vName = (vm_address_t) M_POP;
+                Temp = DP_FETCH_U8(vName); /* length */
+                CharPtr = (char *) pfLockMemoryReadOnly(vName, Temp + 1);
+                ForthStringToC( gScratch, CharPtr, sizeof(gScratch) );
                 TOS =  ffSaveForth( gScratch, EntryPoint, NameSize, CodeSize );
+                pfUnlockMemory(vName, CharPtr);
             }
             endcase;
 #endif

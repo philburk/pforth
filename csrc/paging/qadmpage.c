@@ -138,6 +138,100 @@ error:
     return 1;
 }
 
+#define PF_DP_TEST_PATHNAME "/tmp/pf_scratch_file"
+
+
+static cell_t pfQaTestCreateFile(int numBytes) {
+    uint8_t buffer[100];
+    int i;
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
+    if (fid == NULL) {
+        printf("ERROR: Could not open file %s\n",PF_DP_TEST_PATHNAME);
+        return -1;
+    }
+    for (i = 0; i < sizeof(buffer); i++) {
+        buffer[i] = i;
+    }
+    while (numBytes > 0) {
+        int bytesToWrite = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
+        int itemsWritten = sdWriteFile(buffer, 1, bytesToWrite, fid);
+        if (itemsWritten != bytesToWrite) {
+            printf("ERROR: writing file failed %d\n", itemsWritten);
+            return -1;
+        }
+        numBytes -= bytesToWrite;
+    }
+    sdCloseFile(fid);
+    return 0;
+}
+
+static int pfQaTestReadFileStandard(int numBytes) {
+    uint8_t buffer[100];
+    int i;
+    printf("pfQaDemandPaging : pfQaCheckReadFile\n");
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
+    ASSERT_NE(NULL, fid);
+    while (numBytes > 0) {
+        int bytesToRead = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
+        cell_t result = sdReadFile(buffer, 1, (int32_t) bytesToRead, fid); /* use stdio */
+        ASSERT_EQ(bytesToRead, result);
+        for (i = 0; i < bytesToRead; i++) {
+            ASSERT_EQ((i % 100), buffer[i]);
+        }
+        numBytes -= bytesToRead;
+    }
+    sdCloseFile(fid);
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestReadFilePaging(void) {
+    int i;
+    printf("pfQaDemandPaging : pfQaTestReadFile\n");
+    pfResetLockedMemory();
+    const int kBytesToRead = 1175;
+    cell_t result = pfQaTestCreateFile(kBytesToRead);
+    ASSERT_EQ(0, result);
+    vm_address_t vm1 = pfAllocatePagedMemory(kBytesToRead);
+    ASSERT_NE(NULL, vm1);
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
+    ASSERT_NE(NULL, fid);
+    result = ffReadFile(vm1, 1, kBytesToRead, fid); /* use demand paging */
+    ASSERT_EQ(kBytesToRead, result);
+    for (i = 0; i < kBytesToRead; i++) {
+        ASSERT_EQ((i % 100), DP_FETCH_U8(vm1 + i));
+    }
+    sdCloseFile(fid);
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestWriteFilePaging(void) {
+    int i;
+    printf("pfQaDemandPaging : pfQaTestWriteFilePaging\n");
+    pfResetLockedMemory();
+    const int kBytesToWrite = 1175;
+    cell_t result = pfQaTestCreateFile(kBytesToWrite);
+    ASSERT_EQ(0, result);
+    vm_address_t vm1 = pfAllocatePagedMemory(kBytesToWrite);
+    ASSERT_NE(NULL, vm1);
+    for (i = 0; i < kBytesToWrite; i++) {
+        DP_STORE_U8((vm1 + i), (i % 100));
+    }
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
+    ASSERT_NE(NULL, fid);
+    result = ffWriteFile(vm1, 1, kBytesToWrite, fid); /* use demand paging */
+    ASSERT_EQ(kBytesToWrite, result);
+    sdCloseFile(fid);
+    result = pfQaTestReadFileStandard(kBytesToWrite);
+    ASSERT_EQ(0, result);
+    return 0;
+error:
+    return 1;
+}
+
 int pfQaDemandPaging(void) {
     printf("pfQaDemandPaging\n");
     int x = 4;
@@ -150,6 +244,8 @@ int pfQaDemandPaging(void) {
     ASSERT_EQ(pfQaTestReadWrite(), 0);
     ASSERT_EQ(pfQaTestRegionLock(), 0);
     ASSERT_EQ(pfQaTestFetchStore(), 0);
+    ASSERT_EQ(pfQaTestReadFilePaging(), 0);
+    ASSERT_EQ(pfQaTestWriteFilePaging(), 0);
 
     printf("pfQaDemandPaging ended\n");
 

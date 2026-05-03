@@ -142,7 +142,7 @@ int main( int argc, char **argv )
     }
 #endif
 
-    Result = pfQaDemandPaging();
+/*    Result = pfQaDemandPaging(); FIXME */
 
     Result = pfDoForth( DicName, SourceName, IfInit);
 
