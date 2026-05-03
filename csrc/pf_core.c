@@ -251,11 +251,12 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 /* Allocate memory for header. */
     if( HeaderSize > 0 )
     {
-//#if PF_DEMAND_PAGING
-//        dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocatePagedMemory( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE);
-//#else
+/*
+#if PF_DEMAND_PAGING
+        dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocatePagedMemory( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE);
+#else
+ */
         dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocMem((ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE );
-//#endif
         if( !dic->dic_HeaderBaseUnaligned ) goto nomem;
 /* Align header base. */
         dic->dic_HeaderBase = DIC_ALIGN(dic->dic_HeaderBaseUnaligned);
@@ -277,6 +278,7 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
     if( !dic->dic_CodeBaseUnaligned ) goto nomem;
     dic->dic_CodeBase = DIC_ALIGN(dic->dic_CodeBaseUnaligned);
 #if (PF_DEMAND_PAGING == 0)
+    /* TODO also clear RAM for demand paging dic. */
     pfSetMemory( (char *) dic->dic_CodeBase, 0x5A, (ucell_t) CodeSize);
 #endif
 
