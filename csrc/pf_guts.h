@@ -94,7 +94,7 @@
 #define PF_NAME_SIZE    (0x20)
 #endif
 
-/* these the same, but have different names for clarity */
+/* These are the same, but have different names for clarity. */
 #define MASK_NAME_SIZE  (PF_NAME_SIZE - 1)
 #define PF_NAME_SIZE_SAFE    (PF_NAME_SIZE + 8)
 
@@ -568,15 +568,13 @@ extern cell_t         gIncludeIndex;
 
 #else
 
-#define WRITE_FLOAT_DIC(addr,data)  { *((PF_FLOAT *)(addr)) = (PF_FLOAT)(data); }
-#define WRITE_CELL_DIC(addr,data)   { *((cell_t *)(addr)) = (cell_t)(data); }
-#define WRITE_SHORT_DIC(addr,data)  { *((int16_t *)(addr)) = (int16_t)(data); }
-#define READ_FLOAT_DIC(addr)        ( *((PF_FLOAT *)(addr)) )
-#define READ_CELL_DIC(addr)         ( *((const ucell_t *)(addr)) )
-#define READ_SHORT_DIC(addr)        ( *((const uint16_t *)(addr)) )
-
+#define WRITE_FLOAT_DIC(addr,data)  DP_STORE_FLOAT(addr,data)
+#define WRITE_CELL_DIC(addr,data)   DP_STORE_CELL(addr,data)
+#define WRITE_SHORT_DIC(addr,data)  DP_STORE_U16(addr,data)
+#define READ_FLOAT_DIC(addr)        DP_FETCH_FLOAT(addr)
+#define READ_CELL_DIC(addr)         DP_FETCH_CELL(addr)
+#define READ_SHORT_DIC(addr)        DP_FETCH_U16(addr)
 #endif
-
 
 #define HEADER_HERE (gCurrentDictionary->dic_HeaderPtr.Cell)
 #define CODE_HERE (gCurrentDictionary->dic_CodePtr.Cell)

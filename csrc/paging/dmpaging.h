@@ -32,13 +32,39 @@ extern "C" {
 typedef uint8_t *vm_address_t;
 
 /* Basic memory access macros. */
-#define DP_FETCH_CELL(address) (*((cell_t *)(address)))
-#define DP_FETCH_U8(address)   (*((uint8_t *)(address)))
-#define DP_FETCH_U16(address)  (*((uint16_t *)(address)))
+#if (PF_DEMAND_PAGING == 0)
+/* Straight memory access. */
+#define DP_FETCH_U8(address)    (*((uint8_t *)(address)))
+#define DP_FETCH_U16(address)   (*((uint16_t *)(address)))
+#define DP_FETCH_CELL(address)  (*((cell_t *)(address)))
+#define DP_FETCH_FLOAT(address) (*((PF_FLOAT *)(address)))
 
-#define DP_STORE_CELL(address, value) *((cell_t *)(address)) = (cell_t)(value)
-#define DP_STORE_U8(address, value)   *((uint8_t *)(address)) = (uint8_t)(value)
-#define DP_STORE_U16(address, value)  *((uint16_t *)(address)) = (uint16_t)(value)
+#define DP_STORE_U8(address, value)    *((uint8_t *)(address)) = (uint8_t)(value)
+#define DP_STORE_U16(address, value)   *((uint16_t *)(address)) = (uint16_t)(value)
+#define DP_STORE_CELL(address, value)  *((cell_t *)(address)) = (cell_t)(value)
+#define DP_STORE_FLOAT(address, value) *((PF_FLOAT *)(address)) = (PF_FLOAT)(value)
+#else
+/* Use either physical or paged memory. */
+#define DP_FETCH_U8(address)    pfFetchVirtualU8((uint8_t *)(address))
+#define DP_FETCH_U16(address)   pfFetchVirtualU16((uint16_t *)(address))
+#define DP_FETCH_CELL(address)  pfFetchVirtualCell((cell_t *)(address))
+#define DP_FETCH_FLOAT(address) pfFetchVirtualFloat((PF_FLOAT *)(address))
+
+#define DP_STORE_U8(address, value)    pfStoreVirtualU8(((uint8_t *)(address)), (uint8_t)(value))
+#define DP_STORE_U16(address, value)   pfStoreVirtualU16(((uint16_t *)(address)), (uint16_t)(value))
+#define DP_STORE_CELL(address, value)  pfStoreVirtualCell(((cell_t *)(address)), (cell_t)(value))
+#define DP_STORE_FLOAT(address, value) pfStoreVirtualFloat(((PF_FLOAT *)(address)), (PF_FLOAT)(value))
+#endif
+
+uint8_t  pfFetchVirtualU8(uint8_t *address);
+uint16_t pfFetchVirtualU16(uint16_t *address);
+cell_t   pfFetchVirtualCell(cell_t *address);
+PF_FLOAT pfFetchVirtualFloat(PF_FLOAT *address);
+
+void pfStoreVirtualU8(uint8_t *address, uint8_t value);
+void pfStoreVirtualU16(uint16_t *address, uint16_t value);
+void pfStoreVirtualCell(cell_t *address, cell_t value);
+void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value);
 
 /* Memory region locking and unlocking
  * A maximum of DP_MAX_REGIONS can be locked at one time.
@@ -50,7 +76,8 @@ typedef uint8_t *vm_address_t;
 #define DP_MAX_REGIONS        (4)
 /* maximum number of bytes per region */
 #define DP_MAX_REGION_SIZE  (256)
-
+/* typical timeout value for accessing serial memory */
+#define DP_TIMEOUT_MICROS  50000
 
 void pfResetLockedMemory(void);
 
@@ -103,7 +130,7 @@ void pfResetPagedMemory(void);
 /** Allocate demand paged memory from SPI or other storage.
  * Memory blocks will be aligned on DP_ALIGNMENT_SIZE byte boundaries.
  */
-vm_address_t pfAllocatePagedMemory(cell_t numBytes);
+vm_address_t pfAllocatePagedMemory(ucell_t numBytes);
 
 /** Free demand paged memory.
  * This may simply be a NOOP. So just allocate

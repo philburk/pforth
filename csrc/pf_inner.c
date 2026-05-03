@@ -558,7 +558,10 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 CharPtr = (char *) M_POP;    /* src */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
                 {
-                    *DstPtr++ = *CharPtr++;
+                    uint8_t value = DP_FETCH_U8(CharPtr);
+                    CharPtr++;
+                    DP_STORE_U8(DstPtr, value);
+                    DstPtr++;
                 }
                 M_DROP;
             }
@@ -570,7 +573,10 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 CharPtr = ((char *) M_POP) + TOS;;    /* src */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
                 {
-                    *(--DstPtr) = *(--CharPtr);
+                    --CharPtr;
+                    uint8_t value = DP_FETCH_U8(CharPtr);
+                    --DstPtr;
+                    DP_STORE_U8(DstPtr, value);
                 }
                 M_DROP;
             }
@@ -1187,7 +1193,8 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 DstPtr = (char *) M_POP; /* dst */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) Temp ; Scratch++ )
                 {
-                    *DstPtr++ = (char) TOS;
+                    DP_STORE_U8(DstPtr, TOS);
+                    DstPtr++;
                 }
                 M_DROP;
             }

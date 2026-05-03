@@ -49,7 +49,7 @@ int pfIsAddressInPagedMemory(void * p) {
     return (offset >= 0) && (offset < PF_DP_AVAILABLE_SPACE);
 }
 
-vm_address_t pfAllocatePagedMemory(const cell_t numBytes) {
+vm_address_t pfAllocatePagedMemory(const ucell_t numBytes) {
     cell_t alignedNumBytes = (numBytes + DP_ALIGNMENT_MASK) & (~DP_ALIGNMENT_MASK);
     cell_t finalAvailable = sDpNextAvailable + alignedNumBytes;
     if (finalAvailable > PF_DP_AVAILABLE_SPACE) {

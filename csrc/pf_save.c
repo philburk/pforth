@@ -817,7 +817,11 @@ PForthDictionary pfLoadStaticDictionary( void )
     if( !dic ) goto nomem_error;
 
     pfCopyMemory( (uint8_t *) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
+#if PF_DEMAND_PAGING
+    pfWritePagedMemory((uint8_t *) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode), DP_TIMEOUT_MICROS);
+#else
     pfCopyMemory( (uint8_t *) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode) );
+#endif
     DBUG(("Static data copied to newly allocated dictionaries.\n"));
 
     dic->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(CODEPTR);
