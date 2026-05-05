@@ -59,8 +59,7 @@
 include? }T{  t_tools.fth
 
 true fp-require-e !
-echo on
-true value verbose
+false value verbose
 
 : testing
     verbose IF

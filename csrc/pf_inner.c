@@ -1173,13 +1173,21 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 	    }
 	    endcase;
 
-	case ID_FILE_RENAME: /* ( oldName newName -- ior ) */
-	    {
-		char *New = (char *) TOS;
-		char *Old = (char *) M_POP;
-		TOS = sdRenameFile( Old, New );
-	    }
-	    endcase;
+        case ID_FILE_RENAME: /* ( oldName newName -- ior ) */
+        {
+            /* oldName and newName are NUL terminated C strings */
+            /* TODO: consider changing the API for (RENAME_FILE) to match ANS.
+             * Then we will have the name lengths.
+             */
+            vm_address_t vNewName = (vm_address_t)TOS;
+            char *pNewName = pfLockMemoryReadOnly(vNewName, DP_MAX_REGION_SIZE);
+            vm_address_t vOldName = (vm_address_t)M_POP;
+            char *pOldName = pfLockMemoryReadOnly(vOldName, DP_MAX_REGION_SIZE);
+            TOS = sdRenameFile( pOldName, pNewName );
+            pfUnlockMemory(vOldName, pOldName);
+            pfUnlockMemory(vNewName, pNewName);
+        }
+        endcase;
 
 	case ID_FILE_RESIZE: /* ( ud fileid -- ior ) */
 	    {
