@@ -604,12 +604,13 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 const char *s1, *s2;
                 vm_address_t v1, v2;
                 cell_t len1;
+                cell_t len2 = TOS;
                 v2 = (vm_address_t) M_POP;
                 len1 = M_POP;
                 v1 = (vm_address_t) M_POP;
-                s2 = (const char *) pfLockMemoryReadOnly(v2, TOS);
+                s2 = (const char *) pfLockMemoryReadOnly(v2, len2);
                 s1 = (const char *) pfLockMemoryReadOnly(v1, len1);
-                TOS = ffCompare( s1, len1, s2, TOS );
+                TOS = ffCompare( s1, len1, s2, len2 );
                 pfUnlockMemory(v1, (const uint8_t *) s1);
                 pfUnlockMemory(v2, (const uint8_t *) s2);
             }
@@ -1289,7 +1290,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 ** Only supports single precision for bootstrap.
 */
             Scratch = MASK_NAME_SIZE & DP_FETCH_U8((vm_address_t) TOS); /* Length of string. */
-            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) TOS, Scratch);
+            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) TOS, Scratch + 1);
             TOS = (cell_t) ffNumberQ( (char *) CharPtr, &Temp );
             pfUnlockMemory((vm_address_t) TOS, (const uint8_t *) CharPtr);
             if( TOS == NUM_TYPE_SINGLE)
