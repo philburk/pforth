@@ -449,7 +449,7 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
             Temp = M_POP;
             CharPtr = (char *) pfLockMemoryReadWrite((vm_address_t) Temp, TOS);
             TOS = ioAccept( CharPtr, TOS );
-            pfUnlockMemory((vm_address_t) Temp, CharPtr);
+            pfUnlockMemory((vm_address_t) Temp, (const uint8_t *)CharPtr);
             endcase;
 
 #ifndef PF_NO_SHELL
@@ -593,7 +593,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 Temp = DP_FETCH_U8(vp); /* length */
                 CharPtr = (char *) pfLockMemoryReadOnly(vp, Temp + 1);
                 CreateDicEntry( TOS, CharPtr, 0 );
-                pfUnlockMemory(vp, CharPtr);
+                pfUnlockMemory(vp, (const uint8_t *) CharPtr);
                 M_DROP;
             }
             endcase;
@@ -610,8 +610,8 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 s2 = (const char *) pfLockMemoryReadOnly(v2, TOS);
                 s1 = (const char *) pfLockMemoryReadOnly(v1, len1);
                 TOS = ffCompare( s1, len1, s2, TOS );
-                pfUnlockMemory(v1, s1);
-                pfUnlockMemory(v2, s2);
+                pfUnlockMemory(v1, (const uint8_t *) s1);
+                pfUnlockMemory(v2, (const uint8_t *) s2);
             }
             endcase;
 
@@ -919,8 +919,8 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = M_POP;
             CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
             DumpMemory( (char *) CharPtr, TOS );
-            printf("Call pfUnlockMemory from ID_DUMP\n");
-            pfUnlockMemory((vm_address_t) Scratch, CharPtr);
+            /* TODO handle dump of larger virtual areas. */
+            pfUnlockMemory((vm_address_t) Scratch, (const uint8_t *) CharPtr);
             M_DROP;
             endcase;
 
@@ -991,12 +991,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_FILE_CREATE: /* ( c-addr u fam -- fid ior ) */
             Scratch = M_POP; /* u */
-            CharPtr = (char *) M_POP;    /* caddr */
             if( Scratch < TIB_SIZE-2 )
             {
+                vm_address_t vName = (vm_address_t) M_POP;    /* caddr */
                 const char *famText = pfSelectFileModeCreate( TOS );
                 /* Build NUL terminated name string. */
-                pfCopyFromVirtualMemory(gScratch, CharPtr, Scratch);
+                pfCopyFromVirtualMemory(gScratch, vName, Scratch);
                 gScratch[Scratch] = '\0';
                 DBUG(("Create file = %s with famTxt %s\n", gScratch, famText ));
                 FileID = sdOpenFile( gScratch, famText );
@@ -1006,6 +1006,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             else
             {
                 ERR("Filename too large for name buffer.\n");
+                M_POP;
                 M_PUSH( 0 );
                 TOS = -2;
             }
@@ -1763,7 +1764,6 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Temp = M_POP;    /* addr */
                 char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
                 TOS = ffSkip( lockedMemory, Scratch, (char) TOS, &CharPtr );
-                printf("Call pfUnlockMemory from ID_SKIP\n");
                 pfUnlockMemory((vm_address_t) Temp, lockedMemory);
                 M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
             }

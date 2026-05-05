@@ -116,8 +116,8 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp);
  * @param source The data may be in physical or paged memory.
  * @return destination
  */
-void *pfCopyFromVirtualMemory(uint8_t *destination,
-                        vm_address_t source,
+void *pfCopyFromVirtualMemory(void *destination,
+                              vm_address_t source,
                               size_t numBytes);
 
 /* Serial Memory Access
@@ -153,7 +153,7 @@ void pfFreePagedMemory(vm_address_t p);
  * @param micros if zero then issue an async transfer, else timeout in micros
  * @return number of bytes read or 0 if timed out
  */
-int pfReadPagedMemory(uint8_t *destination,
+size_t pfReadPagedMemory(void *destination,
                       paging_address_t source,
                       size_t numBytes,
                       int micros);
@@ -169,8 +169,8 @@ int pfWaitAsyncPagedMemoryAccess(int micros);
  * @param micros if zero then issue an async transfer, else timeout in micros
  * @return number of bytes written or 0 if timed out
  */
-int pfWritePagedMemory(paging_address_t destination,
-                       uint8_t *source,
+size_t pfWritePagedMemory(paging_address_t destination,
+                       void *source,
                        size_t numBytes,
                        int micros);
 

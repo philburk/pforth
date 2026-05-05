@@ -102,7 +102,7 @@ const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, cell_t numBytes) {
 }
 
 uint8_t *pfLockMemoryReadWrite(vm_address_t vp, cell_t numBytes) {
-    return ((uint8_t *)(pfLockMemoryInternal(vp, numBytes, 1)));
+    return pfLockMemoryInternal(vp, numBytes, 1);
 }
 
 int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
@@ -144,7 +144,7 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
 uint8_t  pfFetchVirtualU8(uint8_t *address) {
     uint8_t value;
     if (pfIsAddressInPagedMemory(address)) {
-        pfReadPagedMemory(&value, address, sizeof(uint8_t), DP_TIMEOUT_MICROS);
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint8_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
         return (*((uint8_t *)(address)));
@@ -154,7 +154,7 @@ uint8_t  pfFetchVirtualU8(uint8_t *address) {
 uint16_t pfFetchVirtualU16(uint16_t *address) {
     uint16_t value;
     if (pfIsAddressInPagedMemory(address)) {
-        pfReadPagedMemory(&value, address, sizeof(uint16_t), DP_TIMEOUT_MICROS);
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint16_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
         return (*((uint16_t *)(address)));
@@ -163,7 +163,7 @@ uint16_t pfFetchVirtualU16(uint16_t *address) {
 cell_t   pfFetchVirtualCell(cell_t *address) {
     cell_t value;
     if (pfIsAddressInPagedMemory(address)) {
-        pfReadPagedMemory(&value, address, sizeof(cell_t), DP_TIMEOUT_MICROS);
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(cell_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
         return (*((cell_t *)(address)));
@@ -172,7 +172,7 @@ cell_t   pfFetchVirtualCell(cell_t *address) {
 PF_FLOAT pfFetchVirtualFloat(PF_FLOAT *address) {
     PF_FLOAT value;
     if (pfIsAddressInPagedMemory(address)) {
-        pfReadPagedMemory(&value, address, sizeof(PF_FLOAT), DP_TIMEOUT_MICROS);
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(PF_FLOAT), DP_TIMEOUT_MICROS);
         return value;
     } else {
         return (*((PF_FLOAT *)(address)));
@@ -181,7 +181,7 @@ PF_FLOAT pfFetchVirtualFloat(PF_FLOAT *address) {
 
 void pfStoreVirtualU8(uint8_t *address, uint8_t value) {
     if (pfIsAddressInPagedMemory(address)) {
-        pfWritePagedMemory(address, &value, sizeof(uint8_t), DP_TIMEOUT_MICROS);
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(uint8_t), DP_TIMEOUT_MICROS);
     } else {
         *address = value;
     }
@@ -189,31 +189,31 @@ void pfStoreVirtualU8(uint8_t *address, uint8_t value) {
 
 void pfStoreVirtualU16(uint16_t *address, uint16_t value) {
     if (pfIsAddressInPagedMemory(address)) {
-        pfWritePagedMemory(address, &value, sizeof(uint16_t), DP_TIMEOUT_MICROS);
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(uint16_t), DP_TIMEOUT_MICROS);
     } else {
         *address = value;
     }
 }
 void pfStoreVirtualCell(cell_t *address, cell_t value) {
     if (pfIsAddressInPagedMemory(address)) {
-        pfWritePagedMemory(address, &value, sizeof(cell_t), DP_TIMEOUT_MICROS);
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(cell_t), DP_TIMEOUT_MICROS);
     } else {
         *address = value;
     }
 }
 void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value) {
     if (pfIsAddressInPagedMemory(address)) {
-        pfWritePagedMemory(address, &value, sizeof(PF_FLOAT), DP_TIMEOUT_MICROS);
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(PF_FLOAT), DP_TIMEOUT_MICROS);
     } else {
         *address = value;
     }
 }
 
-void *pfCopyFromVirtualMemory(uint8_t *destination,
-                       vm_address_t source,
-                       size_t numBytes) {
+void *pfCopyFromVirtualMemory(void *destination,
+                              vm_address_t source,
+                              size_t numBytes) {
     if (pfIsAddressInPagedMemory(source)) {
-        pfReadPagedMemory(destination, source, numBytes, DP_TIMEOUT_MICROS); /* TODO check result */
+        pfReadPagedMemory(destination, (paging_address_t) source, numBytes, DP_TIMEOUT_MICROS); /* TODO check result */
         return destination;
     } else {
         return pfCopyMemory(destination, source, numBytes);

@@ -298,7 +298,7 @@ cell_t ffWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream 
             pfUnlockMemory(vp, buffer); /* writes to backing storage */
 
             if (numWritten < bytesToWrite) {
-                numBytes = 0; // no more data left
+                numBytes = 0; /* no more data left */
             } else {
                 numBytes -= bytesToWrite;
             }

@@ -67,7 +67,7 @@ vm_address_t pfAllocatePagedMemory(const ucell_t numBytes) {
 
 void pfFreePagedMemory(vm_address_t p) {}
 
-int pfReadPagedMemory(uint8_t *destination,
+size_t pfReadPagedMemory(void *destination,
                       vm_address_t source,
                       size_t numBytes,
                       int async) {
@@ -77,7 +77,7 @@ int pfReadPagedMemory(uint8_t *destination,
     }
     /* TODO check upper boundary */
     vm_address_t vaddr = PF_DP_UNMUNGE(source);
-    pfCopyMemory(destination, vaddr, numBytes);
+    pfCopyMemory((uint8_t *)destination, vaddr, numBytes);
     return numBytes;
 }
 
@@ -85,8 +85,8 @@ int pfWaitPendingVirtualRead(void) {
     return 0;
 }
 
-int pfWritePagedMemory(vm_address_t destination,
-                       uint8_t *source,
+size_t pfWritePagedMemory(paging_address_t destination,
+                       void *source,
                        size_t numBytes,
                        int async) {
     if (!pfIsAddressInPagedMemory(destination)) {
@@ -94,7 +94,7 @@ int pfWritePagedMemory(vm_address_t destination,
         return 0;
     }
     /* TODO check upper boundary */
-    vm_address_t vaddr = PF_DP_UNMUNGE(destination);
-    pfCopyMemory(vaddr, source, numBytes);
+    void *pAddr = PF_DP_UNMUNGE(destination);
+    pfCopyMemory(pAddr, source, numBytes);
     return numBytes;
  }

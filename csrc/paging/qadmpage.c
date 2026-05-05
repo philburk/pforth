@@ -141,7 +141,7 @@ error:
 #define PF_DP_TEST_PATHNAME "/tmp/pf_scratch_file"
 
 
-static cell_t pfQaTestCreateFile(int numBytes) {
+static cell_t pfQaTestCreateFile(size_t numBytes) {
     uint8_t buffer[100];
     int i;
     FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
@@ -153,10 +153,11 @@ static cell_t pfQaTestCreateFile(int numBytes) {
         buffer[i] = i;
     }
     while (numBytes > 0) {
-        int bytesToWrite = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
-        int itemsWritten = sdWriteFile(buffer, 1, bytesToWrite, fid);
+        size_t bytesToWrite = (numBytes < sizeof(buffer))
+                ? numBytes : sizeof(buffer);
+        size_t itemsWritten = sdWriteFile(buffer, 1, bytesToWrite, fid);
         if (itemsWritten != bytesToWrite) {
-            printf("ERROR: writing file failed %d\n", itemsWritten);
+            printf("ERROR: writing file failed %d\n", (int)itemsWritten);
             return -1;
         }
         numBytes -= bytesToWrite;
@@ -165,15 +166,15 @@ static cell_t pfQaTestCreateFile(int numBytes) {
     return 0;
 }
 
-static int pfQaTestReadFileStandard(int numBytes) {
+static int pfQaTestReadFileStandard(size_t numBytes) {
     uint8_t buffer[100];
     int i;
     printf("pfQaDemandPaging : pfQaCheckReadFile\n");
     FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
     ASSERT_NE(NULL, fid);
     while (numBytes > 0) {
-        int bytesToRead = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
-        cell_t result = sdReadFile(buffer, 1, (int32_t) bytesToRead, fid); /* use stdio */
+        size_t bytesToRead = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
+        size_t result = sdReadFile(buffer, 1, (int32_t) bytesToRead, fid); /* use stdio */
         ASSERT_EQ(bytesToRead, result);
         for (i = 0; i < bytesToRead; i++) {
             ASSERT_EQ((i % 100), buffer[i]);

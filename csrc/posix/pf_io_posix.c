@@ -157,7 +157,7 @@ cell_t sdSleepMillis(cell_t msec)
     while (micros > 0)
     {
         napTime = (micros > kMaxMicros) ? kMaxMicros : micros;
-        if (usleep(napTime))
+        if (usleep((useconds_t)napTime))
         {
             perror("sdSleepMillis: usleep failed");
             return -1;
