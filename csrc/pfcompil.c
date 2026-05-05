@@ -839,11 +839,13 @@ ThrowCode ffInterpret( void )
     cell_t flag;
     char *theWord;
     ThrowCode exception = 0;
+    /* td_SourcePtr may be pointing to a string in the dictionary. */
+    vm_address_t saveSource = (vm_address_t)gCurrentTask->td_SourcePtr;
+    gCurrentTask->td_SourcePtr = (char *)pfLockMemoryReadOnly(saveSource, gCurrentTask->td_SourceNum);
 
 /* Is there any text left in Source ? */
     while( gCurrentTask->td_IN < (gCurrentTask->td_SourceNum) )
     {
-
         pfDebugMessage("ffInterpret: calling ffWord(()\n");
         theWord = ffLWord( BLANK );
         DBUG(("ffInterpret: theWord = 0x%x, Len = %d\n", theWord, *theWord ));
@@ -869,6 +871,7 @@ ThrowCode ffInterpret( void )
             gCurrentTask->td_SourceNum ) );
     }
 error:
+    pfUnlockMemory(saveSource, gCurrentTask->td_SourcePtr);
     return exception;
 }
 

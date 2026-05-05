@@ -209,5 +209,16 @@ void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value) {
     }
 }
 
+void *pfCopyFromVirtualMemory(uint8_t *destination,
+                       vm_address_t source,
+                       size_t numBytes) {
+    if (pfIsAddressInPagedMemory(source)) {
+        pfReadPagedMemory(destination, source, numBytes, DP_TIMEOUT_MICROS); /* TODO check result */
+        return destination;
+    } else {
+        return pfCopyMemory(destination, source, numBytes);
+    }
+}
+
 #endif
 

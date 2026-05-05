@@ -59,10 +59,10 @@
         }
         else
         {
-            *((PF_FLOAT *) TOS) = FP_TOS;
+            DP_STORE_FLOAT(TOS, FP_TOS);
         }
 #else
-        *((PF_FLOAT *) TOS) = FP_TOS;
+        DP_STORE_FLOAT(TOS, FP_TOS);
 #endif
         M_FP_DROP;      /* drop FP value */
         M_DROP;         /* drop addr */
@@ -147,10 +147,10 @@
         }
         else
         {
-            FP_TOS = *((PF_FLOAT *) TOS);
+            FP_TOS = DP_FETCH_FLOAT(TOS);
         }
 #else
-        FP_TOS = *((PF_FLOAT *) TOS);
+        FP_TOS = DP_FETCH_FLOAT(TOS);
 #endif
         M_DROP;
         break;

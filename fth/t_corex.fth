@@ -8,6 +8,7 @@ INCLUDE? }T{  t_tools.fth
 ANEW TASK-T_COREX.FTH
 
 DECIMAL
+ECHO ON
 
 TEST{
 

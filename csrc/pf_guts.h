@@ -432,15 +432,15 @@ typedef struct pfTaskData_s
     PF_FLOAT  *td_FloatStackBase;
     PF_FLOAT  *td_FloatStackLimit;
 #endif
-    cell_t   *td_InsPtr;          /* Instruction pointer, "PC" */
+    cell_t    *td_InsPtr;          /* Instruction pointer, "PC" */
     FileStream   *td_InputStream;
 /* Terminal. */
-    char    td_TIB[TIB_SIZE];   /* Buffer for terminal input. */
-    cell_t    td_IN;              /* Index into Source */
-    cell_t    td_SourceNum;       /* #TIB after REFILL */
-    char   *td_SourcePtr;       /* Pointer to TIB or other source. */
-    cell_t   td_LineNumber;      /* Incremented on every refill. */
-    cell_t    td_OUT;             /* Current output column. */
+    char       td_TIB[TIB_SIZE];   /* Buffer for terminal input. */
+    cell_t     td_IN;              /* Index into Source */
+    cell_t     td_SourceNum;       /* #TIB after REFILL */
+    char      *td_SourcePtr;       /* Pointer to TIB or other source. */
+    cell_t     td_LineNumber;      /* Incremented on every refill. */
+    cell_t     td_OUT;             /* Current output column. */
 } pfTaskData_t;
 
 typedef struct pfNode
@@ -452,7 +452,7 @@ typedef struct pfNode
 /* Structure of header entry in dictionary. These will be stored in dictionary specific endian format*/
 typedef struct cfNameLinks
 {
-    cell_t       cfnl_PreviousName;   /* name relative address of previous */
+    cell_t     cfnl_PreviousName;   /* name relative address of previous */
     ExecToken  cfnl_ExecToken;      /* Execution token for word. */
 /* Followed by variable length name field. */
 } cfNameLinks;
@@ -461,7 +461,7 @@ typedef struct cfNameLinks
 typedef struct pfDictionary_s
 {
     pfNode  dic_Node;
-    ucell_t  dic_Flags;
+    ucell_t dic_Flags;
 /* Headers contain pointers to names and dictionary. */
 
     ucell_t dic_HeaderBaseUnaligned;
@@ -484,9 +484,9 @@ typedef struct pfDictionary_s
 typedef struct IncludeFrame
 {
     FileStream   *inf_FileID;
-    cell_t         inf_LineNumber;
-    cell_t         inf_SourceNum;
-    cell_t         inf_IN;
+    cell_t        inf_LineNumber;
+    cell_t        inf_SourceNum;
+    cell_t        inf_IN;
     char          inf_SaveTIB[TIB_SIZE];
 } IncludeFrame;
 

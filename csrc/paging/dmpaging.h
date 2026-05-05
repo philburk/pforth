@@ -29,7 +29,8 @@ extern "C" {
 #define PF_DEMAND_PAGING 1
 #endif
 
-typedef uint8_t *vm_address_t;
+typedef uint8_t *vm_address_t; /** an address that may be in physical or paged memory */
+typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 
 /* Basic memory access macros. */
 #if (PF_DEMAND_PAGING == 0)
@@ -110,13 +111,22 @@ uint8_t *pfLockMemoryReadWrite(vm_address_t vp, cell_t numBytes);
  */
 int pfUnlockMemory(vm_address_t vp, const uint8_t *pp);
 
+/** Copy from virtual to physical memory synchronously.
+ * @param destination in physical memory
+ * @param source The data may be in physical or paged memory.
+ * @return destination
+ */
+void *pfCopyFromVirtualMemory(uint8_t *destination,
+                        vm_address_t source,
+                              size_t numBytes);
+
 /* Serial Memory Access
  * A demand paging simulator is provided for testing the framework on a host.
  * The actual demand paging interface must be provided by the user.
  */
 #define DP_ALIGNMENT_SIZE    (16)
 
-/** Is the given address associated in the paged memory?
+/** Is the given address pointing to paged memory?
  * @return 1 if in paged memory, else 0
  */
 int pfIsAddressInPagedMemory(void *p);
@@ -130,7 +140,7 @@ void pfResetPagedMemory(void);
 /** Allocate demand paged memory from SPI or other storage.
  * Memory blocks will be aligned on DP_ALIGNMENT_SIZE byte boundaries.
  */
-vm_address_t pfAllocatePagedMemory(ucell_t numBytes);
+paging_address_t pfAllocatePagedMemory(ucell_t numBytes);
 
 /** Free demand paged memory.
  * This may simply be a NOOP. So just allocate
@@ -144,7 +154,7 @@ void pfFreePagedMemory(vm_address_t p);
  * @return number of bytes read or 0 if timed out
  */
 int pfReadPagedMemory(uint8_t *destination,
-                      vm_address_t source,
+                      paging_address_t source,
                       size_t numBytes,
                       int micros);
 
@@ -159,7 +169,7 @@ int pfWaitAsyncPagedMemoryAccess(int micros);
  * @param micros if zero then issue an async transfer, else timeout in micros
  * @return number of bytes written or 0 if timed out
  */
-int pfWritePagedMemory(vm_address_t destination,
+int pfWritePagedMemory(paging_address_t destination,
                        uint8_t *source,
                        size_t numBytes,
                        int micros);

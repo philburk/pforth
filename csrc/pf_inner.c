@@ -998,9 +998,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             {
                 const char *famText = pfSelectFileModeCreate( TOS );
                 /* Build NUL terminated name string. */
-                const char *pName = (char *) pfLockMemoryReadOnly(CharPtr, Scratch);
-                pfCopyMemory( gScratch, pName, (ucell_t) Scratch );
-                pfUnlockMemory(CharPtr, pName);
+                pfCopyFromVirtualMemory(gScratch, CharPtr, Scratch);
                 gScratch[Scratch] = '\0';
                 DBUG(("Create file = %s with famTxt %s\n", gScratch, famText ));
                 FileID = sdOpenFile( gScratch, famText );
@@ -1016,11 +1014,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_FILE_DELETE: /* ( c-addr u -- ior ) */
-/* Build NUL terminated name string. */
-            Temp = M_POP;    /* caddr */
+            CharPtr = (char *)M_POP;    /* caddr */
             if( TOS < TIB_SIZE-2 )
             {
-                pfCopyMemory( gScratch, (char *) Temp, (ucell_t) TOS ); /* FIXME vm */
+                /* Build NUL terminated name string. */
+                pfCopyFromVirtualMemory(gScratch, CharPtr, TOS);
                 gScratch[TOS] = '\0';
                 DBUG(("Delete file = %s\n", gScratch ));
                 TOS = sdDeleteFile( gScratch );
@@ -1039,9 +1037,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             {
                 const char *famText = pfSelectFileModeOpen( TOS );
                 /* Build NUL terminated name string. */
-                const char *pName = (char *) pfLockMemoryReadOnly(CharPtr, Scratch);
-                pfCopyMemory( gScratch, pName, (ucell_t) Scratch );
-                pfUnlockMemory(CharPtr, pName);
+                pfCopyFromVirtualMemory(gScratch, CharPtr, Scratch);
                 gScratch[Scratch] = '\0';
                 DBUG(("Open file = %s\n", gScratch ));
                 FileID = sdOpenFile( gScratch, famText );
@@ -1073,7 +1069,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         /* TODO Why does this crash when passed an illegal FID? */
         case ID_FILE_SIZE: /* ( fid -- ud ior ) */
-/* Determine file size by seeking to end and returning position. */
+            /* Determine file size by seeking to the end and returning position. */
             FileID = (FileStream *) TOS;
             {
                 file_offset_t endposition = -1;
