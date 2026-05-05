@@ -1013,11 +1013,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_FILE_DELETE: /* ( c-addr u -- ior ) */
-            CharPtr = (char *)M_POP;    /* caddr */
             if( TOS < TIB_SIZE-2 )
             {
+                vm_address_t vName = (vm_address_t) M_POP;    /* caddr */
                 /* Build NUL terminated name string. */
-                pfCopyFromVirtualMemory(gScratch, CharPtr, TOS);
+                pfCopyFromVirtualMemory(gScratch, vName, TOS);
                 gScratch[TOS] = '\0';
                 DBUG(("Delete file = %s\n", gScratch ));
                 TOS = sdDeleteFile( gScratch );
@@ -1025,18 +1025,19 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             else
             {
                 ERR("Filename too large for name buffer.\n");
+                M_POP;
                 TOS = -2;
             }
             endcase;
 
         case ID_FILE_OPEN: /* ( c-addr u fam -- fid ior ) */
             Scratch = M_POP; /* u */
-            CharPtr = (char *) M_POP;    /* caddr */
             if( Scratch < TIB_SIZE-2 )
             {
                 const char *famText = pfSelectFileModeOpen( TOS );
+                vm_address_t vName = (vm_address_t) M_POP;    /* caddr */
                 /* Build NUL terminated name string. */
-                pfCopyFromVirtualMemory(gScratch, CharPtr, Scratch);
+                pfCopyFromVirtualMemory(gScratch, vName, Scratch);
                 gScratch[Scratch] = '\0';
                 DBUG(("Open file = %s\n", gScratch ));
                 FileID = sdOpenFile( gScratch, famText );
@@ -1047,6 +1048,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             else
             {
                 ERR("Filename too large for name buffer.\n");
+                M_POP;
                 M_PUSH( 0 );
                 TOS = -2;
             }
@@ -1060,7 +1062,8 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             FileID = (FileStream *) TOS;
             Scratch = M_POP;
             CharPtr = (char *) M_POP;
-            Temp = ffReadFile( CharPtr, 1, Scratch, FileID );
+            /* warning, only 32-bit nItems */
+            Temp = ffReadFile( CharPtr, 1, (int32_t) Scratch, FileID );
             /* TODO check feof() or ferror() */
             M_PUSH(Temp);
             TOS = 0;
@@ -1100,7 +1103,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             FileID = (FileStream *) TOS;
             Scratch = M_POP;
             CharPtr = (char *) M_POP;
-            Temp = ffWriteFile( CharPtr, 1, Scratch, FileID );
+            Temp = ffWriteFile( CharPtr, 1, (int32_t)Scratch, FileID );
             TOS = (Temp != Scratch) ? -3 : 0;
             endcase;
 
@@ -1179,12 +1182,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
              * Then we will have the name lengths.
              */
             vm_address_t vNewName = (vm_address_t)TOS;
-            char *pNewName = pfLockMemoryReadOnly(vNewName, DP_MAX_REGION_SIZE);
+            char *pNewName = (char *)pfLockMemoryReadOnly(vNewName, DP_MAX_REGION_SIZE);
             vm_address_t vOldName = (vm_address_t)M_POP;
-            char *pOldName = pfLockMemoryReadOnly(vOldName, DP_MAX_REGION_SIZE);
+            char *pOldName = (char *)pfLockMemoryReadOnly(vOldName, DP_MAX_REGION_SIZE);
             TOS = sdRenameFile( pOldName, pNewName );
-            pfUnlockMemory(vOldName, pOldName);
-            pfUnlockMemory(vNewName, pNewName);
+            pfUnlockMemory(vOldName, (const uint8_t *)pOldName);
+            pfUnlockMemory(vNewName, (const uint8_t *)pNewName);
         }
         endcase;
 
@@ -1220,7 +1223,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Scratch = DP_FETCH_U8(vaddr) + 1; /* length including count */
                 CharPtr = (char *) pfLockMemoryReadOnly(vaddr, Scratch);
                 TOS = ffFind( (char *) CharPtr, (ExecToken *) &Temp );
-                pfUnlockMemory(vaddr, CharPtr);
+                pfUnlockMemory(vaddr, (const uint8_t *)CharPtr);
                 if (TOS != 0) {
                     M_PUSH( Temp ); /* xt */
                 } else {
@@ -1236,7 +1239,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Scratch = DP_FETCH_U8(name) + 1; /* length including count */
                 CharPtr = (char *) pfLockMemoryReadOnly(name, Scratch);
                 TOS = ffFindNFA( (const ForthString *) CharPtr, (const ForthString **) &nfa );
-                pfUnlockMemory(name, CharPtr);
+                pfUnlockMemory(name, (const uint8_t *)CharPtr);
                 if (TOS != 0) {
                     M_PUSH( nfa );
                 } else {
@@ -1288,7 +1291,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = MASK_NAME_SIZE & DP_FETCH_U8((vm_address_t) TOS); /* Length of string. */
             CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) TOS, Scratch);
             TOS = (cell_t) ffNumberQ( (char *) CharPtr, &Temp );
-            pfUnlockMemory((vm_address_t) TOS, CharPtr);
+            pfUnlockMemory((vm_address_t) TOS, (const uint8_t *) CharPtr);
             if( TOS == NUM_TYPE_SINGLE)
             {
                 M_PUSH( Temp );   /* Push single number */
@@ -1703,7 +1706,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 CharPtr = (char *) pfLockMemoryReadOnly(vName, Temp + 1);
                 ForthStringToC( gScratch, CharPtr, sizeof(gScratch) );
                 TOS =  ffSaveForth( gScratch, EntryPoint, NameSize, CodeSize );
-                pfUnlockMemory(vName, CharPtr);
+                pfUnlockMemory(vName, (const uint8_t *) CharPtr);
             }
             endcase;
 #endif
@@ -1744,7 +1747,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Temp = M_POP;    /* virtual address */
                 char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
                 TOS = ffScan( lockedMemory, Scratch, (char) TOS, &CharPtr );
-                pfUnlockMemory((vm_address_t) Temp, lockedMemory);
+                pfUnlockMemory((vm_address_t) Temp, (const uint8_t *) lockedMemory);
                 M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
             }
             endcase;
@@ -1764,7 +1767,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 Temp = M_POP;    /* addr */
                 char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
                 TOS = ffSkip( lockedMemory, Scratch, (char) TOS, &CharPtr );
-                pfUnlockMemory((vm_address_t) Temp, lockedMemory);
+                pfUnlockMemory((vm_address_t) Temp, (const uint8_t *) lockedMemory);
                 M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
             }
             endcase;
@@ -1860,7 +1863,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = M_POP; /* addr */
             CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
             ioType( (char *) CharPtr, TOS );
-            pfUnlockMemory((vm_address_t) Scratch, CharPtr);
+            pfUnlockMemory((vm_address_t) Scratch, (const uint8_t *) CharPtr);
             M_DROP;
             endcase;
 

@@ -46,7 +46,7 @@ void pfResetPagedMemory(void) {
     sDpNextAvailable = 0;
 }
 
-int pfIsAddressInPagedMemory(void * p) {
+int pfIsAddressInPagedMemory(vm_address_t p) {
     vm_address_t vaddr = PF_DP_UNMUNGE(p);
     cell_t offset = (uint8_t *)vaddr - sFakeSerialRAM;
     return (offset >= 0) && (offset < PF_DP_AVAILABLE_SPACE);

@@ -143,7 +143,7 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
 
 uint8_t  pfFetchVirtualU8(uint8_t *address) {
     uint8_t value;
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint8_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
@@ -153,7 +153,7 @@ uint8_t  pfFetchVirtualU8(uint8_t *address) {
 }
 uint16_t pfFetchVirtualU16(uint16_t *address) {
     uint16_t value;
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint16_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
@@ -162,7 +162,7 @@ uint16_t pfFetchVirtualU16(uint16_t *address) {
 }
 cell_t   pfFetchVirtualCell(cell_t *address) {
     cell_t value;
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(cell_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
@@ -171,7 +171,7 @@ cell_t   pfFetchVirtualCell(cell_t *address) {
 }
 PF_FLOAT pfFetchVirtualFloat(PF_FLOAT *address) {
     PF_FLOAT value;
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(PF_FLOAT), DP_TIMEOUT_MICROS);
         return value;
     } else {
@@ -180,7 +180,7 @@ PF_FLOAT pfFetchVirtualFloat(PF_FLOAT *address) {
 }
 
 void pfStoreVirtualU8(uint8_t *address, uint8_t value) {
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfWritePagedMemory((paging_address_t) address, &value, sizeof(uint8_t), DP_TIMEOUT_MICROS);
     } else {
         *address = value;
@@ -188,21 +188,21 @@ void pfStoreVirtualU8(uint8_t *address, uint8_t value) {
 }
 
 void pfStoreVirtualU16(uint16_t *address, uint16_t value) {
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfWritePagedMemory((paging_address_t) address, &value, sizeof(uint16_t), DP_TIMEOUT_MICROS);
     } else {
         *address = value;
     }
 }
 void pfStoreVirtualCell(cell_t *address, cell_t value) {
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfWritePagedMemory((paging_address_t) address, &value, sizeof(cell_t), DP_TIMEOUT_MICROS);
     } else {
         *address = value;
     }
 }
 void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value) {
-    if (pfIsAddressInPagedMemory(address)) {
+    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfWritePagedMemory((paging_address_t) address, &value, sizeof(PF_FLOAT), DP_TIMEOUT_MICROS);
     } else {
         *address = value;

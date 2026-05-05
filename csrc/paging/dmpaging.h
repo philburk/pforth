@@ -129,7 +129,7 @@ void *pfCopyFromVirtualMemory(void *destination,
 /** Is the given address pointing to paged memory?
  * @return 1 if in paged memory, else 0
  */
-int pfIsAddressInPagedMemory(void *p);
+int pfIsAddressInPagedMemory(vm_address_t p);
 
 /**
  * Reset the memory allocator.

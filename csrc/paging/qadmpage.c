@@ -35,8 +35,8 @@ static int pfQaTestAllocate(void) {
     ASSERT_EQ((vm2 - vm1), DP_ALIGNMENT_SIZE);
 
     int x = 0;
-    ASSERT_EQ(pfIsAddressInPagedMemory(&x), 0);
-    ASSERT_EQ(pfIsAddressInPagedMemory((void *)(vm2 + 5)), 1);
+    ASSERT_EQ(pfIsAddressInPagedMemory((vm_address_t)&x), 0);
+    ASSERT_EQ(pfIsAddressInPagedMemory((vm_address_t)(vm2 + 5)), 1);
     return 0;
 error:
     return 1;

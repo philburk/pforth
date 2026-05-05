@@ -252,9 +252,9 @@ char * ffLWord( char c )
   return Word( c, FALSE );
 }
 
-cell_t ffReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  )
+size_t ffReadFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
 {
-    cell_t numBytes = Size * nItems;
+    size_t numBytes = Size * nItems;
     if (numBytes == 0) {
         return 0;
     } else if (pfIsAddressInPagedMemory(ptr)) {
@@ -268,7 +268,7 @@ cell_t ffReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  
             cell_t numRead = sdReadFile(buffer, 1, bytesToRead, Stream);
             pfUnlockMemory(vp, buffer); /* writes to backing storage */
             if (numRead < bytesToRead) {
-                numBytes = 0; // no more data left
+                numBytes = 0; /* no more data left */
             } else {
                 numBytes -= bytesToRead;
             }
@@ -281,15 +281,14 @@ cell_t ffReadFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  
     }
 }
 
-cell_t ffWriteFile( void *ptr, cell_t Size, int32_t nItems, FileStream * Stream  )
+size_t ffWriteFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
 {
-    cell_t numBytes = Size * nItems;
+    size_t numBytes = Size * nItems;
     if (numBytes == 0) {
         return 0;
     } else if (pfIsAddressInPagedMemory(ptr)) {
         /* Write file in blocks that will fit in locked regions. */
         vm_address_t vp = (vm_address_t)ptr;
-        cell_t numBytes = Size * nItems;
         cell_t bytesWritten = 0;
         while (numBytes > 0) {
             cell_t bytesToWrite = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;

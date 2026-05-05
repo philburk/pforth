@@ -58,7 +58,7 @@ int main( void )
 }
 #else
 
-int pfQaDemandPaging();
+int pfQaDemandPaging(void);
 
 int main( int argc, char **argv )
 {

@@ -367,7 +367,7 @@ static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t 
     if( Write32ToFile( fid, (uint32_t)EvenNumW ) < 0 ) goto error;
 
     /* use demand paging just in case */
-    numw = ffWriteFile( Data, 1, EvenNumW, fid );
+    numw = ffWriteFile( Data, 1, (int32_t)EvenNumW, fid );
     if( numw != EvenNumW ) goto error;
     return 0;
 error:
