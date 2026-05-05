@@ -24,6 +24,8 @@
 #include "../pf_all.h"
 #include "dmpaging.h"
 
+#if PF_DEMAND_PAGING
+
 #ifndef PF_DP_AVAILABLE_SPACE
 #define PF_DP_AVAILABLE_SPACE   (512*1024)
 #endif
@@ -98,3 +100,5 @@ size_t pfWritePagedMemory(paging_address_t destination,
     pfCopyMemory(pAddr, source, numBytes);
     return numBytes;
  }
+
+#endif /* PF_DEMAND_PAGING */

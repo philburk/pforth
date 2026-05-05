@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 #ifndef PF_DEMAND_PAGING
-#define PF_DEMAND_PAGING 1
+#define PF_DEMAND_PAGING 0
 #endif
 
 typedef uint8_t *vm_address_t; /** an address that may be in physical or paged memory */
@@ -124,12 +124,14 @@ void *pfCopyFromVirtualMemory(void *destination,
  * A demand paging simulator is provided for testing the framework on a host.
  * The actual demand paging interface must be provided by the user.
  */
-#define DP_ALIGNMENT_SIZE    (16)
 
 /** Is the given address pointing to paged memory?
  * @return 1 if in paged memory, else 0
  */
 int pfIsAddressInPagedMemory(vm_address_t p);
+
+#if PF_DEMAND_PAGING
+#define DP_ALIGNMENT_SIZE    (16)
 
 /**
  * Reset the memory allocator.
@@ -174,9 +176,10 @@ size_t pfWritePagedMemory(paging_address_t destination,
                        size_t numBytes,
                        int micros);
 
+#endif /* PF_DEMAND_PAGING */
+
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* _pf_dmpaging_h */

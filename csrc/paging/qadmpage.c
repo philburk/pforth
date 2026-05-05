@@ -22,6 +22,8 @@
 #include "../pf_all.h"
 #include "unittest.h"
 
+#if PF_DEMAND_PAGING
+
 PFQA_INSTANTIATE_GLOBALS;
 
 static int pfQaTestAllocate(void) {
@@ -254,3 +256,5 @@ error:
     PFQA_PRINT_RESULT;
     return PFQA_EXIT_RESULT;
 }
+
+#endif /* PF_DEMAND_PAGING */

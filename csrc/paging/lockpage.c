@@ -21,7 +21,7 @@
 #include "../pf_all.h"
 #include "dmpaging.h"
 
-#ifndef PF_DEMAND_PAGING
+#if PF_DEMAND_PAGING == 0
 
 void pfResetLockedMemory(void) {
 }
@@ -34,15 +34,21 @@ uint8_t *pfLockMemoryReadWrite(vm_address_t vp, cell_t numBytes) {
     return ((uint8_t *)(vp));
 }
 
-void pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
+int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
+    return 0;
 }
 
-vm_address_t pfConvertPhysicalToVirtual(const uint8_t *p) {
-    return (vm_address_t) p;
+void *pfCopyFromVirtualMemory(void *destination,
+                              vm_address_t source,
+                              size_t numBytes) {
+    return pfCopyMemory(destination, source, numBytes);
 }
 
-void pfUnlockMemory(vm_address_t vp, const uint8_t *pp);
-#else
+int pfIsAddressInPagedMemory(vm_address_t p) {
+    return FALSE;
+}
+
+#else /* PF_DEMAND_PAGING */
 
 #define DP_MAGIC  (0x5A9E)
 
@@ -222,5 +228,5 @@ void *pfCopyFromVirtualMemory(void *destination,
     }
 }
 
-#endif
+#endif /* PF_DEMAND_PAGING */
 

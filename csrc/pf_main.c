@@ -142,7 +142,10 @@ int main( int argc, char **argv )
     }
 #endif
 
-/*    Result = pfQaDemandPaging(); FIXME */
+#if PF_DEMAND_PAGING
+    Result = pfQaDemandPaging(); /* FIXME move to standalone qa test */
+    if (Result != 0) goto on_error;
+#endif
 
     Result = pfDoForth( DicName, SourceName, IfInit);
 
