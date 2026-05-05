@@ -60,20 +60,22 @@ struct RegionControlBlock {
 struct RegionControlBlock sLockedRegions[DP_MAX_REGIONS];
 
 void pfResetLockedMemory(void) {
+    int i;
     pfSetMemory(sLockedRegions, 0, sizeof(sLockedRegions));
-    for (int i = 0; i < DP_MAX_REGIONS; i++) {
+    for (i = 0; i < DP_MAX_REGIONS; i++) {
         struct RegionControlBlock *region = &sLockedRegions[i];
         region->magic = DP_MAGIC;
     }
 }
 
 uint8_t *pfLockMemoryInternal(vm_address_t vp, cell_t numBytes, int writable) {
+    int i;
     struct RegionControlBlock *region = NULL;
     if (pfIsAddressInPagedMemory(vp) == 0) { /* not in paged memory so locking not needed */
         return (uint8_t *) vp;
     }
     /* Find an empty region. */
-    for (int i = 0; i < DP_MAX_REGIONS; i++) {
+    for (i = 0; i < DP_MAX_REGIONS; i++) {
         if (sLockedRegions[i].locked == 0) {
             region = &sLockedRegions[i];
             break;

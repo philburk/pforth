@@ -1859,13 +1859,14 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_TIMES: BINARY_OP( * ); endcase;
 
-        case ID_TYPE:
+        case ID_TYPE: {
             Scratch = M_POP; /* addr */
-            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
-            ioType( (char *) CharPtr, TOS );
-            pfUnlockMemory((vm_address_t) Scratch, (const uint8_t *) CharPtr);
+            const char * pText = (const char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
+            ioType(pText, TOS);
+            pfUnlockMemory((vm_address_t) Scratch, (const uint8_t *) pText);
             M_DROP;
-            endcase;
+        }
+        endcase;
 
         case ID_TO_R:
             M_R_PUSH( TOS );
