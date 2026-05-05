@@ -149,41 +149,41 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
     return 0;
 }
 
-uint8_t  pfFetchVirtualU8(uint8_t *address) {
+uint8_t  pfFetchVirtualU8(const uint8_t *address) {
     uint8_t value;
     if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint8_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
-        return (*((uint8_t *)(address)));
+        return *address;
     }
 
 }
-uint16_t pfFetchVirtualU16(uint16_t *address) {
+uint16_t pfFetchVirtualU16(const uint16_t *address) {
     uint16_t value;
     if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint16_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
-        return (*((uint16_t *)(address)));
+        return *address;
     }
 }
-cell_t   pfFetchVirtualCell(cell_t *address) {
+cell_t   pfFetchVirtualCell(const cell_t *address) {
     cell_t value;
     if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(cell_t), DP_TIMEOUT_MICROS);
         return value;
     } else {
-        return (*((cell_t *)(address)));
+        return *address;
     }
 }
-PF_FLOAT pfFetchVirtualFloat(PF_FLOAT *address) {
+PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address) {
     PF_FLOAT value;
     if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfReadPagedMemory(&value, (paging_address_t) address, sizeof(PF_FLOAT), DP_TIMEOUT_MICROS);
         return value;
     } else {
-        return (*((PF_FLOAT *)(address)));
+        return *address;
     }
 }
 

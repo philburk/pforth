@@ -34,12 +34,12 @@ static uint8_t sFakeSerialRAM[PF_DP_AVAILABLE_SPACE];
 static cell_t sDpNextAvailable = 0;
 #define DP_ALIGNMENT_MASK (DP_ALIGNMENT_SIZE - 1)
 
-#if 1
+#if 0
 #define PF_DP_MUNGE_KEY  (0)
 #elif (PF_64BIT)
 #define PF_DP_MUNGE_KEY  (0x005A000000000000)
 #elif (PF_32BIT)
-#define PF_DP_MUNGE_KEY  (0x5A000000)
+#define PF_DP_MUNGE_KEY  (0x50000000)
 #endif
 
 #define PF_DP_MUNGE(vaddr) ((vm_address_t)(((cell_t)vaddr) ^ PF_DP_MUNGE_KEY))

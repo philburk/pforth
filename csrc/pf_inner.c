@@ -557,10 +557,8 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
                 CharPtr = (char *) M_POP;    /* src */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
                 {
-                    uint8_t value = DP_FETCH_U8(CharPtr);
-                    CharPtr++;
-                    DP_STORE_U8(DstPtr, value);
-                    DstPtr++;
+                    uint8_t value = DP_FETCH_U8(CharPtr++);
+                    DP_STORE_U8(DstPtr++, value);
                 }
                 M_DROP;
             }
@@ -569,13 +567,11 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
         case ID_CMOVE_UP: /* ( src dst n -- ) */
             {
                 register char *DstPtr = ((char *) M_POP) + TOS; /* dst */
-                CharPtr = ((char *) M_POP) + TOS;;    /* src */
+                CharPtr = ((char *) M_POP) + TOS;    /* src */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
                 {
-                    --CharPtr;
-                    uint8_t value = DP_FETCH_U8(CharPtr);
-                    --DstPtr;
-                    DP_STORE_U8(DstPtr, value);
+                    uint8_t value = DP_FETCH_U8(--CharPtr);
+                    DP_STORE_U8(--DstPtr, value);
                 }
                 M_DROP;
             }
@@ -1007,7 +1003,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             else
             {
                 ERR("Filename too large for name buffer.\n");
-                M_POP;
+                M_DROP;
                 M_PUSH( 0 );
                 TOS = -2;
             }
@@ -1026,7 +1022,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             else
             {
                 ERR("Filename too large for name buffer.\n");
-                M_POP;
+                M_DROP;
                 TOS = -2;
             }
             endcase;
@@ -1049,7 +1045,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             else
             {
                 ERR("Filename too large for name buffer.\n");
-                M_POP;
+                M_DROP;
                 M_PUSH( 0 );
                 TOS = -2;
             }
@@ -1183,9 +1179,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
              * Then we will have the name lengths.
              */
             vm_address_t vNewName = (vm_address_t)TOS;
-            char *pNewName = (char *)pfLockMemoryReadOnly(vNewName, DP_MAX_REGION_SIZE);
+            const char *pNewName = (char *)pfLockMemoryReadOnly(vNewName, DP_MAX_REGION_SIZE);
             vm_address_t vOldName = (vm_address_t)M_POP;
-            char *pOldName = (char *)pfLockMemoryReadOnly(vOldName, DP_MAX_REGION_SIZE);
+            const char *pOldName = (char *)pfLockMemoryReadOnly(vOldName, DP_MAX_REGION_SIZE);
             TOS = sdRenameFile( pOldName, pNewName );
             pfUnlockMemory(vOldName, (const uint8_t *)pOldName);
             pfUnlockMemory(vNewName, (const uint8_t *)pNewName);
@@ -1291,7 +1287,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
              */
             vm_address_t vAddr = (vm_address_t) TOS;
             Scratch = MASK_NAME_SIZE & DP_FETCH_U8(vAddr); /* Length of string. */
-            char *pAddr = (char *) pfLockMemoryReadOnly(vAddr, Scratch + 1);
+            const char *pAddr = (const char *) pfLockMemoryReadOnly(vAddr, Scratch + 1);
             TOS = (cell_t) ffNumberQ(pAddr, &Temp );
             pfUnlockMemory(vAddr, (const uint8_t *) pAddr);
             if( TOS == NUM_TYPE_SINGLE)
@@ -1701,15 +1697,16 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_SAVE_FORTH_P:   /* ( $name Entry NameSize CodeSize -- err ) */
             {
                 cell_t NameSize, CodeSize, EntryPoint;
+                vm_address_t vName;
                 CodeSize = TOS;
                 NameSize = M_POP;
                 EntryPoint = M_POP;
-                vm_address_t vName = (vm_address_t) M_POP;
+                vName = (vm_address_t) M_POP;
                 Temp = DP_FETCH_U8(vName); /* length */
-                CharPtr = (char *) pfLockMemoryReadOnly(vName, Temp + 1);
-                ForthStringToC( gScratch, CharPtr, sizeof(gScratch) );
+                const char *pFString = (const char *) pfLockMemoryReadOnly(vName, Temp + 1);
+                ForthStringToC( gScratch, pFString, sizeof(gScratch) );
                 TOS =  ffSaveForth( gScratch, EntryPoint, NameSize, CodeSize );
-                pfUnlockMemory(vName, (const uint8_t *) CharPtr);
+                pfUnlockMemory(vName, (const uint8_t *) pFString);
             }
             endcase;
 #endif
@@ -1746,12 +1743,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_SCAN: /* ( addr cnt char -- addr' cnt' ) */
             {
-                Scratch = M_POP; /* cnt */
-                vm_address_t vAddr = (vm_address_t)M_POP;
-                char *lockedMemory = (char *) pfLockMemoryReadOnly(vAddr, Scratch);
-                TOS = ffScan( lockedMemory, Scratch, (char) TOS, &CharPtr );
+                char charToFind = TOS;
+                cell_t cnt = M_POP;
+                vm_address_t vAddr = (vm_address_t) M_POP;
+                char *lockedMemory = (char *) pfLockMemoryReadOnly(vAddr, cnt);
+                TOS = ffScan( lockedMemory, cnt, charToFind, &CharPtr );
                 pfUnlockMemory(vAddr, (const uint8_t *) lockedMemory);
-                M_PUSH((cell_t) (vAddr + (Scratch - TOS))); /* offset address by (cnt - cnt') */
+                M_PUSH((cell_t) (vAddr + (cnt - TOS))); /* offset address by (cnt - cnt') */
             }
             endcase;
 

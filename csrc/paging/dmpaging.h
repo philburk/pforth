@@ -35,10 +35,10 @@ typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 /* Basic memory access macros. */
 #if (PF_DEMAND_PAGING == 0)
 /* Straight memory access. */
-#define DP_FETCH_U8(address)    (*((uint8_t *)(address)))
-#define DP_FETCH_U16(address)   (*((uint16_t *)(address)))
-#define DP_FETCH_CELL(address)  (*((cell_t *)(address)))
-#define DP_FETCH_FLOAT(address) (*((PF_FLOAT *)(address)))
+#define DP_FETCH_U8(address)    (*((const uint8_t *)(address)))
+#define DP_FETCH_U16(address)   (*((const uint16_t *)(address)))
+#define DP_FETCH_CELL(address)  (*((const cell_t *)(address)))
+#define DP_FETCH_FLOAT(address) (*((const PF_FLOAT *)(address)))
 
 #define DP_STORE_U8(address, value)    *((uint8_t *)(address)) = (uint8_t)(value)
 #define DP_STORE_U16(address, value)   *((uint16_t *)(address)) = (uint16_t)(value)
@@ -46,10 +46,10 @@ typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 #define DP_STORE_FLOAT(address, value) *((PF_FLOAT *)(address)) = (PF_FLOAT)(value)
 #else
 /* Use either physical or paged memory. */
-#define DP_FETCH_U8(address)    pfFetchVirtualU8((uint8_t *)(address))
-#define DP_FETCH_U16(address)   pfFetchVirtualU16((uint16_t *)(address))
-#define DP_FETCH_CELL(address)  pfFetchVirtualCell((cell_t *)(address))
-#define DP_FETCH_FLOAT(address) pfFetchVirtualFloat((PF_FLOAT *)(address))
+#define DP_FETCH_U8(address)    pfFetchVirtualU8((const uint8_t *)(address))
+#define DP_FETCH_U16(address)   pfFetchVirtualU16((const uint16_t *)(address))
+#define DP_FETCH_CELL(address)  pfFetchVirtualCell((const cell_t *)(address))
+#define DP_FETCH_FLOAT(address) pfFetchVirtualFloat((const PF_FLOAT *)(address))
 
 #define DP_STORE_U8(address, value)    pfStoreVirtualU8(((uint8_t *)(address)), (uint8_t)(value))
 #define DP_STORE_U16(address, value)   pfStoreVirtualU16(((uint16_t *)(address)), (uint16_t)(value))
@@ -57,10 +57,10 @@ typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 #define DP_STORE_FLOAT(address, value) pfStoreVirtualFloat(((PF_FLOAT *)(address)), (PF_FLOAT)(value))
 #endif
 
-uint8_t  pfFetchVirtualU8(uint8_t *address);
-uint16_t pfFetchVirtualU16(uint16_t *address);
-cell_t   pfFetchVirtualCell(cell_t *address);
-PF_FLOAT pfFetchVirtualFloat(PF_FLOAT *address);
+uint8_t  pfFetchVirtualU8(const uint8_t *address);
+uint16_t pfFetchVirtualU16(const uint16_t *address);
+cell_t   pfFetchVirtualCell(const cell_t *address);
+PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address);
 
 void pfStoreVirtualU8(uint8_t *address, uint8_t value);
 void pfStoreVirtualU16(uint16_t *address, uint16_t value);

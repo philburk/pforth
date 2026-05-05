@@ -18,7 +18,7 @@
         EOL word drop
 ; immediate
 
-1 echo !  \ Uncomment this line to echo Forth code while compiling.
+\ 1 echo !  \ Uncomment this line to echo Forth code while compiling.
 
 \ *********************************************************************
 \ This is another style of comment that is common in Forth.
