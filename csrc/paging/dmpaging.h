@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 #ifndef PF_DEMAND_PAGING
-#define PF_DEMAND_PAGING 0
+#define PF_DEMAND_PAGING 1
 #endif
 
 typedef uint8_t *vm_address_t; /** an address that may be in physical or paged memory */
