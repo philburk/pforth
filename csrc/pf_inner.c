@@ -1285,19 +1285,21 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             TOS = (cell_t)CODE_HERE;
             endcase;
 
-        case ID_NUMBERQ_P:   /* ( addr -- 0 | n 1 ) */
-/* Convert using number converter in 'C'.
-** Only supports single precision for bootstrap.
-*/
-            Scratch = MASK_NAME_SIZE & DP_FETCH_U8((vm_address_t) TOS); /* Length of string. */
-            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) TOS, Scratch + 1);
-            TOS = (cell_t) ffNumberQ( (char *) CharPtr, &Temp );
-            pfUnlockMemory((vm_address_t) TOS, (const uint8_t *) CharPtr);
+        case ID_NUMBERQ_P:   /* ( addr -- 0 | n 1 ) */ {
+            /* Convert using number converter in 'C'.
+             ** Only supports single precision for bootstrap.
+             */
+            vm_address_t vAddr = (vm_address_t) TOS;
+            Scratch = MASK_NAME_SIZE & DP_FETCH_U8(vAddr); /* Length of string. */
+            char *pAddr = (char *) pfLockMemoryReadOnly(vAddr, Scratch + 1);
+            TOS = (cell_t) ffNumberQ(pAddr, &Temp );
+            pfUnlockMemory(vAddr, (const uint8_t *) pAddr);
             if( TOS == NUM_TYPE_SINGLE)
             {
                 M_PUSH( Temp );   /* Push single number */
             }
-            endcase;
+        }
+        endcase;
 
         case ID_I:  /* ( -- i , DO LOOP index ) */
             PUSH_TOS;
@@ -1745,11 +1747,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_SCAN: /* ( addr cnt char -- addr' cnt' ) */
             {
                 Scratch = M_POP; /* cnt */
-                Temp = M_POP;    /* virtual address */
-                char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
+                vm_address_t vAddr = (vm_address_t)M_POP;
+                char *lockedMemory = (char *) pfLockMemoryReadOnly(vAddr, Scratch);
                 TOS = ffScan( lockedMemory, Scratch, (char) TOS, &CharPtr );
-                pfUnlockMemory((vm_address_t) Temp, (const uint8_t *) lockedMemory);
-                M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
+                pfUnlockMemory(vAddr, (const uint8_t *) lockedMemory);
+                M_PUSH((cell_t) (vAddr + (Scratch - TOS))); /* offset address by (cnt - cnt') */
             }
             endcase;
 
