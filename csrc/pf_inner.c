@@ -587,9 +587,9 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
             {
                 vm_address_t vp = (vm_address_t) M_POP;
                 Temp = DP_FETCH_U8(vp); /* length */
-                CharPtr = (char *) pfLockMemoryReadOnly(vp, Temp + 1);
-                CreateDicEntry( TOS, CharPtr, 0 );
-                pfUnlockMemory(vp, (const uint8_t *) CharPtr);
+                const ForthStringPtr pName = (const ForthStringPtr) pfLockMemoryReadOnly(vp, Temp + 1);
+                CreateDicEntry( TOS, pName, 0 );
+                pfUnlockMemory(vp, (const uint8_t *) pName);
                 M_DROP;
             }
             endcase;
@@ -912,14 +912,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_DROP:  M_DROP; endcase;
 
-        case ID_DUMP:
-            Scratch = M_POP;
-            CharPtr = (char *) pfLockMemoryReadOnly((vm_address_t) Scratch, TOS);
-            DumpMemory( (char *) CharPtr, TOS );
-            /* TODO handle dump of larger virtual areas. */
-            pfUnlockMemory((vm_address_t) Scratch, (const uint8_t *) CharPtr);
+        case ID_DUMP: /* ( addr cnt -- ) */ {
+            cell_t cnt = TOS;
+            vm_address_t vAddr = (vm_address_t) M_POP;
+            DumpMemory(vAddr, cnt);
             M_DROP;
-            endcase;
+        }
+        endcase;
 
         case ID_DUP:   M_DUP; endcase;
 

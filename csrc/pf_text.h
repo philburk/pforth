@@ -61,7 +61,7 @@ cell_t ffCompare( const char *s1, cell_t len1, const char *s2, cell_t len2 );
 cell_t ffCompareText( const char *s1, const char *s2, cell_t len );
 cell_t ffCompareTextCaseN( const char *s1, const char *s2, cell_t len );
 
-void  DumpMemory( void *addr, cell_t cnt);
+void  DumpMemory(vm_address_t vAddr, cell_t cnt);
 char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t MinChars );
 void  TypeName( const char *Name );
 

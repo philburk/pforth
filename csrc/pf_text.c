@@ -300,35 +300,38 @@ char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t Mi
 /***************************************************************
 ** Diagnostic routine that prints memory in table format.
 */
-void DumpMemory( void *addr, cell_t cnt)
+void DumpMemory(vm_address_t vAddr, cell_t cnt)
 {
-    cell_t ln, cn, nlines;
-    unsigned char *ptr, *cptr, c;
-
-    nlines = (cnt + 15) / 16;
-
-    ptr = (unsigned char *) addr;
+    cell_t lineIndex, byteIndex;
+    cell_t numLines = (cnt + 15) / 16;
+    vm_address_t vPtr = vAddr;
 
     EMIT_CR;
 
-    for (ln=0; ln<nlines; ln++)
+    for (lineIndex=0; lineIndex<numLines; lineIndex++)
     {
-        MSG( ConvertNumberToText( (cell_t) ptr, 16, FALSE, 8 ) );
+        const uint8_t *pAddr = (const uint8_t *) pfLockMemoryReadOnly(vPtr, cnt);
+
+        MSG( ConvertNumberToText( (cell_t) vPtr, 16, FALSE, 8 ) );
         MSG(": ");
-        cptr = ptr;
-        for (cn=0; cn<16; cn++)
+        for (byteIndex=0; byteIndex<16; byteIndex++)
         {
-            MSG( ConvertNumberToText( (cell_t) *cptr++, 16, FALSE, 2 ) );
+            MSG( ConvertNumberToText( (cell_t) pAddr[byteIndex], 16, FALSE, 2 ) );
             EMIT(' ');
         }
         EMIT(' ');
-        for (cn=0; cn<16; cn++)
+        for (byteIndex=0; byteIndex<16; byteIndex++)
         {
-            c = *ptr++;
+            unsigned char c = (unsigned char) pAddr[byteIndex];
             if ((c < ' ') || (c > '}')) c = '.';
             EMIT(c);
         }
+
+        /* TODO handle dump of larger virtual areas. */
+        pfUnlockMemory(vPtr, pAddr);
+
         EMIT_CR;
+        vPtr += 16;
     }
 }
 
