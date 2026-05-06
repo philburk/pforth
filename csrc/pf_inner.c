@@ -1767,7 +1767,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 const char *dummy;
                 cell_t cnt = M_POP; /* cnt */
                 vm_address_t vAddr = (vm_address_t) M_POP;
-                char *lockedMemory = (char *) pfLockMemoryReadOnly(vAddr, cnt);
+                const char *lockedMemory = (const char *) pfLockMemoryReadOnly(vAddr, cnt);
                 TOS = ffSkip( lockedMemory, cnt, (char) TOS, &dummy );
                 pfUnlockMemory(vAddr, (const uint8_t *) lockedMemory);
                 M_PUSH((cell_t) (vAddr + (cnt - TOS))); /* offset address by (cnt - cnt') */
