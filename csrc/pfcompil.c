@@ -57,7 +57,7 @@ cell_t NotCompiled( const char *FunctionName )
 ** Create an entry in the Dictionary for the given ExecutionToken.
 ** FName is name in Forth format.
 */
-void CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags )
+void CreateDicEntry(ExecToken XT, const char *FName, ucell_t Flags)
 {
     cfNameLinks *cfnl;
 
@@ -871,7 +871,7 @@ ThrowCode ffInterpret( void )
             gCurrentTask->td_SourceNum ) );
     }
 error:
-    pfUnlockMemory(saveSource, gCurrentTask->td_SourcePtr);
+    pfUnlockMemory(saveSource, (const uint8_t *) gCurrentTask->td_SourcePtr);
     return exception;
 }
 

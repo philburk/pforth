@@ -586,8 +586,8 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
         case ID_COLON_P:  /* ( $name xt -- ) */
             {
                 vm_address_t vp = (vm_address_t) M_POP;
-                Temp = DP_FETCH_U8(vp); /* length */
-                const ForthStringPtr pName = (const ForthStringPtr) pfLockMemoryReadOnly(vp, Temp + 1);
+                cell_t length = DP_FETCH_U8(vp);
+                const char *pName = (const char *) pfLockMemoryReadOnly(vp, length + 1);
                 CreateDicEntry( TOS, pName, 0 );
                 pfUnlockMemory(vp, (const uint8_t *) pName);
                 M_DROP;
@@ -1178,9 +1178,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
              * Then we will have the name lengths.
              */
             vm_address_t vNewName = (vm_address_t)TOS;
-            const char *pNewName = (char *)pfLockMemoryReadOnly(vNewName, DP_MAX_REGION_SIZE);
+            const char *pNewName = (const char *)pfLockMemoryReadOnly(vNewName, DP_MAX_REGION_SIZE);
             vm_address_t vOldName = (vm_address_t)M_POP;
-            const char *pOldName = (char *)pfLockMemoryReadOnly(vOldName, DP_MAX_REGION_SIZE);
+            const char *pOldName = (const char *)pfLockMemoryReadOnly(vOldName, DP_MAX_REGION_SIZE);
             TOS = sdRenameFile( pOldName, pNewName );
             pfUnlockMemory(vOldName, (const uint8_t *)pOldName);
             pfUnlockMemory(vNewName, (const uint8_t *)pNewName);
@@ -1216,10 +1216,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FIND:  /* ( $addr -- $addr 0 | xt +-1 ) */
             {
                 vm_address_t vaddr = (vm_address_t) TOS;
-                Scratch = DP_FETCH_U8(vaddr) + 1; /* length including count */
-                CharPtr = (char *) pfLockMemoryReadOnly(vaddr, Scratch);
-                TOS = ffFind( (char *) CharPtr, (ExecToken *) &Temp );
-                pfUnlockMemory(vaddr, (const uint8_t *)CharPtr);
+                cell_t totalLength = DP_FETCH_U8(vaddr) + 1; /* length including count */
+                const char *pAddr = (const char *) pfLockMemoryReadOnly(vaddr, totalLength);
+                TOS = ffFind(pAddr, (ExecToken *) &Temp );
+                pfUnlockMemory(vaddr, (const uint8_t *)pAddr);
                 if (TOS != 0) {
                     M_PUSH( Temp ); /* xt */
                 } else {
@@ -1231,15 +1231,15 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FINDNFA: /* ( $name -- $addr 0 | nfa -1 | nfa 1 , find NFA in dictionary ) */
             {
                 vm_address_t nfa = NULL;
-                vm_address_t name = (vm_address_t) TOS;
-                Scratch = DP_FETCH_U8(name) + 1; /* length including count */
-                CharPtr = (char *) pfLockMemoryReadOnly(name, Scratch);
-                TOS = ffFindNFA( (const ForthString *) CharPtr, (const ForthString **) &nfa );
-                pfUnlockMemory(name, (const uint8_t *)CharPtr);
+                vm_address_t vName = (vm_address_t) TOS;
+                cell_t totalLength = DP_FETCH_U8(vName) + 1; /* length including count */
+                const char *pAddr = (const char *) pfLockMemoryReadOnly(vName, totalLength);
+                TOS = ffFindNFA(pAddr, (const ForthString **) &nfa );
+                pfUnlockMemory(vName, (const uint8_t *)CharPtr);
                 if (TOS != 0) {
                     M_PUSH( nfa );
                 } else {
-                    M_PUSH( name ); /* $addr */
+                    M_PUSH( vName ); /* $addr */
                 }
             }
             endcase;
@@ -1742,11 +1742,12 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_SCAN: /* ( addr cnt char -- addr' cnt' ) */
             {
+                const char *dummy = 0;
                 char charToFind = TOS;
                 cell_t cnt = M_POP;
                 vm_address_t vAddr = (vm_address_t) M_POP;
-                char *lockedMemory = (char *) pfLockMemoryReadOnly(vAddr, cnt);
-                TOS = ffScan( lockedMemory, cnt, charToFind, &CharPtr );
+                const char *lockedMemory = (const char *) pfLockMemoryReadOnly(vAddr, cnt);
+                TOS = ffScan( lockedMemory, cnt, charToFind, &dummy );
                 pfUnlockMemory(vAddr, (const uint8_t *) lockedMemory);
                 M_PUSH((cell_t) (vAddr + (cnt - TOS))); /* offset address by (cnt - cnt') */
             }
@@ -1763,12 +1764,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_SKIP: /* ( addr cnt char -- addr' cnt' ) */
             {
-                Scratch = M_POP; /* cnt */
-                Temp = M_POP;    /* addr */
-                char *lockedMemory = (char *) pfLockMemoryReadOnly((vm_address_t) Temp, Scratch);
-                TOS = ffSkip( lockedMemory, Scratch, (char) TOS, &CharPtr );
-                pfUnlockMemory((vm_address_t) Temp, (const uint8_t *) lockedMemory);
-                M_PUSH((cell_t) (Temp + (Scratch - TOS))); /* offset address by (cnt - cnt') */
+                const char *dummy;
+                cell_t cnt = M_POP; /* cnt */
+                vm_address_t vAddr = (vm_address_t) M_POP;
+                char *lockedMemory = (char *) pfLockMemoryReadOnly(vAddr, cnt);
+                TOS = ffSkip( lockedMemory, cnt, (char) TOS, &dummy );
+                pfUnlockMemory(vAddr, (const uint8_t *) lockedMemory);
+                M_PUSH((cell_t) (vAddr + (cnt - TOS))); /* offset address by (cnt - cnt') */
             }
             endcase;
 

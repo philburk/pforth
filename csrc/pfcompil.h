@@ -46,7 +46,7 @@ const ForthString *NameToPrevious( const ForthString *NFA );
 cell_t FindSpecialCFAs( void );
 cell_t FindSpecialXTs( void );
 cell_t NotCompiled( const char *FunctionName );
-void  CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags );
+void  CreateDicEntry(ExecToken XT, const char *FName, ucell_t Flags);
 void  CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags );
 void  ff2Literal( cell_t dHi, cell_t dLo );
 void  ffALiteral( cell_t Num );

@@ -75,9 +75,9 @@ void ffDotS( void )
 }
 
 /* ( addr cnt char -- addr' cnt' , skip leading characters ) */
-cell_t ffSkip( char *AddrIn, cell_t Cnt, char c, char **AddrOut )
+cell_t ffSkip(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut)
 {
-    char *s;
+    const char *s;
 
     s = AddrIn;
 
@@ -105,9 +105,9 @@ DBUGX(("ffSkip: %c=0x%x, %d\n", *s, Cnt ));
 }
 
 /* ( addr cnt char -- addr' cnt' , scan for char ) */
-cell_t ffScan( char *AddrIn, cell_t Cnt, char c, char **AddrOut )
+cell_t ffScan(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut)
 {
-    char *s;
+    const char *s;
 
     s = AddrIn;
 
@@ -212,7 +212,7 @@ cell_t ffNumberQ( const char *FWord, cell_t *Num )
  */
 static char * Word ( char c, int Upcase )
 {
-    char *s1,*s2,*s3;
+    const char *s1,*s2,*s3;
     cell_t n1, n2, n3;
     cell_t i, nc;
 

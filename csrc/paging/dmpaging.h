@@ -172,7 +172,7 @@ int pfWaitAsyncPagedMemoryAccess(int micros);
  * @return number of bytes written or 0 if timed out
  */
 size_t pfWritePagedMemory(paging_address_t destination,
-                       void *source,
+                       const void *source,
                        size_t numBytes,
                        int micros);
 

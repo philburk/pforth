@@ -29,8 +29,8 @@ extern "C" {
 void ffDot( cell_t n );
 void ffDotHex( cell_t n );
 void ffDotS( void );
-cell_t ffSkip( char *AddrIn, cell_t Cnt, char c, char **AddrOut );
-cell_t ffScan( char *AddrIn, cell_t Cnt, char c, char **AddrOut );
+cell_t ffSkip(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut);
+cell_t ffScan(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut);
 
 size_t ffReadFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  );
 size_t ffWriteFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  );

@@ -90,7 +90,7 @@ int pfWaitPendingVirtualRead(void) {
 }
 
 size_t pfWritePagedMemory(paging_address_t destination,
-                       void *source,
+                       const void *source,
                        size_t numBytes,
                        int async) {
     if (!pfIsAddressInPagedMemory(destination)) {
