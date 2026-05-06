@@ -841,6 +841,7 @@ ThrowCode ffInterpret( void )
     ThrowCode exception = 0;
     /* td_SourcePtr may be pointing to a string in the dictionary. */
     vm_address_t saveSource = (vm_address_t)gCurrentTask->td_SourcePtr;
+    /* It may be difficult to make td_SourcePtr const because of refill(). */
     gCurrentTask->td_SourcePtr = (char *)pfLockMemoryReadOnly(saveSource, gCurrentTask->td_SourceNum);
 
 /* Is there any text left in Source ? */

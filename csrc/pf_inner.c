@@ -1235,7 +1235,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 cell_t totalLength = DP_FETCH_U8(vName) + 1; /* length including count */
                 const char *pAddr = (const char *) pfLockMemoryReadOnly(vName, totalLength);
                 TOS = ffFindNFA(pAddr, (const ForthString **) &nfa );
-                pfUnlockMemory(vName, (const uint8_t *)CharPtr);
+                pfUnlockMemory(vName, (const uint8_t *)pAddr);
                 if (TOS != 0) {
                     M_PUSH( nfa );
                 } else {
