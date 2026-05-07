@@ -96,7 +96,7 @@ cell_t ioKey( void )
 cell_t ioAccept( char *buffer, cell_t maxChars )
 {
     int c;
-    int len;
+    cell_t len;
     char *p;
 
 DBUGX(("ioAccept(0x%x, 0x%x)\n", buffer, len ));

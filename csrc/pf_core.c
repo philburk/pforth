@@ -119,10 +119,6 @@ static void pfInit( void )
     pfResetLockedMemory();
     ioInit();
 
-#if PF_DEMAND_PAGING
-    pfQaDemandPaging(); /* FIXME move to standalone qa test */
-#endif
-
 }
 static void pfTerm( void )
 {
@@ -136,6 +132,7 @@ static void pfTerm( void )
 void pfDeleteTask( PForthTask task )
 {
     pfTaskData_t *cftd = (pfTaskData_t *)task;
+    if (cftd == NULL) return;
 #ifdef PF_SUPPORT_FP
     FREE_VAR( cftd->td_FloatStackLimit );
 #endif
@@ -441,7 +438,7 @@ void pfDebugMessage( const char *CString )
 /***************************************************************
 ** Print a decimal number to debug output.
 */
-void pfDebugPrintDecimalNumber( int n )
+void pfDebugPrintDecimalNumber( cell_t n )
 {
     pfDebugMessage( ConvertNumberToText( n, 10, TRUE, 1 ) );
 }
@@ -462,7 +459,7 @@ void pfMessage( const char *CString )
 */
 ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit )
 {
-    pfTaskData_t *cftd;
+    pfTaskData_t *cftd = NULL;
     pfDictionary_t *dic = NULL;
     ThrowCode Result = 0;
     ExecToken  EntryPoint = 0;
@@ -473,6 +470,11 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
 #endif
 
     pfInit();
+
+#if PF_DEMAND_PAGING
+    Result = pfQaDemandPaging(); /* FIXME move to standalone qa test */
+    if (Result != 0) goto error2;
+#endif
 
 /* Allocate Task structure. */
     pfDebugMessage("pfDoForth: call pfCreateTask()\n");

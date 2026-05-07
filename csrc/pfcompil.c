@@ -966,7 +966,7 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
     exception = ffOuterInterpreterLoop();
     if( exception )
     {
-        int i;
+        cell_t i;
 /* Report line number and nesting level. */
         MSG("INCLUDE error on line #"); ffDot(gCurrentTask->td_LineNumber);
         MSG(", level = ");  ffDot(gIncludeIndex );
@@ -1116,7 +1116,7 @@ FileStream * ffConvertSourceIDToStream( cell_t id )
 static cell_t readLineFromStream( char *buffer, cell_t maxChars, FileStream *stream )
 {
     int   c;
-    int   len;
+    cell_t   len;
     char *p;
     static int lastChar = 0;
     int   done = 0;

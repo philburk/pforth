@@ -1983,7 +1983,7 @@ DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
         if( _CrtCheckMemory() == 0 )
         {
             ERR("_CrtCheckMemory abort: InsPtr = 0x");
-            ffDotHex((int)InsPtr);
+            ffDotHex((cell_t)InsPtr);
             ERR("\n");
         }
 #endif

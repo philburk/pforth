@@ -29,7 +29,7 @@ extern "C" {
 void   pfInitGlobals( void );
 
 void   pfDebugMessage( const char *CString );
-void   pfDebugPrintDecimalNumber( int n );
+void   pfDebugPrintDecimalNumber( cell_t n );
 
 cell_t pfUnitTestText( void );
 
