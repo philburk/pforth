@@ -13,6 +13,7 @@ env:
 
 jobs:
   build:
+    name: Build (PAGING=${{ matrix.demand_paging }}, FLOAT=${{ matrix.support_fp }})
     # This uses a Unix Makefile and should run on Linux and Mac
     runs-on: ubuntu-latest
 
