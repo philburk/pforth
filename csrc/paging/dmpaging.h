@@ -56,12 +56,15 @@ typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 uint8_t  pfFetchVirtualU8(const uint8_t *address);
 uint16_t pfFetchVirtualU16(const uint16_t *address);
 cell_t   pfFetchVirtualCell(const cell_t *address);
-PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address);
 
 void pfStoreVirtualU8(uint8_t *address, uint8_t value);
 void pfStoreVirtualU16(uint16_t *address, uint16_t value);
 void pfStoreVirtualCell(cell_t *address, cell_t value);
+
+#ifdef PF_SUPPORT_FP
+PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address);
 void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value);
+#endif /* PF_SUPPORT_FP */
 
 /* Memory region locking and unlocking
  * A maximum of DP_MAX_REGIONS can be locked at one time.

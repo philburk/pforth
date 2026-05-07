@@ -46,8 +46,6 @@ error:
 
 static int pfQaTestFetchStore(void) {
     printf("pfQaDemandPaging : pfQaTestFetchStore\n");
-    PF_FLOAT f1 = 3.14159;
-    PF_FLOAT f2;
     cell_t c1 = 123456;
     cell_t c2;
     uint16_t w1 = 1234;
@@ -62,7 +60,6 @@ static int pfQaTestFetchStore(void) {
     DP_STORE_U8(vm1 + 16, b1);
     DP_STORE_U16(vm1 + 32, w1);
     DP_STORE_CELL(vm1 + 48, c1);
-    DP_STORE_FLOAT(vm1 + 64, f1);
 
     b2 = DP_FETCH_U8(vm1 + 16);
     ASSERT_EQ(b1, b2);
@@ -70,12 +67,29 @@ static int pfQaTestFetchStore(void) {
     ASSERT_EQ(w1, w2);
     c2 = DP_FETCH_CELL(vm1 + 48);
     ASSERT_EQ(c1, c2);
+    return 0;
+error:
+    return 1;
+}
+
+#ifdef PF_SUPPORT_FP
+static int pfQaTestFetchStoreFloat(void) {
+    printf("pfQaDemandPaging : pfQaTestFetchStoreFloat\n");
+    PF_FLOAT f1 = 3.14159;
+    PF_FLOAT f2;
+
+    pfResetPagedMemory();
+    vm_address_t vm1 = pfAllocatePagedMemory(1024);
+    ASSERT_NE(vm1, 0);
+
+    DP_STORE_FLOAT(vm1 + 64, f1);
     f2 = DP_FETCH_FLOAT(vm1 + 64);
     ASSERT_EQ(f1, f2);
     return 0;
 error:
     return 1;
 }
+#endif /* PF_SUPPORT_FP */
 
 static int pfQaTestReadWrite(void) {
     printf("pfQaDemandPaging : pfQaTestReadWrite\n");
@@ -274,6 +288,9 @@ int pfQaDemandPaging(void) {
 
     ASSERT_EQ(pfQaTestAllocate(), 0);
     ASSERT_EQ(pfQaTestReadWrite(), 0);
+#ifdef PF_SUPPORT_FP
+    ASSERT_EQ(pfQaTestReadWriteFloat(), 0);
+#endif /* PF_SUPPORT_FP */
     ASSERT_EQ(pfQaTestRegionLock(), 0);
     ASSERT_EQ(pfQaTestFetchStore(), 0);
     ASSERT_EQ(pfQaTestReadFilePaging(), 0);

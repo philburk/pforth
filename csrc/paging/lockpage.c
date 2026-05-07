@@ -180,6 +180,8 @@ cell_t   pfFetchVirtualCell(const cell_t *address) {
         return *address;
     }
 }
+
+#ifdef PF_SUPPORT_FP
 PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address) {
     PF_FLOAT value;
     if (pfIsAddressInPagedMemory((vm_address_t)address)) {
@@ -189,6 +191,7 @@ PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address) {
         return *address;
     }
 }
+#endif /* PF_SUPPORT_FP */
 
 void pfStoreVirtualU8(uint8_t *address, uint8_t value) {
     if (pfIsAddressInPagedMemory((vm_address_t)address)) {
@@ -212,6 +215,8 @@ void pfStoreVirtualCell(cell_t *address, cell_t value) {
         *address = value;
     }
 }
+
+#ifdef PF_SUPPORT_FP
 void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value) {
     if (pfIsAddressInPagedMemory((vm_address_t)address)) {
         pfWritePagedMemory((paging_address_t) address, &value, sizeof(PF_FLOAT));
@@ -219,6 +224,7 @@ void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value) {
         *address = value;
     }
 }
+#endif /* PF_SUPPORT_FP */
 
 void *pfCopyFromVirtualMemory(void *destination,
                               vm_address_t source,
