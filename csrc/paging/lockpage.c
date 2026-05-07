@@ -26,11 +26,11 @@
 void pfResetLockedMemory(void) {
 }
 
-const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, cell_t numBytes) {
+const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, uint32_t numBytes) {
     return ((const uint8_t *)(vp));
 }
 
-uint8_t *pfLockMemoryReadWrite(vm_address_t vp, cell_t numBytes) {
+uint8_t *pfLockMemoryReadWrite(vm_address_t vp, uint32_t numBytes) {
     return ((uint8_t *)(vp));
 }
 
@@ -38,14 +38,30 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
     return 0;
 }
 
+int pfIsAddressInPagedMemory(vm_address_t p) {
+    return FALSE;
+}
+
 void *pfCopyFromVirtualMemory(void *destination,
                               vm_address_t source,
-                              size_t numBytes) {
+                              uint32_t numBytes) {
     return pfCopyMemory(destination, source, numBytes);
 }
 
-int pfIsAddressInPagedMemory(vm_address_t p) {
-    return FALSE;
+void *pfCopyToVirtualMemory(vm_address_t destination,
+                            void * source,
+                            uint32_t numBytes) {
+    return pfCopyMemory(destination, source, numBytes);
+}
+
+void pfFreeVirtualMemory(vm_address_t address) {
+    pfFreeMem(address);
+}
+
+void *pfSetVirtualMemory(vm_address_t destination,
+                         uint8_t value,
+                         uint32_t numBytes) {
+    return pfSetMemory(destination, value, numBytes);
 }
 
 #else /* PF_DEMAND_PAGING */
@@ -275,5 +291,5 @@ void *pfSetVirtualMemory(vm_address_t destination,
         return pfSetMemory(destination, value, numBytes);
     }
 }
-#endif /* PF_DEMAND_PAGING */
 
+#endif /* PF_DEMAND_PAGING */
