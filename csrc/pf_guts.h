@@ -598,7 +598,7 @@ extern cell_t         gIncludeIndex;
 /* The check for >0 is only needed for CLONE testing. !!! */
 #define IsTokenPrimitive(xt) ((xt<gNumPrimitives) && (xt>=0))
 
-#define FREE_VAR(v) { if (v) { pfFreeMem((void *)(v)); v = 0; } }
+#define FREE_VAR(v) { pfFreeVirtualMemory((void *)(v)); v = 0; }
 
 #define DATA_STACK_DEPTH (gCurrentTask->td_StackBase - gCurrentTask->td_StackPtr)
 #define DROP_DATA_STACK (gCurrentTask->td_StackPtr++)

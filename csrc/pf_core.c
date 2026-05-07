@@ -219,14 +219,7 @@ void pfDeleteDictionary( PForthDictionary dictionary )
     if( dic->dic_Flags & PF_DICF_ALLOCATED_SEGMENTS )
     {
         FREE_VAR( dic->dic_HeaderBaseUnaligned );
-#if PF_DEMAND_PAGING
-        if (dic->dic_CodeBaseUnaligned != 0) {
-            pfFreePagedMemory((vm_address_t) dic->dic_CodeBaseUnaligned);
-            dic->dic_CodeBaseUnaligned = 0;
-        }
-#else
         FREE_VAR( dic->dic_CodeBaseUnaligned );
-#endif
     }
     pfFreeMem( dic );
 }
@@ -259,16 +252,17 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 /* Allocate memory for header. */
     if( HeaderSize > 0 )
     {
-/*
+
 #if PF_DEMAND_PAGING
         dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocatePagedMemory( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE);
 #else
- */
+
         dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocMem((ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE );
+#endif
         if( !dic->dic_HeaderBaseUnaligned ) goto nomem;
 /* Align header base. */
         dic->dic_HeaderBase = DIC_ALIGN(dic->dic_HeaderBaseUnaligned);
-        pfSetMemory( (char *) dic->dic_HeaderBase, 0xA5, (ucell_t) HeaderSize);
+        pfSetVirtualMemory((vm_address_t) dic->dic_HeaderBase, 0xA5, (uint32_t) HeaderSize);
         dic->dic_HeaderLimit = dic->dic_HeaderBase + HeaderSize;
         dic->dic_HeaderPtr = dic->dic_HeaderBase;
     }
@@ -285,10 +279,7 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 #endif
     if( !dic->dic_CodeBaseUnaligned ) goto nomem;
     dic->dic_CodeBase = DIC_ALIGN(dic->dic_CodeBaseUnaligned);
-#if (PF_DEMAND_PAGING == 0)
-    /* TODO also clear RAM for demand paging dic. */
-    pfSetMemory( (char *) dic->dic_CodeBase, 0x5A, (ucell_t) CodeSize);
-#endif
+    pfSetVirtualMemory((vm_address_t) dic->dic_CodeBase, 0x5A, (uint32_t) CodeSize);
 
     dic->dic_CodeLimit = dic->dic_CodeBase + CodeSize;
     dic->dic_CodePtr.Byte = ((uint8_t *) (dic->dic_CodeBase + QUADUP(NUM_PRIMITIVES)));

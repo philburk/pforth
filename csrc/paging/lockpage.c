@@ -231,5 +231,43 @@ void *pfCopyFromVirtualMemory(void *destination,
     }
 }
 
+void *pfCopyToVirtualMemory(vm_address_t destination,
+                            void * source,
+                            uint32_t numBytes) {
+    if (pfIsAddressInPagedMemory(destination)) {
+        pfWritePagedMemory((paging_address_t) destination, source, numBytes); /* TODO check result */
+        return destination;
+    } else {
+        return pfCopyMemory(destination, source, numBytes);
+    }
+}
+
+void pfFreeVirtualMemory(vm_address_t address) {
+    if (pfIsAddressInPagedMemory(address)) {
+        pfFreePagedMemory((paging_address_t) address);
+    } else {
+        pfFreeMem(address);
+    }
+}
+
+void *pfSetVirtualMemory(vm_address_t destination,
+                         uint8_t value,
+                         uint32_t numBytes) {
+    if (pfIsAddressInPagedMemory(destination)) {
+        /* Set memory in blocks that will fit in locked regions. */
+        vm_address_t vp = destination;
+        uint8_t buffer[16];
+        pfSetMemory(buffer, value, sizeof(buffer));
+        while (numBytes > 0) {
+            uint32_t bytesToWrite = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
+            pfWritePagedMemory(vp, buffer, bytesToWrite);
+            numBytes -= bytesToWrite;
+            vp += bytesToWrite;
+        }
+        return destination;
+    } else {
+        return pfSetMemory(destination, value, numBytes);
+    }
+}
 #endif /* PF_DEMAND_PAGING */
 

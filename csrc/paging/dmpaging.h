@@ -116,6 +116,30 @@ void *pfCopyFromVirtualMemory(void *destination,
                               vm_address_t source,
                               uint32_t numBytes);
 
+/** Copy from physical to virtual memory.
+ * @param destination The target may be in physical or paged memory.
+ * @param source in physical memory
+ * @return destination
+ */
+void *pfCopyToVirtualMemory(vm_address_t destination,
+                            void * source,
+                            uint32_t numBytes);
+
+/** Free virtual memory.
+ * @param address may be in physical or paged memory
+ */
+void pfFreeVirtualMemory(vm_address_t address);
+
+/** Set a region of virtual memory to a value.
+ * @param destination in physical or paged memory
+ * @param value fill memory with this value
+ * @param numBytes how many bytes to set
+ * @return destination
+ */
+void *pfSetVirtualMemory(vm_address_t destination,
+                         uint8_t value,
+                         uint32_t numBytes);
+
 #ifdef __cplusplus
 }
 #endif

@@ -39,7 +39,7 @@ static cell_t sDpNextAvailable = 0;
  * This will help us catch areas where we need to use functions like pfLockMemoryReadWrite().
  * You may need to use a different mask on your system depending on the memory layout.
  */
-#if 1
+#if 0
 #define PF_DP_MUNGE_KEY  (0)
 #elif (PF_64BIT)
 #define PF_DP_MUNGE_KEY  (0x005A000000000000)

@@ -692,7 +692,8 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
                 pfReportError("pfLoadDictionary", PF_ERR_TOO_BIG);
                 goto error;
             }
-            numr = sdReadFile( (char *) NAME_BASE, 1, ChunkSize, fid );
+            /* read using demand paging if needed */
+            numr = ffReadFile( (char *) NAME_BASE, 1, ChunkSize, fid );
             if( numr != ChunkSize ) goto read_error;
             BytesLeft -= ChunkSize;
 #endif /* PF_NO_SHELL */
@@ -816,7 +817,11 @@ PForthDictionary pfLoadStaticDictionary( void )
     gCurrentDictionary = dic = pfCreateDictionary( NewNameSize, NewCodeSize );
     if( !dic ) goto nomem_error;
 
+#if PF_DEMAND_PAGING
+    pfWritePagedMemory((paging_address_t) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames));
+#else
     pfCopyMemory( (uint8_t *) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
+#endif
 
 #if PF_DEMAND_PAGING
     pfWritePagedMemory((paging_address_t) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));

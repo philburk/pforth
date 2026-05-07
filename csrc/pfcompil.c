@@ -66,11 +66,11 @@ void CreateDicEntry(ExecToken XT, const char *FName, ucell_t Flags)
 /* Set link to previous header, if any. */
     if( gVarContext )
     {
-        WRITE_CELL_DIC( &cfnl->cfnl_PreviousName, ABS_TO_NAMEREL( gVarContext ) );
+        WRITE_CELL_DIC(&cfnl->cfnl_PreviousName, ABS_TO_NAMEREL( gVarContext ));
     }
     else
     {
-        cfnl->cfnl_PreviousName = 0;
+        WRITE_CELL_DIC(&cfnl->cfnl_PreviousName, 0);
     }
 
 /* Put Execution token in header. */
@@ -81,16 +81,16 @@ void CreateDicEntry(ExecToken XT, const char *FName, ucell_t Flags)
 
 /* Laydown name. */
     gVarContext = gCurrentDictionary->dic_HeaderPtr;
-    pfCopyMemory( (uint8_t *) gCurrentDictionary->dic_HeaderPtr, FName, (*FName)+1 );
+    pfCopyToVirtualMemory((uint8_t *) gCurrentDictionary->dic_HeaderPtr, FName, (*FName)+1);
     gCurrentDictionary->dic_HeaderPtr += (*FName)+1;
 
 /* Set flags. */
-    *(char*)gVarContext |= (char) Flags;
+    DP_STORE_U8(gVarContext, DP_FETCH_U8(gVarContext) | (uint8_t)Flags);
 
 /* Align to quad byte boundaries with zeroes. */
     while( gCurrentDictionary->dic_HeaderPtr & UINT32_MASK )
     {
-        *(char*)(gCurrentDictionary->dic_HeaderPtr++) = 0;
+        DP_STORE_U8(gCurrentDictionary->dic_HeaderPtr++, 0);
     }
 }
 
@@ -458,40 +458,46 @@ cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
 {
     const ForthString *WordChar;
     uint8_t WordLen;
-    const char *NameField, *NameChar;
+    vm_address_t vNameField, vNextNameField;
     int8_t NameLen;
     cell_t Searching = TRUE;
     cell_t Result = 0;
+    const char *pNameField;
+    const char *pNameChar;
 
     WordLen = (uint8_t) ((ucell_t)*WordName & MASK_NAME_SIZE);
     WordChar = WordName+1;
 
-    NameField = (ForthString *) gVarContext;
+    vNameField = (vm_address_t) gVarContext;
 DBUG(("\nffFindNFA: WordLen = %d, WordName = %*s\n", WordLen, WordLen, WordChar ));
 DBUG(("\nffFindNFA: gVarContext = 0x%x\n", gVarContext));
     do
     {
-        NameLen = (uint8_t) ((ucell_t)(*NameField) & MASK_NAME_SIZE);
-        NameChar = NameField+1;
+        uint8_t countAndFlags = DP_FETCH_U8(vNameField);
+        NameLen = (uint8_t) (countAndFlags & MASK_NAME_SIZE);
 /* DBUG(("   %c\n", (*NameField & FLAG_SMUDGE) ? 'S' : 'V' )); */
-        if( ((*NameField & FLAG_SMUDGE) == 0) &&
+        pNameField = (const char *) pfLockMemoryReadOnly(vNameField, NameLen + 1);
+        pNameChar = pNameField + 1;
+        if( ((countAndFlags & FLAG_SMUDGE) == 0) &&
             (NameLen == WordLen) &&
-            ffCompareTextCaseN( NameChar, WordChar, WordLen ) ) /* FIXME - slow */
+            ffCompareTextCaseN( pNameChar, WordChar, WordLen ) ) /* FIXME - slow */
         {
 DBUG(("ffFindNFA: found it at NFA = 0x%x\n", NameField));
-            *NFAPtr = NameField ;
-            Result = ((*NameField) & FLAG_IMMEDIATE) ? 1 : -1;
+            *NFAPtr = (const ForthString *) vNameField ;
+            Result = (countAndFlags & FLAG_IMMEDIATE) ? 1 : -1;
             Searching = FALSE;
         }
         else
         {
-            NameField = NameToPrevious( NameField );
-            if( NameField == NULL )
+            vNextNameField = NameToPrevious( vNameField );
+            if( vNextNameField == NULL )
             {
                 *NFAPtr = WordName;
                 Searching = FALSE;
             }
         }
+        pfUnlockMemory(vNameField, (const uint8_t *) pNameField);
+        vNameField = vNextNameField;
     } while ( Searching);
 DBUG(("ffFindNFA: returns 0x%x\n", Result));
     return Result;
@@ -677,7 +683,7 @@ void ffDefer( void )
 /* Unsmudge the word to make it visible. */
 static void ffUnSmudge( void )
 {
-    *(char*)gVarContext &= ~FLAG_SMUDGE;
+    DP_STORE_U8(gVarContext, DP_FETCH_U8(gVarContext) & (uint8_t)(~FLAG_SMUDGE));
 }
 
 /* Implement ; */

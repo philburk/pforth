@@ -235,6 +235,35 @@ error:
     return 1;
 }
 
+static int pfQaTestSetVirtualMemory(void) {
+    int i;
+    printf("pfQaDemandPaging : pfQaTestSetVirtualMemory\n");
+    pfResetLockedMemory();
+    vm_address_t dest;
+    /* Paint a large region then paint a small region in the middle. */
+    const int largeSize = 1175;
+    const int smallSize = 234;
+    const int smallOffset = 571;
+    vm_address_t vm1 = pfAllocatePagedMemory(largeSize);
+    ASSERT_NE(NULL, vm1);
+    dest = pfSetVirtualMemory(vm1, 0x5A, largeSize);
+    ASSERT_EQ(dest, vm1);
+    dest = pfSetVirtualMemory(vm1 + smallOffset, 0x3C, smallSize);
+    ASSERT_EQ(dest, vm1);
+    i = 0;
+    for (; i < smallOffset; i++) {
+        ASSERT_EQ(0x3C, DP_FETCH_U8(vm1 + i));
+    }
+    for (; i < smallOffset + smallSize; i++) {
+        ASSERT_EQ(0x5A, DP_FETCH_U8(vm1 + i));
+    }
+    for (; i < largeSize; i++) {
+        ASSERT_EQ(0x3C, DP_FETCH_U8(vm1 + i));
+    }
+    return 0;
+error:
+    return 1;
+}
 int pfQaDemandPaging(void) {
     printf("pfQaDemandPaging\n");
     int x = 4;
@@ -249,6 +278,7 @@ int pfQaDemandPaging(void) {
     ASSERT_EQ(pfQaTestFetchStore(), 0);
     ASSERT_EQ(pfQaTestReadFilePaging(), 0);
     ASSERT_EQ(pfQaTestWriteFilePaging(), 0);
+    ASSERT_EQ(pfQaTestSetVirtualMemory(), 0);
 
     printf("pfQaDemandPaging ended\n");
 

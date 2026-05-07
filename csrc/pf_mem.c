@@ -1,5 +1,5 @@
 /***************************************************************
-** Memory allocator for systems that don't have real one.
+** Memory allocator for systems that don't have malloc().
 ** This might be useful when bringing up a new computer with no OS.
 **
 ** For PForth based on 'C'
