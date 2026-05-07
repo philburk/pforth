@@ -25,8 +25,12 @@
 extern "C" {
 #endif
 
+/**
+ * To use demand paged memory, enable the code by passing -DPF_DEMAND_PAGING=1
+ * to the C compiler.
+ */
 typedef uint8_t *vm_address_t; /** an address that may be in physical or paged memory */
-typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
+typedef uint8_t *paging_address_t; /** an address in paged memory */
 
 /* Basic memory access macros. */
 #if (PF_DEMAND_PAGING == 0)
@@ -40,7 +44,9 @@ typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 #define DP_STORE_U16(address, value)   *((uint16_t *)(address)) = (uint16_t)(value)
 #define DP_STORE_CELL(address, value)  *((cell_t *)(address)) = (cell_t)(value)
 #define DP_STORE_FLOAT(address, value) *((PF_FLOAT *)(address)) = (PF_FLOAT)(value)
-#else
+
+#else /* PF_DEMAND_PAGING */
+
 /* Use either physical or paged memory. */
 #define DP_FETCH_U8(address)    pfFetchVirtualU8((const uint8_t *)(address))
 #define DP_FETCH_U16(address)   pfFetchVirtualU16((const uint16_t *)(address))
@@ -51,7 +57,7 @@ typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 #define DP_STORE_U16(address, value)   pfStoreVirtualU16(((uint16_t *)(address)), (uint16_t)(value))
 #define DP_STORE_CELL(address, value)  pfStoreVirtualCell(((cell_t *)(address)), (cell_t)(value))
 #define DP_STORE_FLOAT(address, value) pfStoreVirtualFloat(((PF_FLOAT *)(address)), (PF_FLOAT)(value))
-#endif
+#endif /* PF_DEMAND_PAGING */
 
 uint8_t  pfFetchVirtualU8(const uint8_t *address);
 uint16_t pfFetchVirtualU16(const uint16_t *address);
@@ -86,6 +92,9 @@ void pfResetLockedMemory(void);
  * a single primitive.
  * If the virtual memory address is not in paged memory then it will be passed through.
  * You cannot lock more than DP_MAX_REGION_SIZE bytes.
+ *
+ * @param vp virtual address in physical or paged memory
+ * @param numBytes number of byte in region
  * @return physical address that can be used by normal C code as “const” memory.
  */
 const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, uint32_t numBytes);
@@ -95,6 +104,9 @@ const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, uint32_t numBytes);
  * Load the data from demand paging if not already loaded.
  * If the virtual memory address is not in paged memory then it will be passed through.
  * You cannot lock more than DP_MAX_REGION_SIZE bytes.
+ *
+ * @param vp virtual address in physical or paged memory
+ * @param numBytes number of byte in region
  * @return physical address that can be read or written by normal C code.
  */
 uint8_t *pfLockMemoryReadWrite(vm_address_t vp, uint32_t numBytes);
@@ -104,15 +116,15 @@ uint8_t *pfLockMemoryReadWrite(vm_address_t vp, uint32_t numBytes);
  * Writable regions will be written back to serial memory.
  * Regions may be kept in physical memory on an LRU basis
  * to improve performance.
- * @param vp virtual memory address
+ * @param vp virtual address in physical or paged memory
  * @param pp physical memory address
  * @return negative code if an error occured else zero
  */
 int pfUnlockMemory(vm_address_t vp, const uint8_t *pp);
 
 /** Copy from virtual to physical memory.
- * @param destination in physical memory
- * @param source The data may be in physical or paged memory.
+ * @param destination target address in physical memory
+ * @param source data address in physical or paged memory
  * @return destination
  */
 void *pfCopyFromVirtualMemory(void *destination,
@@ -120,7 +132,7 @@ void *pfCopyFromVirtualMemory(void *destination,
                               uint32_t numBytes);
 
 /** Copy from physical to virtual memory.
- * @param destination The target may be in physical or paged memory.
+ * @param destination target address in physical or paged memory
  * @param source in physical memory
  * @return destination
  */

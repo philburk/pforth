@@ -25,11 +25,12 @@
 **
 ***************************************************************/
 
-/* Define stubs for data types so we can pass pointers but not touch inside. */
+/* Opaque pointer types used to hide internal structures. */
 typedef void *PForthTask;
 typedef void *PForthDictionary;
 
 #include <stdint.h>
+
 #if   INTPTR_MAX == INT64_MAX
   #define PF_64BIT 1
   #define PF_32BIT 0
@@ -41,14 +42,14 @@ typedef void *PForthDictionary;
 #endif
 
 /* Integer types for Forth cells, signed and unsigned: */
-typedef intptr_t cell_t;
+typedef intptr_t cell_t;   /* primary data type for the stack and dictionary */
 typedef uintptr_t ucell_t;
 
 typedef ucell_t ExecToken;              /* Execution Token */
 typedef cell_t ThrowCode;
 
 #ifndef PF_DEMAND_PAGING
-#define PF_DEMAND_PAGING 1
+#define PF_DEMAND_PAGING 0
 #endif
 
 #ifdef __cplusplus
@@ -102,7 +103,6 @@ ThrowCode pfIncludeFile( const char *FileName );
 
 /* Execute a Forth word by name. */
 ThrowCode  pfExecIfDefined( const char *CString );
-
 
 /* Assertion macro for pForth. */
 extern cell_t gPfAssertEnabled;
