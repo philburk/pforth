@@ -263,16 +263,16 @@ static int pfQaTestSetVirtualMemory(void) {
     dest = pfSetVirtualMemory(vm1, 0x5A, largeSize);
     ASSERT_EQ(dest, vm1);
     dest = pfSetVirtualMemory(vm1 + smallOffset, 0x3C, smallSize);
-    ASSERT_EQ(dest, vm1);
+    ASSERT_EQ(dest, vm1 + smallOffset);
     i = 0;
     for (; i < smallOffset; i++) {
-        ASSERT_EQ(0x3C, DP_FETCH_U8(vm1 + i));
-    }
-    for (; i < smallOffset + smallSize; i++) {
         ASSERT_EQ(0x5A, DP_FETCH_U8(vm1 + i));
     }
-    for (; i < largeSize; i++) {
+    for (; i < smallOffset + smallSize; i++) {
         ASSERT_EQ(0x3C, DP_FETCH_U8(vm1 + i));
+    }
+    for (; i < largeSize; i++) {
+        ASSERT_EQ(0x5A, DP_FETCH_U8(vm1 + i));
     }
     return 0;
 error:
@@ -281,9 +281,6 @@ error:
 
 int pfQaDemandPaging(void) {
     printf("pfQaDemandPaging\n");
-    int x = 4;
-    int y = 4;
-    ASSERT_EQ(x,y);
 
     ASSERT_EQ(sizeof(vm_address_t), sizeof(cell_t));
 

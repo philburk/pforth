@@ -106,7 +106,7 @@ uint8_t *pfLockMemoryReadWrite(vm_address_t vp, uint32_t numBytes);
  * to improve performance.
  * @param vp virtual memory address
  * @param pp physical memory address
- * @return negative code if an error occured
+ * @return negative code if an error occured else zero
  */
 int pfUnlockMemory(vm_address_t vp, const uint8_t *pp);
 
@@ -133,7 +133,7 @@ void *pfCopyToVirtualMemory(vm_address_t destination,
  */
 void pfFreeVirtualMemory(vm_address_t address);
 
-/** Set a region of virtual memory to a value.
+/** Set a region of virtual memory to a byte value.
  * @param destination in physical or paged memory
  * @param value fill memory with this value
  * @param numBytes how many bytes to set
