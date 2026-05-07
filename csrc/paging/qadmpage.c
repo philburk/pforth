@@ -278,6 +278,7 @@ static int pfQaTestSetVirtualMemory(void) {
 error:
     return 1;
 }
+
 int pfQaDemandPaging(void) {
     printf("pfQaDemandPaging\n");
     int x = 4;
@@ -288,11 +289,11 @@ int pfQaDemandPaging(void) {
 
     ASSERT_EQ(pfQaTestAllocate(), 0);
     ASSERT_EQ(pfQaTestReadWrite(), 0);
-#ifdef PF_SUPPORT_FP
-    ASSERT_EQ(pfQaTestReadWriteFloat(), 0);
-#endif /* PF_SUPPORT_FP */
     ASSERT_EQ(pfQaTestRegionLock(), 0);
     ASSERT_EQ(pfQaTestFetchStore(), 0);
+#ifdef PF_SUPPORT_FP
+    ASSERT_EQ(pfQaTestFetchStoreFloat(), 0);
+#endif /* PF_SUPPORT_FP */
     ASSERT_EQ(pfQaTestReadFilePaging(), 0);
     ASSERT_EQ(pfQaTestWriteFilePaging(), 0);
     ASSERT_EQ(pfQaTestSetVirtualMemory(), 0);
