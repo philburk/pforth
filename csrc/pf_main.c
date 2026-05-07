@@ -58,8 +58,6 @@ int main( void )
 }
 #else
 
-int pfQaDemandPaging(void);
-
 int main( int argc, char **argv )
 {
 #ifdef PF_STATIC_DIC
@@ -140,11 +138,6 @@ int main( int argc, char **argv )
         ERR(("pForth stopping on unit test failure.\n"));
         goto on_error;
     }
-#endif
-
-#if PF_DEMAND_PAGING
-    Result = pfQaDemandPaging(); /* FIXME move to standalone qa test */
-    if (Result != 0) goto on_error;
 #endif
 
     Result = pfDoForth( DicName, SourceName, IfInit);

@@ -47,6 +47,10 @@ typedef uintptr_t ucell_t;
 typedef ucell_t ExecToken;              /* Execution Token */
 typedef cell_t ThrowCode;
 
+#ifndef PF_DEMAND_PAGING
+#define PF_DEMAND_PAGING 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -99,8 +103,21 @@ ThrowCode pfIncludeFile( const char *FileName );
 /* Execute a Forth word by name. */
 ThrowCode  pfExecIfDefined( const char *CString );
 
+
+/* Assertion macro for pForth. */
+extern cell_t gPfAssertEnabled;
+#define PF_ASSERT(_expr) do { \
+    if (!(_expr)) { \
+        if (gPfAssertEnabled) { \
+            pfMessage("PF_ASSERT failed: " #_expr "\n"); \
+            (void)(*(volatile int *)0); \
+        } \
+    } \
+} while(0)
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif  /* _pforth_h */
+

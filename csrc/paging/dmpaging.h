@@ -25,10 +25,6 @@
 extern "C" {
 #endif
 
-#ifndef PF_DEMAND_PAGING
-#define PF_DEMAND_PAGING 1
-#endif
-
 typedef uint8_t *vm_address_t; /** an address that may be in physical or paged memory */
 typedef uint8_t *paging_address_t; /** an address that may be in paged memory */
 
@@ -77,8 +73,6 @@ void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value);
 #define DP_MAX_REGIONS        (4)
 /* maximum number of bytes per region */
 #define DP_MAX_REGION_SIZE  (256)
-/* typical timeout value for accessing serial memory */
-#define DP_TIMEOUT_MICROS  50000
 
 void pfResetLockedMemory(void);
 
@@ -88,17 +82,19 @@ void pfResetLockedMemory(void);
  * A region should only be locked temporarily, for example within
  * a single primitive.
  * If the virtual memory address is not in paged memory then it will be passed through.
+ * You cannot lock more than DP_MAX_REGION_SIZE bytes.
  * @return physical address that can be used by normal C code as “const” memory.
  */
-const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, cell_t numBytes);
+const uint8_t *pfLockMemoryReadOnly(vm_address_t vp, uint32_t numBytes);
 
 /**
  * Lock a read-write region of demand paging in physical memory.
  * Load the data from demand paging if not already loaded.
  * If the virtual memory address is not in paged memory then it will be passed through.
- * @return physical address that can be used by normal C code as “const” memory.
+ * You cannot lock more than DP_MAX_REGION_SIZE bytes.
+ * @return physical address that can be read or written by normal C code.
  */
-uint8_t *pfLockMemoryReadWrite(vm_address_t vp, cell_t numBytes);
+uint8_t *pfLockMemoryReadWrite(vm_address_t vp, uint32_t numBytes);
 
 /**
  * Release a previously locked region of memory.
@@ -111,72 +107,14 @@ uint8_t *pfLockMemoryReadWrite(vm_address_t vp, cell_t numBytes);
  */
 int pfUnlockMemory(vm_address_t vp, const uint8_t *pp);
 
-/** Copy from virtual to physical memory synchronously.
+/** Copy from virtual to physical memory.
  * @param destination in physical memory
  * @param source The data may be in physical or paged memory.
  * @return destination
  */
 void *pfCopyFromVirtualMemory(void *destination,
                               vm_address_t source,
-                              size_t numBytes);
-
-/* Serial Memory Access
- * A demand paging simulator is provided for testing the framework on a host.
- * The actual demand paging interface must be provided by the user.
- */
-
-/** Is the given address pointing to paged memory?
- * @return 1 if in paged memory, else 0
- */
-int pfIsAddressInPagedMemory(vm_address_t p);
-
-#if PF_DEMAND_PAGING
-#define DP_ALIGNMENT_SIZE    (16)
-
-/**
- * Reset the memory allocator.
- * This may or may not clear the memory.
- */
-void pfResetPagedMemory(void);
-
-/** Allocate demand paged memory from SPI or other storage.
- * Memory blocks will be aligned on DP_ALIGNMENT_SIZE byte boundaries.
- */
-paging_address_t pfAllocatePagedMemory(ucell_t numBytes);
-
-/** Free demand paged memory.
- * This may simply be a NOOP. So just allocate
- * what you need at the beginning and don't rely on being able to free it.
- */
-void pfFreePagedMemory(vm_address_t p);
-
-/** Read from virtual to physical memory.
- * Only one async read or write can be pending at a time.
- * @param micros if zero then issue an async transfer, else timeout in micros
- * @return number of bytes read or 0 if timed out
- */
-size_t pfReadPagedMemory(void *destination,
-                      paging_address_t source,
-                      size_t numBytes,
-                      int micros);
-
-/* Wait for asynchronous paged memory read or write to complete.
- * This is useful for read-ahead buffering.
- * return 0 if finished in under the specified microseconds
- */
-int pfWaitAsyncPagedMemoryAccess(int micros);
-
-/** Read from virtual to physical memory.
- * Only one async read or write can be pending at a time.
- * @param micros if zero then issue an async transfer, else timeout in micros
- * @return number of bytes written or 0 if timed out
- */
-size_t pfWritePagedMemory(paging_address_t destination,
-                       const void *source,
-                       size_t numBytes,
-                       int micros);
-
-#endif /* PF_DEMAND_PAGING */
+                              uint32_t numBytes);
 
 #ifdef __cplusplus
 }

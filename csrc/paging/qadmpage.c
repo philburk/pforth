@@ -90,9 +90,9 @@ static int pfQaTestReadWrite(void) {
     vm_address_t vm1 = pfAllocatePagedMemory(kBufferSize);
     ASSERT_NE(vm1, 0);
     printf("pfQaTestReadWrite: vm1 = %p\n", vm1);
-    cell_t written = pfWritePagedMemory(vm1, buffer1, kBufferSize, 0);
+    cell_t written = pfWritePagedMemory(vm1, buffer1, kBufferSize);
     ASSERT_EQ(written, kBufferSize);
-    cell_t numRead = pfReadPagedMemory(buffer2, vm1, kBufferSize, 0);
+    cell_t numRead = pfReadPagedMemory(buffer2, vm1, kBufferSize);
     ASSERT_EQ(numRead, kBufferSize);
     for (i = 0; i < kBufferSize; i++) {
         ASSERT_EQ(buffer2[i], buffer1[i]);

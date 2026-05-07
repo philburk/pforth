@@ -51,6 +51,7 @@ ExecToken       gLocalCompiler_XT;   /* custom compiler for local variables */
 ExecToken       gNumberQ_XT;         /* XT of NUMBER? */
 ExecToken       gQuitP_XT;           /* XT of (QUIT) */
 ExecToken       gAcceptP_XT;         /* XT of ACCEPT */
+cell_t          gPfAssertEnabled = 0;
 
 /* Depth of data stack when colon called. */
 cell_t          gDepthAtColon;
@@ -88,6 +89,8 @@ static void pfTerm( void );
 #define PF_DEFAULT_CODE_SIZE (300000)
 #endif
 
+int pfQaDemandPaging(void);
+
 /* Initialize globals in a function to simplify loading on
  * embedded systems which may not support initialization of data section.
  */
@@ -115,6 +118,11 @@ static void pfInit( void )
     pfInitMemoryAllocator();
     pfResetLockedMemory();
     ioInit();
+
+#if PF_DEMAND_PAGING
+    pfQaDemandPaging(); /* FIXME move to standalone qa test */
+#endif
+
 }
 static void pfTerm( void )
 {
@@ -446,7 +454,6 @@ void pfDebugPrintDecimalNumber( int n )
 {
     pfDebugMessage( ConvertNumberToText( n, 10, TRUE, 1 ) );
 }
-
 
 /***************************************************************
 ** Output 'C' string message.

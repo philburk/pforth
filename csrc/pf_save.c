@@ -819,7 +819,7 @@ PForthDictionary pfLoadStaticDictionary( void )
     pfCopyMemory( (uint8_t *) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
 
 #if PF_DEMAND_PAGING
-    pfWritePagedMemory((paging_address_t) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode), DP_TIMEOUT_MICROS);
+    pfWritePagedMemory((paging_address_t) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));
 #else
     pfCopyMemory((uint8_t *) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));
 #endif
