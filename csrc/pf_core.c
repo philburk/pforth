@@ -51,7 +51,7 @@ ExecToken       gLocalCompiler_XT;   /* custom compiler for local variables */
 ExecToken       gNumberQ_XT;         /* XT of NUMBER? */
 ExecToken       gQuitP_XT;           /* XT of (QUIT) */
 ExecToken       gAcceptP_XT;         /* XT of ACCEPT */
-cell_t          gPfAssertEnabled = 0;
+cell_t          gPfAssertEnabled = PF_ASSERT_ENABLED;
 
 /* Depth of data stack when colon called. */
 cell_t          gDepthAtColon;
@@ -251,10 +251,10 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
     {
 
 #if PF_DEMAND_PAGING
-        dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocatePagedMemory( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE);
+        dic->dic_HeaderBaseUnaligned = pfAllocatePagedMemory( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE);
 #else
 
-        dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocMem((ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE );
+        dic->dic_HeaderBaseUnaligned = PTR_TO_VMA(pfAllocMem((ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE ));
 #endif
         if( !dic->dic_HeaderBaseUnaligned ) goto nomem;
 /* Align header base. */
@@ -270,9 +270,9 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 
 /* Allocate memory for code. */
 #if PF_DEMAND_PAGING
-    dic->dic_CodeBaseUnaligned = (ucell_t) pfAllocatePagedMemory( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
+    dic->dic_CodeBaseUnaligned = pfAllocatePagedMemory( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
 #else
-    dic->dic_CodeBaseUnaligned = (ucell_t) pfAllocMem( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
+    dic->dic_CodeBaseUnaligned = PTR_TO_VMA(pfAllocMem( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE ));
 #endif
     if( !dic->dic_CodeBaseUnaligned ) goto nomem;
     dic->dic_CodeBase = DIC_ALIGN(dic->dic_CodeBaseUnaligned);

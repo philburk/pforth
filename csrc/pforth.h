@@ -78,7 +78,12 @@ typedef cell_t ThrowCode;
 #endif /* PF_DEMAND_PAGING */
 
 typedef ucell_t vm_address_t; /** an address that may be in physical or paged memory */
-#define PF_VM_NULL  ((vm_address_t) 0)
+#define PTR_TO_VMA(p) ((vm_address_t)(uintptr_t)(p))
+#define PF_VM_NULL    PTR_TO_VMA(0)
+
+#ifndef PF_ASSERT_ENABLED
+#define PF_ASSERT_ENABLED 0
+#endif /* PF_ASSERT_ENABLED */
 
 #ifdef __cplusplus
 extern "C" {

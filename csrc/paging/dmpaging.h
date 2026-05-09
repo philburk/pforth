@@ -34,15 +34,15 @@ typedef ucell_t paging_address_t; /** an address in paged memory */
 /* Basic memory access macros. */
 #if (PF_DEMAND_PAGING == 0)
 /* Straight memory access. */
-#define DP_FETCH_U8(address)    (*((const uint8_t *)(address)))
-#define DP_FETCH_U16(address)   (*((const uint16_t *)(address)))
-#define DP_FETCH_CELL(address)  (*((const cell_t *)(address)))
-#define DP_FETCH_FLOAT(address) (*((const PF_FLOAT *)(address)))
+#define DP_FETCH_U8(address)    (*((const uint8_t *)(uintptr_t)(address)))
+#define DP_FETCH_U16(address)   (*((const uint16_t *)(uintptr_t)(address)))
+#define DP_FETCH_CELL(address)  (*((const cell_t *)(uintptr_t)(address)))
+#define DP_FETCH_FLOAT(address) (*((const PF_FLOAT *)(uintptr_t)(address)))
 
-#define DP_STORE_U8(address, value)    *((uint8_t *)(address)) = (uint8_t)(value)
-#define DP_STORE_U16(address, value)   *((uint16_t *)(address)) = (uint16_t)(value)
-#define DP_STORE_CELL(address, value)  *((cell_t *)(address)) = (cell_t)(value)
-#define DP_STORE_FLOAT(address, value) *((PF_FLOAT *)(address)) = (PF_FLOAT)(value)
+#define DP_STORE_U8(address, value)    *((uint8_t *)(uintptr_t)(address)) = (uint8_t)(value)
+#define DP_STORE_U16(address, value)   *((uint16_t *)(uintptr_t)(address)) = (uint16_t)(value)
+#define DP_STORE_CELL(address, value)  *((cell_t *)(uintptr_t)(address)) = (cell_t)(value)
+#define DP_STORE_FLOAT(address, value) *((PF_FLOAT *)(uintptr_t)(address)) = (PF_FLOAT)(value)
 
 #else /* PF_DEMAND_PAGING */
 

@@ -23,12 +23,12 @@
 ** 941004 PLB Extracted IO calls from pforth_main.c
 ** 950320 RDG Added underflow checking for FP stack
 ***************************************************************/
-
+#include <stdio.h>
 #include "pf_all.h"
 #include "pfcompil.h"
 
 #define ABORT_RETURN_CODE   (10)
-#define CELL_MASK  ((sizeof(ucell_t)-1))
+#define UCELL_MASK  (((ucell_t)PF_CELL_SIZE) - 1)
 
 /***************************************************************/
 /************** Static Prototypes ******************************/
@@ -89,7 +89,7 @@ void CreateDicEntry(ExecToken XT, const char *FName, ucell_t Flags)
     DP_STORE_U8(gVarContext, DP_FETCH_U8(gVarContext) | (uint8_t)Flags);
 
 /* Align to cell byte boundaries with zeroes. */
-    while( gCurrentDictionary->dic_HeaderPtr & CELL_MASK )
+    while( gCurrentDictionary->dic_HeaderPtr & UCELL_MASK )
     {
         DP_STORE_U8(gCurrentDictionary->dic_HeaderPtr++, 0);
     }
@@ -121,7 +121,7 @@ vm_address_t NameToPrevious(vm_address_t NFA)
     if (relativeNamePtr) {
         return NAMEREL_TO_ABS( relativeNamePtr );
     } else {
-        return (vm_address_t) NULL;
+        return PF_VM_NULL;
     }
 }
 
@@ -462,7 +462,7 @@ cell_t ffFindNFA( const ForthString *WordName, vm_address_t *NFAPtr )
     WordLen = (uint8_t) ((ucell_t)*WordName & MASK_NAME_SIZE);
     WordChar = WordName+1;
 
-    vNameField = (vm_address_t) gVarContext;
+    vNameField = gVarContext;
 DBUG(("\nffFindNFA: WordLen = %d, WordName = %*s\n", WordLen, WordLen, WordChar ));
 DBUG(("\nffFindNFA: gVarContext = 0x%x\n", gVarContext));
     do
@@ -486,7 +486,7 @@ DBUG(("ffFindNFA: found it at NFA = 0x%x\n", NameField));
             vNextNameField = NameToPrevious( vNameField );
             if( vNextNameField == PF_VM_NULL )
             {
-                *NFAPtr = (vm_address_t) WordName;
+                *NFAPtr = PTR_TO_VMA(WordName);
                 Searching = FALSE;
             }
         }
@@ -515,7 +515,7 @@ DBUG(("ffFind: %8s at 0x%x\n", WordName+1, NFA)); /* WARNING, not NUL terminated
     }
     else
     {
-        *pXT = (ExecToken) WordName;
+        *pXT = (ExecToken)PTR_TO_VMA(WordName);
     }
 
     return Result;
@@ -573,7 +573,7 @@ void ffCreateSecondaryHeader( const ForthStringPtr FName)
     pfDebugMessage("ffCreateSecondaryHeader: CheckRedefinition()\n");
     CheckRedefinition( FName );
     /* Align CODE_HERE */
-    CODE_HERE = (vm_address_t)( (((ucell_t)CODE_HERE) + CELL_MASK) & ~CELL_MASK);
+    CODE_HERE = (CODE_HERE + UCELL_MASK) & ~UCELL_MASK;
     CreateDicEntry( (ExecToken) ABS_TO_CODEREL(CODE_HERE), FName, FLAG_SMUDGE );
 }
 
@@ -779,7 +779,7 @@ DBUG(("FindAndCompile: IMMEDIATE, theWord = 0x%x\n", theWord ));
         cell_t NumResult;
 
 DBUG(("FindAndCompile: not found, try number?\n" ));
-        PUSH_DATA_STACK( theWord );   /* Push text of number */
+        PUSH_PTR_DATA_STACK( theWord );   /* Push text of number */
         exception = pfCatch( gNumberQ_XT );
         if( exception ) goto error;
 
@@ -835,7 +835,7 @@ ThrowCode ffInterpret( void )
     char *theWord;
     ThrowCode exception = 0;
     /* td_SourcePtr may be pointing to a string in the dictionary. */
-    vm_address_t saveSource = (vm_address_t)gCurrentTask->td_SourcePtr;
+    vm_address_t saveSource = PTR_TO_VMA(gCurrentTask->td_SourcePtr);
     /* It may be difficult to make td_SourcePtr const because of refill(). */
     gCurrentTask->td_SourcePtr = (char *)pfLockMemoryReadOnly(saveSource, gCurrentTask->td_SourceNum);
 
@@ -851,7 +851,7 @@ ThrowCode ffInterpret( void )
             flag = 0;
             if( gLocalCompiler_XT )
             {
-                PUSH_DATA_STACK( theWord );   /* Push word. */
+                PUSH_PTR_DATA_STACK( theWord );   /* Push word. */
                 exception = pfCatch( gLocalCompiler_XT );
                 if( exception ) goto error;
                 flag = POP_DATA_STACK;  /* Compiled local? */
@@ -1070,7 +1070,7 @@ cell_t ffConvertStreamToSourceID( FileStream *Stream )
     }
     else
     {
-        Result = (cell_t) Stream;
+        Result = PTR_TO_VMA(Stream);
     }
     return Result;
 }
@@ -1165,7 +1165,7 @@ cell_t ffRefill( void )
     {
     /* ACCEPT is deferred so we call it through the dictionary. */
         ThrowCode throwCode;
-        PUSH_DATA_STACK( gCurrentTask->td_SourcePtr );
+        PUSH_PTR_DATA_STACK( gCurrentTask->td_SourcePtr );
         PUSH_DATA_STACK( TIB_SIZE );
         throwCode = pfCatch( gAcceptP_XT );
         if (throwCode) {

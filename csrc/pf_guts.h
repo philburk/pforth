@@ -578,7 +578,6 @@ extern cell_t         gIncludeIndex;
 #define READ_SHORT_DIC(addr)        DP_FETCH_U16(addr)
 #endif
 
-#define HEADER_HERE (gCurrentDictionary->dic_HeaderPtr.Cell)
 #define CODE_HERE (gCurrentDictionary->dic_CodePtr)
 #define CODE_COMMA(N) { WRITE_CELL_DIC(CODE_HERE,(N)); CODE_HERE += PF_CELL_SIZE; }
 #define NAME_BASE (gCurrentDictionary->dic_HeaderBase)
@@ -606,6 +605,7 @@ extern cell_t         gIncludeIndex;
 #define DROP_DATA_STACK (gCurrentTask->td_StackPtr++)
 #define POP_DATA_STACK (*gCurrentTask->td_StackPtr++)
 #define PUSH_DATA_STACK(x) {*(--(gCurrentTask->td_StackPtr)) = (cell_t) x; }
+#define PUSH_PTR_DATA_STACK(x) {*(--(gCurrentTask->td_StackPtr)) = PTR_TO_VMA(x); }
 
 /* Force Quad alignment. */
 #define QUADUP(x) (((x)+3)&~3)

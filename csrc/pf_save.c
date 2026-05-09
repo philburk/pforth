@@ -657,8 +657,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
             if( sd->sd_NameSize > 0 )
             {
                 gVarContext = NAMEREL_TO_ABS(sd->sd_RelContext); /* Restore context. */
-                gCurrentDictionary->dic_HeaderPtr = (ucell_t)(uint8_t *)
-                    NAMEREL_TO_ABS(sd->sd_RelHeaderPtr);
+                gCurrentDictionary->dic_HeaderPtr = NAMEREL_TO_ABS(sd->sd_RelHeaderPtr);
             }
             else
             {
@@ -837,7 +836,7 @@ PForthDictionary pfLoadStaticDictionary( void )
     if( NAME_BASE != 0)
     {
 /* Setup name space. */
-        dic->dic_HeaderPtr = (ucell_t)(uint8_t *) NAMEREL_TO_ABS(HEADERPTR);
+        dic->dic_HeaderPtr = (vm_address_t) NAMEREL_TO_ABS(HEADERPTR);
         gVarContext = NAMEREL_TO_ABS(RELCONTEXT); /* Restore context. */
 
 /* Find special words in dictionary for global XTs. */
