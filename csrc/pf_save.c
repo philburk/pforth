@@ -407,7 +407,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 /* Write P4DI Dictionary Info  ------------------ */
     SD.sd_Version = PF_FILE_VERSION;
 
-    relativeCodePtr = ABS_TO_CODEREL(gCurrentDictionary->dic_CodePtr.Byte); /* 940225 */
+    relativeCodePtr = (uint32_t) ABS_TO_CODEREL(gCurrentDictionary->dic_CodePtr); /* 940225 */
     SD.sd_RelCodePtr = relativeCodePtr;
     SD.sd_UserStackSize = sizeof(cell_t) * (gCurrentTask->td_StackBase - gCurrentTask->td_StackLimit);
     SD.sd_ReturnStackSize = sizeof(cell_t) * (gCurrentTask->td_ReturnBase - gCurrentTask->td_ReturnLimit);
@@ -665,7 +665,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
                 gVarContext = 0;
                 gCurrentDictionary->dic_HeaderPtr = (ucell_t)NULL;
             }
-            gCurrentDictionary->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(sd->sd_RelCodePtr);
+            gCurrentDictionary->dic_CodePtr = (vm_address_t) CODEREL_TO_ABS(sd->sd_RelCodePtr);
             gNumPrimitives = sd->sd_NumPrimitives;  /* Must match compiled dictionary. */
 /* Pass EntryPoint back to caller. */
             if( EntryPointPtr != NULL ) *EntryPointPtr = sd->sd_EntryPoint;
@@ -831,7 +831,7 @@ PForthDictionary pfLoadStaticDictionary( void )
 
     DBUG(("Static data copied to newly allocated dictionaries.\n"));
 
-    dic->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(CODEPTR);
+    dic->dic_CodePtr = CODEREL_TO_ABS(CODEPTR);
     gNumPrimitives = NUM_PRIMITIVES;
 
     if( NAME_BASE != 0)

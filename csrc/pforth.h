@@ -32,25 +32,53 @@ typedef void *PForthDictionary;
 #include <stdint.h>
 
 #if   INTPTR_MAX == INT64_MAX
-  #define PF_64BIT 1
-  #define PF_32BIT 0
+    #define PF_POINTER_SIZE 8
 #elif INTPTR_MAX == INT32_MAX
-  #define PF_64BIT 0
-  #define PF_32BIT 1
+    #define PF_POINTER_SIZE 4
+#elif INTPTR_MAX == INT16_MAX
+    #define PF_POINTER_SIZE 2
 #else
-  #error "Unsupported pointer size"
+    #error "Unsupported pointer size"
+#endif
+
+/* Set CELL size to match pointer size if not defined. */
+#ifndef PF_CELL_SIZE
+    #if   PF_POINTER_SIZE >= 4
+        #define PF_CELL_SIZE PF_POINTER_SIZE
+    #else
+        #define PF_CELL_SIZE 4
+    #endif
+#endif /* PF_CELL_SIZE */
+
+#if (PF_CELL_SIZE < PF_POINTER_SIZE)
+    #error "PF_CELL_SIZE must be at least as big as a pointer."
 #endif
 
 /* Integer types for Forth cells, signed and unsigned: */
-typedef intptr_t cell_t;   /* primary data type for the stack and dictionary */
-typedef uintptr_t ucell_t;
+#if (PF_CELL_SIZE == 8)
+    typedef int64_t cell_t;
+    typedef uint64_t ucell_t;
+#elif (PF_CELL_SIZE == 4)
+    typedef int32_t cell_t;
+    typedef uint32_t ucell_t;
+#else
+    #error "Unsupported PF_CELL_SIZE"
+#endif
 
-typedef ucell_t ExecToken;              /* Execution Token */
+typedef cell_t ExecToken;              /* Execution Token */
 typedef cell_t ThrowCode;
 
 #ifndef PF_DEMAND_PAGING
-#define PF_DEMAND_PAGING 0
-#endif
+    #if INTPTR_MAX == INT16_MAX
+        /* The only way to address enough RAM for the dictionary is through demand paging. */
+        #define PF_DEMAND_PAGING 1
+    #else /* INTPTR_MAX */
+        #define PF_DEMAND_PAGING 0
+    #endif /* INTPTR_MAX */
+#endif /* PF_DEMAND_PAGING */
+
+typedef ucell_t vm_address_t; /** an address that may be in physical or paged memory */
+#define PF_VM_NULL  ((vm_address_t) 0)
 
 #ifdef __cplusplus
 extern "C" {

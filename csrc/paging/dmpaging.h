@@ -29,8 +29,7 @@ extern "C" {
  * To use demand paged memory, enable the code by passing -DPF_DEMAND_PAGING=1
  * to the C compiler.
  */
-typedef uint8_t *vm_address_t; /** an address that may be in physical or paged memory */
-typedef uint8_t *paging_address_t; /** an address in paged memory */
+typedef ucell_t paging_address_t; /** an address in paged memory */
 
 /* Basic memory access macros. */
 #if (PF_DEMAND_PAGING == 0)
@@ -136,8 +135,8 @@ void *pfCopyFromVirtualMemory(void *destination,
  * @param source in physical memory
  * @return destination
  */
-void *pfCopyToVirtualMemory(vm_address_t destination,
-                            void * source,
+vm_address_t pfCopyToVirtualMemory(vm_address_t destination,
+                            const void *source,
                             uint32_t numBytes);
 
 /** Free virtual memory.
@@ -151,7 +150,7 @@ void pfFreeVirtualMemory(vm_address_t address);
  * @param numBytes how many bytes to set
  * @return destination
  */
-void *pfSetVirtualMemory(vm_address_t destination,
+vm_address_t pfSetVirtualMemory(vm_address_t destination,
                          uint8_t value,
                          uint32_t numBytes);
 

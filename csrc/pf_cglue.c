@@ -94,7 +94,7 @@ Err CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t 
     DBUG(("Packed = 0x%8x\n", Packed));
 
     ffCreateSecondaryHeader( FName );
-    CODE_COMMA( ID_CALL_C );
+    CODE_COMMA(ID_CALL_C);
     CODE_COMMA(Packed);
     ffFinishSecondary();
 

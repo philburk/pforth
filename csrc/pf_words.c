@@ -254,16 +254,16 @@ char * ffLWord( char c )
 
 size_t ffReadFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
 {
-    size_t numBytes = Size * nItems;
+    vm_address_t vp = (vm_address_t)ptr;
+    uint32_t numBytes = (uint32_t)(Size * nItems);
     if (numBytes == 0) {
         return 0;
-    } else if (pfIsAddressInPagedMemory(ptr)) {
+    } else if (pfIsAddressInPagedMemory(vp)) {
         /* Read file in blocks that will fit in locked regions. */
-        vm_address_t vp = (vm_address_t)ptr;
         cell_t numBytes = Size * nItems;
         cell_t bytesRead = 0;
         while (numBytes > 0) {
-            cell_t bytesToRead = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
+            uint32_t bytesToRead = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
             uint8_t *buffer = pfLockMemoryReadWrite(vp, bytesToRead);
             cell_t numRead = sdReadFile(buffer, 1, bytesToRead, Stream);
             pfUnlockMemory(vp, buffer); /* writes to backing storage */
@@ -283,15 +283,15 @@ size_t ffReadFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
 
 size_t ffWriteFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
 {
-    size_t numBytes = Size * nItems;
+    vm_address_t vp = (vm_address_t)ptr;
+    uint32_t numBytes = (uint32_t)(Size * nItems);
     if (numBytes == 0) {
         return 0;
-    } else if (pfIsAddressInPagedMemory(ptr)) {
+    } else if (pfIsAddressInPagedMemory(vp)) {
         /* Write file in blocks that will fit in locked regions. */
-        vm_address_t vp = (vm_address_t)ptr;
         cell_t bytesWritten = 0;
         while (numBytes > 0) {
-            cell_t bytesToWrite = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
+            uint32_t bytesToWrite = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
             const uint8_t *buffer = pfLockMemoryReadOnly(vp, bytesToWrite);
             cell_t numWritten = sdWriteFile(buffer, 1, bytesToWrite, Stream);
             pfUnlockMemory(vp, buffer); /* writes to backing storage */

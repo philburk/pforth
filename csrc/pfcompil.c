@@ -28,7 +28,7 @@
 #include "pfcompil.h"
 
 #define ABORT_RETURN_CODE   (10)
-#define UINT32_MASK  ((sizeof(ucell_t)-1))
+#define CELL_MASK  ((sizeof(ucell_t)-1))
 
 /***************************************************************/
 /************** Static Prototypes ******************************/
@@ -59,36 +59,37 @@ cell_t NotCompiled( const char *FunctionName )
 */
 void CreateDicEntry(ExecToken XT, const char *FName, ucell_t Flags)
 {
-    cfNameLinks *cfnl;
-
-    cfnl = (cfNameLinks *) gCurrentDictionary->dic_HeaderPtr;
+    vm_address_t headerPtr = gCurrentDictionary->dic_HeaderPtr;
+    vm_address_t previousNamePtr = headerPtr + PF_HEADER_OFFSET_PREVIOUS_NAME;
+    vm_address_t execTokenPtr = headerPtr + PF_HEADER_OFFSET_EXEC_TOKEN;
+    vm_address_t nfaPtr = headerPtr + PF_HEADER_OFFSET_NFA;
 
 /* Set link to previous header, if any. */
     if( gVarContext )
     {
-        WRITE_CELL_DIC(&cfnl->cfnl_PreviousName, ABS_TO_NAMEREL( gVarContext ));
+        WRITE_CELL_DIC(previousNamePtr, ABS_TO_NAMEREL( gVarContext ));
     }
     else
     {
-        WRITE_CELL_DIC(&cfnl->cfnl_PreviousName, 0);
+        WRITE_CELL_DIC(previousNamePtr, 0);
     }
 
 /* Put Execution token in header. */
-    WRITE_CELL_DIC( &cfnl->cfnl_ExecToken, XT );
+    WRITE_CELL_DIC(execTokenPtr, XT);
 
-/* Advance Header Dictionary Pointer */
-    gCurrentDictionary->dic_HeaderPtr += sizeof(cfNameLinks);
+/* Advance Header Dictionary Pointer to the NFA. */
+    gCurrentDictionary->dic_HeaderPtr = nfaPtr;
 
 /* Laydown name. */
     gVarContext = gCurrentDictionary->dic_HeaderPtr;
-    pfCopyToVirtualMemory((uint8_t *) gCurrentDictionary->dic_HeaderPtr, FName, (*FName)+1);
+    pfCopyToVirtualMemory(gCurrentDictionary->dic_HeaderPtr, FName, (*FName)+1);
     gCurrentDictionary->dic_HeaderPtr += (*FName)+1;
 
 /* Set flags. */
     DP_STORE_U8(gVarContext, DP_FETCH_U8(gVarContext) | (uint8_t)Flags);
 
-/* Align to quad byte boundaries with zeroes. */
-    while( gCurrentDictionary->dic_HeaderPtr & UINT32_MASK )
+/* Align to cell byte boundaries with zeroes. */
+    while( gCurrentDictionary->dic_HeaderPtr & CELL_MASK )
     {
         DP_STORE_U8(gCurrentDictionary->dic_HeaderPtr++, 0);
     }
@@ -104,40 +105,33 @@ void CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags )
     CreateDicEntry( XT, FName, Flags );
 }
 
+/* Define offsets to fields in an header entry. */
+#define PF_HEADER_OFFSET_PREVIOUS_NAME (0)
+#define PF_HEADER_OFFSET_EXEC_TOKEN    (PF_CELL_SIZE)
+#define PF_HEADER_OFFSET_NFA           (PF_HEADER_OFFSET_EXEC_TOKEN + PF_CELL_SIZE)
+
 /***************************************************************
 ** Convert absolute namefield address to previous absolute name
 ** field address or NULL.
 */
-const ForthString *NameToPrevious( const ForthString *NFA )
+vm_address_t NameToPrevious(vm_address_t NFA)
 {
-    cell_t RelNamePtr;
-    const cfNameLinks *cfnl;
-
-/* DBUG(("\nNameToPrevious: NFA = 0x%x\n", (cell_t) NFA)); */
-    cfnl = (const cfNameLinks *) ( ((const char *) NFA) - sizeof(cfNameLinks) );
-
-    RelNamePtr = READ_CELL_DIC((const cell_t *) (&cfnl->cfnl_PreviousName));
-/* DBUG(("\nNameToPrevious: RelNamePtr = 0x%x\n", (cell_t) RelNamePtr )); */
-    if( RelNamePtr )
-    {
-        return ( (ForthString *) NAMEREL_TO_ABS( RelNamePtr ) );
-    }
-    else
-    {
-        return NULL;
+    vm_address_t previousNamePtr = NFA - PF_HEADER_OFFSET_NFA + PF_HEADER_OFFSET_PREVIOUS_NAME;
+    cell_t relativeNamePtr = READ_CELL_DIC(previousNamePtr);
+    if (relativeNamePtr) {
+        return NAMEREL_TO_ABS( relativeNamePtr );
+    } else {
+        return (vm_address_t) NULL;
     }
 }
+
 /***************************************************************
 ** Convert NFA to ExecToken.
 */
-ExecToken NameToToken( const ForthString *NFA )
+ExecToken NameToToken(vm_address_t NFA)
 {
-    const cfNameLinks *cfnl;
-
-/* Convert absolute namefield address to absolute link field address. */
-    cfnl = (const cfNameLinks *) ( ((const char *) NFA) - sizeof(cfNameLinks) );
-
-    return READ_CELL_DIC((const cell_t *) (&cfnl->cfnl_ExecToken));
+    vm_address_t tokenPtr = NFA - PF_HEADER_OFFSET_NFA + PF_HEADER_OFFSET_EXEC_TOKEN;
+    return READ_CELL_DIC(tokenPtr);
 }
 
 /***************************************************************
@@ -415,14 +409,14 @@ nomem:
 ** ( xt -- nfa 1 , x 0 , find NFA in dictionary from XT )
 ** 1 for IMMEDIATE values
 */
-cell_t ffTokenToName( ExecToken XT, const ForthString **NFAPtr )
+cell_t ffTokenToName( ExecToken XT, vm_address_t *NFAPtr )
 {
-    const ForthString *NameField;
+    vm_address_t NameField;
     cell_t Searching = TRUE;
     cell_t Result = 0;
     ExecToken TempXT;
 
-    NameField = (ForthString *) gVarContext;
+    NameField = gVarContext;
 DBUGX(("\ffCodeToName: gVarContext = 0x%x\n", gVarContext));
 
     do
@@ -439,7 +433,7 @@ DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
         else
         {
             NameField = NameToPrevious( NameField );
-            if( NameField == NULL )
+            if( NameField == PF_VM_NULL )
             {
                 *NFAPtr = 0;
                 Searching = FALSE;
@@ -454,7 +448,7 @@ DBUGX(("ffCodeToName: NFA = 0x%x\n", NameField));
 ** ( $name -- $addr 0 | nfa -1 | nfa 1 , find NFA in dictionary )
 ** 1 for IMMEDIATE values
 */
-cell_t ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr )
+cell_t ffFindNFA( const ForthString *WordName, vm_address_t *NFAPtr )
 {
     const ForthString *WordChar;
     uint8_t WordLen;
@@ -483,16 +477,16 @@ DBUG(("\nffFindNFA: gVarContext = 0x%x\n", gVarContext));
             ffCompareTextCaseN( pNameChar, WordChar, WordLen ) ) /* FIXME - slow */
         {
 DBUG(("ffFindNFA: found it at NFA = 0x%x\n", NameField));
-            *NFAPtr = (const ForthString *) vNameField ;
+            *NFAPtr = vNameField ;
             Result = (countAndFlags & FLAG_IMMEDIATE) ? 1 : -1;
             Searching = FALSE;
         }
         else
         {
             vNextNameField = NameToPrevious( vNameField );
-            if( vNextNameField == NULL )
+            if( vNextNameField == PF_VM_NULL )
             {
-                *NFAPtr = WordName;
+                *NFAPtr = (vm_address_t) WordName;
                 Searching = FALSE;
             }
         }
@@ -510,7 +504,7 @@ DBUG(("ffFindNFA: returns 0x%x\n", Result));
 */
 cell_t ffFind( const ForthString *WordName, ExecToken *pXT )
 {
-    const ForthString *NFA;
+    vm_address_t NFA;
     cell_t Result;
 
     Result = ffFindNFA( WordName, &NFA );
@@ -549,16 +543,16 @@ DBUG(("ffFindC: %s\n", WordName ));
 static cell_t ffCheckDicRoom( void )
 {
     cell_t RoomLeft;
-    RoomLeft = (char *)gCurrentDictionary->dic_HeaderLimit -
-           (char *)gCurrentDictionary->dic_HeaderPtr;
+    RoomLeft = gCurrentDictionary->dic_HeaderLimit -
+            gCurrentDictionary->dic_HeaderPtr;
     if( RoomLeft < DIC_SAFETY_MARGIN )
     {
         pfReportError("ffCheckDicRoom", PF_ERR_HEADER_ROOM);
         return PF_ERR_HEADER_ROOM;
     }
 
-    RoomLeft = (char *)gCurrentDictionary->dic_CodeLimit -
-               (char *)gCurrentDictionary->dic_CodePtr.Byte;
+    RoomLeft = gCurrentDictionary->dic_CodeLimit -
+               gCurrentDictionary->dic_CodePtr;
     if( RoomLeft < DIC_SAFETY_MARGIN )
     {
         pfReportError("ffCheckDicRoom", PF_ERR_CODE_ROOM);
@@ -573,13 +567,13 @@ static cell_t ffCheckDicRoom( void )
 void ffCreateSecondaryHeader( const ForthStringPtr FName)
 {
     pfDebugMessage("ffCreateSecondaryHeader()\n");
-/* Check for dictionary overflow. */
+    /* Check for dictionary overflow. */
     if( ffCheckDicRoom() ) return;
 
     pfDebugMessage("ffCreateSecondaryHeader: CheckRedefinition()\n");
     CheckRedefinition( FName );
-/* Align CODE_HERE */
-    CODE_HERE = (cell_t *)( (((ucell_t)CODE_HERE) + UINT32_MASK) & ~UINT32_MASK);
+    /* Align CODE_HERE */
+    CODE_HERE = (vm_address_t)( (((ucell_t)CODE_HERE) + CELL_MASK) & ~CELL_MASK);
     CreateDicEntry( (ExecToken) ABS_TO_CODEREL(CODE_HERE), FName, FLAG_SMUDGE );
 }
 
@@ -734,25 +728,20 @@ void ffLiteral( cell_t Num )
 #ifdef PF_SUPPORT_FP
 void ffFPLiteral( PF_FLOAT fnum )
 {
-    /* Hack for Metrowerks compiler which won't compile the
-     * original expression.
-     */
-    PF_FLOAT  *temp;
-    cell_t    *dicPtr;
+    vm_address_t dicPtr;
 
 /* Make sure that literal float data is float aligned. */
-    dicPtr = CODE_HERE + 1;
-    while( (((ucell_t) dicPtr++) & (sizeof(PF_FLOAT) - 1)) != 0)
+    dicPtr = CODE_HERE + PF_CELL_SIZE;
+    while( (((ucell_t) dicPtr) & (sizeof(PF_FLOAT) - 1)) != 0)
     {
+        dicPtr += PF_CELL_SIZE;
         DBUG((" comma NOOP to align FPLiteral\n"));
         CODE_COMMA( ID_NOOP );
     }
     CODE_COMMA( ID_FP_FLITERAL_P );
 
-    temp = (PF_FLOAT *)CODE_HERE;
-    WRITE_FLOAT_DIC(temp,fnum);   /* Write to dictionary. */
-    temp++;
-    CODE_HERE = (cell_t *) temp;
+    WRITE_FLOAT_DIC(CODE_HERE, fnum);   /* Write to dictionary. */
+    CODE_HERE += sizeof(PF_FLOAT);
 }
 #endif /* PF_SUPPORT_FP */
 

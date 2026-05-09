@@ -1230,7 +1230,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_FINDNFA: /* ( $name -- $addr 0 | nfa -1 | nfa 1 , find NFA in dictionary ) */
             {
-                vm_address_t nfa = NULL;
+                vm_address_t nfa = (vm_address_t) NULL;
                 vm_address_t vName = (vm_address_t) TOS;
                 cell_t totalLength = DP_FETCH_U8(vName) + 1; /* length including count */
                 const char *pAddr = (const char *) pfLockMemoryReadOnly(vName, totalLength);
@@ -1484,11 +1484,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 #ifndef PF_NO_SHELL
         case ID_NAME_TO_TOKEN:
-            TOS = (cell_t) NameToToken((ForthString *)TOS);
+            TOS = (cell_t) NameToToken(TOS);
             endcase;
 
         case ID_NAME_TO_PREVIOUS:
-            TOS = (cell_t) NameToPrevious((ForthString *)TOS);
+            TOS = (cell_t) NameToPrevious(TOS);
             endcase;
 #endif
 
@@ -1880,7 +1880,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_VAR_CODE_BASE: DO_VAR(gCurrentDictionary->dic_CodeBase); endcase;
         case ID_VAR_CODE_LIMIT: DO_VAR(gCurrentDictionary->dic_CodeLimit); endcase;
         case ID_VAR_CONTEXT: DO_VAR(gVarContext); endcase;
-        case ID_VAR_DP: DO_VAR(gCurrentDictionary->dic_CodePtr.Cell); endcase;
+        case ID_VAR_DP: DO_VAR(gCurrentDictionary->dic_CodePtr); endcase;
         case ID_VAR_ECHO: DO_VAR(gVarEcho); endcase;
         case ID_VAR_HEADERS_BASE: DO_VAR(gCurrentDictionary->dic_HeaderBase); endcase;
         case ID_VAR_HEADERS_LIMIT: DO_VAR(gCurrentDictionary->dic_HeaderLimit); endcase;

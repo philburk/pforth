@@ -45,23 +45,23 @@ int pfIsAddressInPagedMemory(vm_address_t p) {
 void *pfCopyFromVirtualMemory(void *destination,
                               vm_address_t source,
                               uint32_t numBytes) {
-    return pfCopyMemory(destination, source, numBytes);
+    return pfCopyMemory(destination, (const void *)source, numBytes);
 }
 
-void *pfCopyToVirtualMemory(vm_address_t destination,
-                            void * source,
+vm_address_t pfCopyToVirtualMemory(vm_address_t destination,
+                            const void *source,
                             uint32_t numBytes) {
-    return pfCopyMemory(destination, source, numBytes);
+    return (vm_address_t) pfCopyMemory((void *)destination, source, numBytes);
 }
 
 void pfFreeVirtualMemory(vm_address_t address) {
-    pfFreeMem(address);
+    pfFreeMem((void *)address);
 }
 
-void *pfSetVirtualMemory(vm_address_t destination,
+vm_address_t pfSetVirtualMemory(vm_address_t destination,
                          uint8_t value,
                          uint32_t numBytes) {
-    return pfSetMemory(destination, value, numBytes);
+    return (vm_address_t) pfSetMemory((void *)destination, value, numBytes);
 }
 
 #else /* PF_DEMAND_PAGING */
@@ -247,20 +247,20 @@ void *pfCopyFromVirtualMemory(void *destination,
                               uint32_t numBytes) {
     if (pfIsAddressInPagedMemory(source)) {
         pfReadPagedMemory(destination, (paging_address_t) source, numBytes); /* TODO check result */
-        return destination;
+        return (void *) destination;
     } else {
-        return pfCopyMemory(destination, source, numBytes);
+        return pfCopyMemory(destination, (void *) source, numBytes);
     }
 }
 
-void *pfCopyToVirtualMemory(vm_address_t destination,
-                            void * source,
+vm_address_t pfCopyToVirtualMemory(vm_address_t destination,
+                            const void *source,
                             uint32_t numBytes) {
     if (pfIsAddressInPagedMemory(destination)) {
         pfWritePagedMemory((paging_address_t) destination, source, numBytes); /* TODO check result */
         return destination;
     } else {
-        return pfCopyMemory(destination, source, numBytes);
+        return (vm_address_t) pfCopyMemory((void *) destination, source, numBytes);
     }
 }
 
@@ -268,11 +268,11 @@ void pfFreeVirtualMemory(vm_address_t address) {
     if (pfIsAddressInPagedMemory(address)) {
         pfFreePagedMemory((paging_address_t) address);
     } else {
-        pfFreeMem(address);
+        pfFreeMem((void *) address);
     }
 }
 
-void *pfSetVirtualMemory(vm_address_t destination,
+vm_address_t pfSetVirtualMemory(vm_address_t destination,
                          uint8_t value,
                          uint32_t numBytes) {
     if (pfIsAddressInPagedMemory(destination)) {

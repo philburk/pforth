@@ -279,7 +279,7 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
     pfSetVirtualMemory((vm_address_t) dic->dic_CodeBase, 0x5A, (uint32_t) CodeSize);
 
     dic->dic_CodeLimit = dic->dic_CodeBase + CodeSize;
-    dic->dic_CodePtr.Byte = ((uint8_t *) (dic->dic_CodeBase + QUADUP(NUM_PRIMITIVES)));
+    dic->dic_CodePtr = (vm_address_t) (dic->dic_CodeBase + (QUADUP(NUM_PRIMITIVES) * PF_CELL_SIZE));
 
     return (PForthDictionary) dic;
 nomem:

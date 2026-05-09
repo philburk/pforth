@@ -449,6 +449,12 @@ typedef struct pfNode
     struct pfNode *n_Prev;
 } pfNode;
 
+/* Define offsets to fields in an header entry. */
+#define PF_HEADER_OFFSET_PREVIOUS_NAME (0)
+#define PF_HEADER_OFFSET_EXEC_TOKEN    (PF_CELL_SIZE)
+#define PF_HEADER_OFFSET_NFA           (PF_HEADER_OFFSET_EXEC_TOKEN + PF_CELL_SIZE)
+
+#if 0
 /* Structure of header entry in dictionary. These will be stored in dictionary specific endian format*/
 typedef struct cfNameLinks
 {
@@ -456,6 +462,7 @@ typedef struct cfNameLinks
     ExecToken  cfnl_ExecToken;      /* Execution token for word. */
 /* Followed by variable length name field. */
 } cfNameLinks;
+#endif
 
 #define PF_DICF_ALLOCATED_SEGMENTS  ( 0x0001)
 typedef struct pfDictionary_s
@@ -463,21 +470,16 @@ typedef struct pfDictionary_s
     pfNode  dic_Node;
     ucell_t dic_Flags;
 /* Headers contain pointers to names and dictionary. */
+    vm_address_t dic_HeaderBaseUnaligned;
 
-    ucell_t dic_HeaderBaseUnaligned;
-
-    ucell_t dic_HeaderBase;
-    ucell_t dic_HeaderPtr;
-    ucell_t dic_HeaderLimit;
+    vm_address_t dic_HeaderBase;
+    vm_address_t dic_HeaderPtr;
+    vm_address_t dic_HeaderLimit;
 /* Code segment contains tokenized code and data. */
-    ucell_t dic_CodeBaseUnaligned;
-    ucell_t dic_CodeBase;
-    union
-    {
-        cell_t  *Cell;
-        uint8_t *Byte;
-    } dic_CodePtr;
-    ucell_t dic_CodeLimit;
+    vm_address_t dic_CodeBaseUnaligned;
+    vm_address_t dic_CodeBase;
+    vm_address_t dic_CodePtr;
+    vm_address_t dic_CodeLimit;
 } pfDictionary_t;
 
 /* Save state of include when nesting files. */
@@ -577,8 +579,8 @@ extern cell_t         gIncludeIndex;
 #endif
 
 #define HEADER_HERE (gCurrentDictionary->dic_HeaderPtr.Cell)
-#define CODE_HERE (gCurrentDictionary->dic_CodePtr.Cell)
-#define CODE_COMMA( N ) WRITE_CELL_DIC(CODE_HERE++,(N))
+#define CODE_HERE (gCurrentDictionary->dic_CodePtr)
+#define CODE_COMMA(N) { WRITE_CELL_DIC(CODE_HERE,(N)); CODE_HERE += PF_CELL_SIZE; }
 #define NAME_BASE (gCurrentDictionary->dic_HeaderBase)
 #define CODE_BASE (gCurrentDictionary->dic_CodeBase)
 #define NAME_SIZE (gCurrentDictionary->dic_HeaderLimit - gCurrentDictionary->dic_HeaderBase)
@@ -598,7 +600,7 @@ extern cell_t         gIncludeIndex;
 /* The check for >0 is only needed for CLONE testing. !!! */
 #define IsTokenPrimitive(xt) ((xt<gNumPrimitives) && (xt>=0))
 
-#define FREE_VAR(v) { pfFreeVirtualMemory((void *)(v)); v = 0; }
+#define FREE_VAR(v) { pfFreeVirtualMemory((vm_address_t)(v)); v = 0; }
 
 #define DATA_STACK_DEPTH (gCurrentTask->td_StackBase - gCurrentTask->td_StackPtr)
 #define DROP_DATA_STACK (gCurrentTask->td_StackPtr++)
