@@ -70,6 +70,7 @@ ASAN ?= 0
 ifeq ($(ASAN),1)
     ASANOPTS = -fsanitize=address
     ifneq ($(UNAME),Darwin)
+        ASANOPTS += -static-libasan
         LDADD += -latomic
     endif
 else

@@ -84,7 +84,7 @@
 ** Misc Forth macros
 ***************************************************************/
 
-#define M_BRANCH   { InsPtr = (cell_t *) (((uint8_t *) InsPtr) + READ_CELL_DIC(InsPtr)); }
+#define M_BRANCH   { InsPtr = InsPtr + READ_CELL_DIC(InsPtr); }
 
 /* Cache top of data stack like in JForth. */
 #ifdef PF_SUPPORT_FP
@@ -195,7 +195,7 @@ static void TraceNames( ExecToken Token, cell_t Level )
 #endif /* PF_NO_SHELL */
 
 /* Use local copy of CODE_BASE for speed. */
-#define LOCAL_CODEREL_TO_ABS( a ) ((cell_t *) (((cell_t) a) + CodeBase))
+#define LOCAL_CODEREL_TO_ABS( a ) (PTR_TO_VMA(a) + CodeBase)
 
 /* Truncate the unsigned double cell integer LO/HI to an uint64_t. */
 static uint64_t UdToUint64( ucell_t Lo, ucell_t Hi )
@@ -281,7 +281,7 @@ ThrowCode pfCatch( ExecToken XT )
     register cell_t  TopOfStack;    /* Cache for faster execution. */
     register cell_t *DataStackPtr;
     register cell_t *ReturnStackPtr;
-    register cell_t *InsPtr = NULL;
+    register vm_address_t InsPtr = PF_VM_NULL;
     register cell_t  Token;
     cell_t           Scratch;
 
@@ -303,7 +303,7 @@ ThrowCode pfCatch( ExecToken XT )
     char          *CharPtr;
     cell_t        *CellPtr;
     FileStream    *FileID;
-    uint8_t       *CodeBase = (uint8_t *) CODE_BASE;
+    vm_address_t   CodeBase = CODE_BASE;
     ThrowCode      ExceptionReturnCode = 0;
 
 /* FIXME
@@ -352,10 +352,11 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
             M_R_PUSH( InsPtr );
 
 /* Convert execution token to absolute address. */
-            InsPtr = (cell_t *) ( LOCAL_CODEREL_TO_ABS(Token) );
+            InsPtr = LOCAL_CODEREL_TO_ABS(Token);
 
 /* Fetch token at IP. */
-            Token = READ_CELL_DIC(InsPtr++);
+            Token = READ_CELL_DIC(InsPtr);
+            InsPtr += PF_CELL_SIZE;
 
 #ifdef PF_SUPPORT_TRACE
 /* Bump level for trace display */
@@ -376,7 +377,7 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
     ** Used to implement semicolon.
     ** Put first in switch because ID_EXIT==0 */
         case ID_EXIT:
-            InsPtr = ( cell_t *) M_R_POP;
+            InsPtr = M_R_POP;
 #ifdef PF_SUPPORT_TRACE
             Level--;
 #endif
@@ -396,8 +397,10 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
         case ID_2LITERAL_P:
 /* hi part stored first, put on top of stack */
             PUSH_TOS;
-            TOS = READ_CELL_DIC(InsPtr++);
-            M_PUSH(READ_CELL_DIC(InsPtr++));
+            TOS = READ_CELL_DIC(InsPtr);
+            InsPtr += PF_CELL_SIZE;
+            M_PUSH(READ_CELL_DIC(InsPtr));
+            InsPtr += PF_CELL_SIZE;
             endcase;
 
         case ID_2MINUS:  TOS -= 2; endcase;
@@ -461,7 +464,8 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
 
         case ID_ALITERAL_P:
             PUSH_TOS;
-            TOS = (cell_t) LOCAL_CODEREL_TO_ABS( READ_CELL_DIC(InsPtr++) );
+            TOS = (cell_t) LOCAL_CODEREL_TO_ABS( READ_CELL_DIC(InsPtr) );
+            InsPtr += PF_CELL_SIZE;
             endcase;
 
 /* Allocate some extra and put validation identifier at base */
@@ -532,7 +536,8 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 
         case ID_CALL_C:
             SAVE_REGISTERS;
-            Scratch = READ_CELL_DIC(InsPtr++);
+            Scratch = READ_CELL_DIC(InsPtr);
+            InsPtr += PF_CELL_SIZE;
             CallUserFunction( Scratch & 0xFFFF,
                 (Scratch >> 31) & 1,
                 (Scratch >> 24) & 0x7F );
@@ -659,7 +664,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
         case ID_CREATE_P:
             PUSH_TOS;
 /* Put address of body on stack.  Insptr points after code start. */
-            TOS = (cell_t) ((char *)InsPtr - sizeof(cell_t) + CREATE_BODY_OFFSET );
+            TOS = (cell_t) (InsPtr - sizeof(cell_t) + CREATE_BODY_OFFSET);
             endcase;
 
         case ID_CSTORE: /* ( c caddr -- ) */
@@ -953,19 +958,19 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_EXECUTE:
 /* Save IP on return stack like a JSR. */
-            M_R_PUSH( InsPtr );
+            M_R_PUSH(InsPtr);
 #ifdef PF_SUPPORT_TRACE
 /* Bump level for trace. */
             Level++;
 #endif
             if( IsTokenPrimitive( TOS ) )
             {
-                WRITE_CELL_DIC( (cell_t *) &FakeSecondary[0], TOS);   /* Build a fake secondary and execute it. */
-                InsPtr = &FakeSecondary[0];
+                InsPtr = PTR_TO_VMA(&FakeSecondary[0]);
+                WRITE_CELL_DIC(InsPtr, TOS);   /* Build a fake secondary and execute it. */
             }
             else
             {
-                InsPtr = (cell_t *) LOCAL_CODEREL_TO_ABS(TOS);
+                InsPtr = LOCAL_CODEREL_TO_ABS(TOS);
             }
             M_DROP;
             endcase;
@@ -997,7 +1002,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 DBUG(("Create file = %s with famTxt %s\n", gScratch, famText ));
                 FileID = sdOpenFile( gScratch, famText );
                 TOS = ( FileID == NULL ) ? -1 : 0 ;
-                M_PUSH( (cell_t) FileID );
+                M_PUSH(PTR_TO_VMA(FileID));
             }
             else
             {
@@ -1039,7 +1044,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 FileID = sdOpenFile( gScratch, famText );
 
                 TOS = ( FileID == NULL ) ? -1 : 0 ;
-                M_PUSH( (cell_t) FileID );
+                M_PUSH(PTR_TO_VMA(FileID));
             }
             else
             {
@@ -1346,9 +1351,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #endif /* !PF_NO_SHELL */
 
         case ID_LITERAL_P:
-            DBUG(("ID_LITERAL_P: InsPtr = 0x%x, *InsPtr = 0x%x\n", InsPtr, *InsPtr ));
             PUSH_TOS;
-            TOS = READ_CELL_DIC(InsPtr++);
+            TOS = READ_CELL_DIC(InsPtr);
+            InsPtr += PF_CELL_SIZE;
             endcase;
 
 #ifndef PF_NO_SHELL
@@ -1408,7 +1413,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 /* End of locals. Create stack frame */
                 DBUG(("LocalEntry: before RP@ = 0x%x, LP = 0x%x\n",
                     TORPTR, LocalsPtr));
-                M_R_PUSH(LocalsPtr);
+                M_R_PUSH(PTR_TO_VMA(LocalsPtr));
                 LocalsPtr = TORPTR;
                 TORPTR -= TOS;
                 DBUG(("LocalEntry: after RP@ = 0x%x, LP = 0x%x\n",
@@ -1426,7 +1431,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             DBUG(("LocalExit: before RP@ = 0x%x, LP = 0x%x\n",
                 TORPTR, LocalsPtr));
             TORPTR = LocalsPtr;
-            LocalsPtr = (cell_t *) M_R_POP;
+            LocalsPtr = (cell_t *) (uintptr_t) M_R_POP;
             DBUG(("LocalExit: after RP@ = 0x%x, LP = 0x%x\n",
                 TORPTR, LocalsPtr));
             endcase;
@@ -1460,7 +1465,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             Scratch = M_R_POP + 1; /* index */
             if( Scratch == Temp )
             {
-                InsPtr++;   /* skip branch offset, exit loop */
+                InsPtr += PF_CELL_SIZE;   /* skip branch offset, exit loop */
             }
             else
             {
@@ -1546,12 +1551,9 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 		   (x^y)<0 is equivalent to (x<0) != (y<0) */
                 if( ((OldDiff ^ (OldDiff + Delta)) /* is the limit crossed? */
 		     & (OldDiff ^ Delta))          /* is it a wrap-around? */
-		    < 0 )
-		{
-                    InsPtr++;   /* skip branch offset, exit loop */
-                }
-                else
-                {
+		    < 0 ) {
+                    InsPtr += PF_CELL_SIZE;   /* skip branch offset, exit loop */
+                } else {
 /* Push index and limit back to R */
                     M_R_PUSH( NewIndex );
                     M_R_PUSH( Limit );
@@ -1573,7 +1575,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             {
                 M_R_PUSH( TOS );
                 M_R_PUSH( Scratch );
-                InsPtr++;   /* skip branch offset, enter loop */
+                InsPtr += PF_CELL_SIZE;   /* skip branch offset, enter loop */
             }
             M_DROP;
             endcase;
@@ -1614,13 +1616,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 /* Resize memory allocated by ALLOCATE. */
         case ID_RESIZE:  /* ( addr1 u -- addr2 result ) */
             {
-                cell_t *Addr1 = (cell_t *) M_POP;
+                cell_t *Addr1 = (cell_t *) (uintptr_t) M_POP;
                 /* Point to validator below users address. */
                 cell_t *FreePtr = Addr1 - 1;
-                if( ((ucell_t)*FreePtr) != ((ucell_t)FreePtr ^ PF_MEMORY_VALIDATOR))
+                if( ((ucell_t)*FreePtr) != (((ucell_t) (uintptr_t) FreePtr) ^ PF_MEMORY_VALIDATOR))
                 {
                     /* 090218 - Fixed bug, was returning zero. */
-                    M_PUSH( Addr1 );
+                    M_PUSH(PTR_TO_VMA(Addr1));
                     TOS = -3;
                 }
                 else
@@ -1951,7 +1953,7 @@ DBUGX(("Before 0Branch: IP = 0x%x\n", InsPtr ));
             }
             else
             {
-                InsPtr++;      /* skip over offset */
+               InsPtr += PF_CELL_SIZE;      /* skip over offset */
             }
             M_DROP;
 DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
@@ -1971,13 +1973,16 @@ DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
             ERR("pfCatch: Unrecognised token = 0x");
             ffDotHex(Token);
             ERR(" at 0x");
-            ffDotHex(PTR_TO_VMA(InsPtr));
+            ffDotHex(InsPtr);
             EMIT_CR;
-            InsPtr = 0;
+            InsPtr = PF_VM_NULL;
             endcase;
         }
 
-        if(InsPtr) Token = READ_CELL_DIC(InsPtr++);   /* Traverse to next token in secondary. */
+        if(InsPtr) {
+            Token = READ_CELL_DIC(InsPtr);   /* Traverse to next token in secondary. */
+            InsPtr += PF_CELL_SIZE;
+        }
 
 #ifdef PF_DEBUG
         M_DOTS;
@@ -1987,7 +1992,7 @@ DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
         if( _CrtCheckMemory() == 0 )
         {
             ERR("_CrtCheckMemory abort: InsPtr = 0x");
-            ffDotHex((cell_t)InsPtr);
+            ffDotHex(InsPtr);
             ERR("\n");
         }
 #endif

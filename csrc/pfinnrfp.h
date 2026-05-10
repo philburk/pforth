@@ -283,17 +283,10 @@
 
     case ID_FP_FLITERAL_P:
         PUSH_FP_TOS;
-#if 0
-/* Some wimpy compilers can't handle this! */
-        FP_TOS = *(((PF_FLOAT *)InsPtr)++);
-#else
         {
-            PF_FLOAT *fptr;
-            fptr = (PF_FLOAT *)InsPtr;
-            FP_TOS = READ_FLOAT_DIC( fptr++ );
-            InsPtr = (cell_t *) fptr;
+            FP_TOS = READ_FLOAT_DIC(InsPtr);
+            InsPtr += sizeof(PF_FLOAT);
         }
-#endif
         endcase;
 
     case ID_FP_FLN: /* ( -- ) ( F: r1 -- r2 ) */

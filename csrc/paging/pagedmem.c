@@ -41,9 +41,9 @@ static cell_t sDpNextAvailable = 0;
  */
 #if 0
 #define PF_DP_MUNGE_KEY  (0)
-#elif (PF_CELL_SIZE == 8)
+#elif (PF_POINTER_SIZE == 8)
 #define PF_DP_MUNGE_KEY  (0x005A000000000000)
-#elif (PF_CELL_SIZE == 4)
+#elif (PF_POINTER_SIZE == 4)
 #define PF_DP_MUNGE_KEY  (0x50000000)
 #endif
 

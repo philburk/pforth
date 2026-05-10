@@ -212,7 +212,7 @@ VARIABLE SPAN
 
 : U.HEX ( n -- , print a as hex unsigned )
     base @
-    swap u.
+    swap hex u.
     base !
 ;
 
