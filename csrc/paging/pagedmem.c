@@ -47,8 +47,8 @@ static cell_t sDpNextAvailable = 0;
 #define PF_DP_MUNGE_KEY  (0x50000000)
 #endif
 
-#define PF_DP_MUNGE(vaddr) ((vm_address_t)(((cell_t)vaddr) ^ PF_DP_MUNGE_KEY))
-#define PF_DP_UNMUNGE(vaddr) ((vm_address_t)(((cell_t)vaddr) ^ PF_DP_MUNGE_KEY))
+#define PF_DP_MUNGE(addr) ((vm_address_t)((PTR_TO_VMA(addr)) ^ PF_DP_MUNGE_KEY))
+#define PF_DP_UNMUNGE(paging_addr) ((uintptr_t)((paging_addr) ^ PF_DP_MUNGE_KEY))
 
 void pfResetPagedMemory(void) {
     printf("pfResetPagedMemory: cell = %d\n", (int)sizeof(cell_t));
@@ -56,8 +56,8 @@ void pfResetPagedMemory(void) {
 }
 
 int pfIsAddressInPagedMemory(vm_address_t p) {
-    vm_address_t vaddr = PF_DP_UNMUNGE(p);
-    cell_t offset = (uint8_t *)vaddr - sFakeSerialRAM;
+    uintptr_t addr = PF_DP_UNMUNGE(p);
+    cell_t offset = (uint8_t *)addr - sFakeSerialRAM;
     return (offset >= 0) && (offset < PF_DP_AVAILABLE_SPACE);
 }
 
@@ -77,14 +77,11 @@ vm_address_t pfAllocatePagedMemory(const ucell_t numBytes) {
 void pfFreePagedMemory(vm_address_t p) {}
 
 size_t pfReadPagedMemory(void *destination,
-                         vm_address_t source,
+                         paging_address_t source,
                          uint32_t numBytes) {
-    if (!pfIsAddressInPagedMemory(source)) {
-        printf("ERROR: not a paged address = %p\n", source);
-        return 0;
-    }
+    PF_ASSERT(pfIsAddressInPagedMemory(source));
     /* TODO check upper boundary */
-    void *pAddr = PF_DP_UNMUNGE(source);
+    void *pAddr = (void *)(uintptr_t) PF_DP_UNMUNGE(source);
     pfCopyMemory(destination, pAddr, numBytes);
     return numBytes;
 }
@@ -92,12 +89,9 @@ size_t pfReadPagedMemory(void *destination,
 size_t pfWritePagedMemory(paging_address_t destination,
                           const void *source,
                           uint32_t numBytes) {
-    if (!pfIsAddressInPagedMemory(destination)) {
-        printf("ERROR: not a paged address = %p\n", destination);
-        return 0;
-    }
+    PF_ASSERT(pfIsAddressInPagedMemory(destination));
     /* TODO check upper boundary */
-    void *pAddr = PF_DP_UNMUNGE(destination);
+    void *pAddr = (void *)(uintptr_t) PF_DP_UNMUNGE(destination);
     pfCopyMemory(pAddr, source, numBytes);
     return numBytes;
  }

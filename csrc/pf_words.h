@@ -32,8 +32,8 @@ void ffDotS( void );
 cell_t ffSkip(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut);
 cell_t ffScan(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut);
 
-size_t ffReadFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  );
-size_t ffWriteFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  );
+size_t ffReadFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  );
+size_t ffWriteFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  );
 
 #ifdef __cplusplus
 }

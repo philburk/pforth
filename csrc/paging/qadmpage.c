@@ -21,6 +21,7 @@
 
 #include "../pf_all.h"
 #include "unittest.h"
+#include "qadmpage.h"
 
 #if PF_DEMAND_PAGING
 
@@ -103,7 +104,6 @@ static int pfQaTestReadWrite(void) {
     pfResetPagedMemory();
     vm_address_t vm1 = pfAllocatePagedMemory(kBufferSize);
     ASSERT_NE(vm1, 0);
-    printf("pfQaTestReadWrite: vm1 = %p\n", vm1);
     cell_t written = pfWritePagedMemory(vm1, buffer1, kBufferSize);
     ASSERT_EQ(written, kBufferSize);
     cell_t numRead = pfReadPagedMemory(buffer2, vm1, kBufferSize);

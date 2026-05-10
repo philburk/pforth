@@ -216,7 +216,7 @@ static char * Word ( char c, int Upcase )
     cell_t n1, n2, n3;
     cell_t i, nc;
 
-    s1 = gCurrentTask->td_SourcePtr + gCurrentTask->td_IN;
+    s1 = (const char *)(uintptr_t)gCurrentTask->td_SourcePtr + gCurrentTask->td_IN;
     n1 = gCurrentTask->td_SourceNum - gCurrentTask->td_IN;
     n2 = ffSkip( s1, n1, c, &s2 );
 DBUGX(("Word: s2=%c, %d\n", *s2, n2 ));
@@ -252,9 +252,8 @@ char * ffLWord( char c )
   return Word( c, FALSE );
 }
 
-size_t ffReadFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
+size_t ffReadFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  )
 {
-    vm_address_t vp = (vm_address_t)ptr;
     uint32_t numBytes = (uint32_t)(Size * nItems);
     if (numBytes == 0) {
         return 0;
@@ -277,13 +276,12 @@ size_t ffReadFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
         }
         return bytesRead / Size;
     } else {
-        return sdReadFile( ptr, Size, nItems, Stream);
+        return sdReadFile( (void *)(uintptr_t) vp, Size, nItems, Stream);
     }
 }
 
-size_t ffWriteFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  )
+size_t ffWriteFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  )
 {
-    vm_address_t vp = (vm_address_t)ptr;
     uint32_t numBytes = (uint32_t)(Size * nItems);
     if (numBytes == 0) {
         return 0;
@@ -304,8 +302,8 @@ size_t ffWriteFile( void *ptr, size_t Size, size_t nItems, FileStream * Stream  
             bytesWritten += numWritten;
             vp += numWritten;
         }
-        return nItems;
+        return bytesWritten / Size;
     } else {
-        return sdWriteFile( ptr, Size, nItems, Stream);
+        return sdWriteFile( (void *)(uintptr_t) vp, Size, nItems, Stream);
     }
 }

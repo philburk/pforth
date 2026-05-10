@@ -26,9 +26,13 @@ extern int pfQaNumFailed;
 /* You must use this macro exactly once in each test program. */
 #define PFQA_INSTANTIATE_GLOBALS\
     int pfQaNumPassed = 0;\
-    int pfQaNumFailed = 0;
+    int pfQaNumFailed = 0
 
-#define CELL_FORMAT "%l"
+#if PF_CELL_SIZE == 4
+#define CELL_FORMAT "%ld"
+#elif PF_CELL_SIZE == 8
+#define CELL_FORMAT "%lld"
+#endif
 /*------------------- Macros ------------------------------*/
 /* Print ERROR if it fails. Tally success or failure. Odd  */
 /* do-while wrapper seems to be needed for some compilers. */
@@ -58,7 +62,7 @@ extern int pfQaNumFailed;
             pfQaNumPassed++; \
         } \
         else { \
-            printf("ERROR at %s:%d, (%s) %s (%s), %ld %s %ld\n", \
+            printf("ERROR at %s:%d, (%s) %s (%s), " CELL_FORMAT " %s " CELL_FORMAT "\n", \
                 __FILE__, __LINE__, #_a, #_opn, #_b, mA, #_opn, mB ); \
             pfQaNumFailed++; \
             _on_error; \

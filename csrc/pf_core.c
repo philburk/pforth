@@ -37,6 +37,7 @@
 ***************************************************************/
 
 #include "pf_all.h"
+#include "paging/qadmpage.h"
 
 /***************************************************************
 ** Global Data
@@ -88,8 +89,6 @@ static void pfTerm( void );
 #ifndef PF_DEFAULT_CODE_SIZE
 #define PF_DEFAULT_CODE_SIZE (300000)
 #endif
-
-int pfQaDemandPaging(void);
 
 /* Initialize globals in a function to simplify loading on
  * embedded systems which may not support initialization of data section.
@@ -176,7 +175,7 @@ PForthTask pfCreateTask( cell_t UserStackDepth, cell_t ReturnStackDepth )
 
     cftd->td_InputStream = PF_STDIN;
 
-    cftd->td_SourcePtr = &cftd->td_TIB[0];
+    cftd->td_SourcePtr = PTR_TO_VMA(&cftd->td_TIB[0]);
     cftd->td_SourceNum = 0;
 
     return (PForthTask) cftd;

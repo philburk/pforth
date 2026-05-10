@@ -553,12 +553,12 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 
         case ID_CMOVE: /* ( src dst n -- ) */
             {
-                register char *DstPtr = (char *) M_POP; /* dst */
-                CharPtr = (char *) M_POP;    /* src */
+                vm_address_t dstVAddr = (vm_address_t) M_POP; /* dst */
+                vm_address_t srcVAddr = (vm_address_t) M_POP;    /* src */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
                 {
-                    uint8_t value = DP_FETCH_U8(CharPtr++);
-                    DP_STORE_U8(DstPtr++, value);
+                    uint8_t value = DP_FETCH_U8(srcVAddr++);
+                    DP_STORE_U8(dstVAddr++, value);
                 }
                 M_DROP;
             }
@@ -566,12 +566,12 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
 
         case ID_CMOVE_UP: /* ( src dst n -- ) */
             {
-                register char *DstPtr = ((char *) M_POP) + TOS; /* dst */
-                CharPtr = ((char *) M_POP) + TOS;    /* src */
+                vm_address_t dstVAddr = ((vm_address_t) M_POP) + TOS; /* dst */
+                vm_address_t srcVAddr = ((vm_address_t) M_POP) + TOS;    /* src */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) TOS ; Scratch++ )
                 {
-                    uint8_t value = DP_FETCH_U8(--CharPtr);
-                    DP_STORE_U8(--DstPtr, value);
+                    uint8_t value = DP_FETCH_U8(--srcVAddr);
+                    DP_STORE_U8(--dstVAddr, value);
                 }
                 M_DROP;
             }
@@ -1057,9 +1057,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FILE_READ: /* ( addr len fid -- u2 ior ) */
             FileID = (FileStream *) TOS;
             Scratch = M_POP;
-            CharPtr = (char *) M_POP;
-            /* warning, only 32-bit nItems */
-            Temp = ffReadFile( CharPtr, 1, (int32_t) Scratch, FileID );
+            {
+                vm_address_t vAddr = (vm_address_t) M_POP;
+                /* warning, only 32-bit nItems */
+                Temp = ffReadFile( vAddr, 1, (int32_t) Scratch, FileID );
+            }
             /* TODO check feof() or ferror() */
             M_PUSH(Temp);
             TOS = 0;
@@ -1098,9 +1100,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FILE_WRITE: /* ( addr len fid -- ior ) */
             FileID = (FileStream *) TOS;
             Scratch = M_POP;
-            CharPtr = (char *) M_POP;
-            Temp = ffWriteFile( CharPtr, 1, (int32_t)Scratch, FileID );
-            TOS = (Temp != Scratch) ? -3 : 0;
+            {
+                vm_address_t vAddr = (vm_address_t) M_POP;
+                Temp = ffWriteFile( vAddr, 1, (int32_t)Scratch, FileID );
+                TOS = (Temp != Scratch) ? -3 : 0;
+            }
             endcase;
 
         case ID_FILE_REPOSITION: /* ( ud fid -- ior ) */
@@ -1200,13 +1204,13 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_FILL: /* ( caddr num charval -- ) */
             {
-                register char *DstPtr;
+                vm_address_t dstVAddr;
                 Temp = M_POP;    /* num */
-                DstPtr = (char *) M_POP; /* dst */
+                dstVAddr = (vm_address_t) M_POP; /* dst */
                 for( Scratch=0; (ucell_t) Scratch < (ucell_t) Temp ; Scratch++ )
                 {
-                    DP_STORE_U8(DstPtr, TOS);
-                    DstPtr++;
+                    DP_STORE_U8(dstVAddr, TOS);
+                    dstVAddr++;
                 }
                 M_DROP;
             }
@@ -1234,7 +1238,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 vm_address_t vName = (vm_address_t) TOS;
                 cell_t totalLength = DP_FETCH_U8(vName) + 1; /* length including count */
                 const char *pAddr = (const char *) pfLockMemoryReadOnly(vName, totalLength);
-                TOS = ffFindNFA(pAddr, (const ForthString **) &nfa );
+                TOS = ffFindNFA((const ForthString *)pAddr, &nfa );
                 pfUnlockMemory(vName, (const uint8_t *)pAddr);
                 if (TOS != 0) {
                     M_PUSH( nfa );
@@ -1781,7 +1785,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_SOURCE_SET: /* ( c-addr num -- ) */
-            gCurrentTask->td_SourcePtr = (char *) M_POP;
+            gCurrentTask->td_SourcePtr = (vm_address_t) M_POP;
             gCurrentTask->td_SourceNum = TOS;
             M_DROP;
             endcase;

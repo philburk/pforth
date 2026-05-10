@@ -835,9 +835,9 @@ ThrowCode ffInterpret( void )
     char *theWord;
     ThrowCode exception = 0;
     /* td_SourcePtr may be pointing to a string in the dictionary. */
-    vm_address_t saveSource = PTR_TO_VMA(gCurrentTask->td_SourcePtr);
+    vm_address_t saveSource = gCurrentTask->td_SourcePtr;
     /* It may be difficult to make td_SourcePtr const because of refill(). */
-    gCurrentTask->td_SourcePtr = (char *)pfLockMemoryReadOnly(saveSource, gCurrentTask->td_SourceNum);
+    gCurrentTask->td_SourcePtr = PTR_TO_VMA(pfLockMemoryReadOnly(saveSource, gCurrentTask->td_SourceNum));
 
 /* Is there any text left in Source ? */
     while( gCurrentTask->td_IN < (gCurrentTask->td_SourceNum) )
@@ -867,7 +867,7 @@ ThrowCode ffInterpret( void )
             gCurrentTask->td_SourceNum ) );
     }
 error:
-    pfUnlockMemory(saveSource, (const uint8_t *) gCurrentTask->td_SourcePtr);
+    pfUnlockMemory(saveSource, (const uint8_t *)(uintptr_t) gCurrentTask->td_SourcePtr);
     return exception;
 }
 
@@ -964,7 +964,7 @@ ThrowCode ffIncludeFile( FileStream *InputFile )
 /* Dump line of error and show offset in line for >IN */
         for( i=0; i<gCurrentTask->td_SourceNum; i++ )
         {
-            char c = gCurrentTask->td_SourcePtr[i];
+            char c = ((char *)(uintptr_t)gCurrentTask->td_SourcePtr)[i];
             if( c == '\t' ) c = ' ';
             EMIT(c);
         }
@@ -1165,7 +1165,7 @@ cell_t ffRefill( void )
     {
     /* ACCEPT is deferred so we call it through the dictionary. */
         ThrowCode throwCode;
-        PUSH_PTR_DATA_STACK( gCurrentTask->td_SourcePtr );
+        PUSH_DATA_STACK( gCurrentTask->td_SourcePtr );
         PUSH_DATA_STACK( TIB_SIZE );
         throwCode = pfCatch( gAcceptP_XT );
         if (throwCode) {
@@ -1181,7 +1181,7 @@ cell_t ffRefill( void )
     }
     else
     {
-        Num = readLineFromStream( gCurrentTask->td_SourcePtr, TIB_SIZE,
+        Num = readLineFromStream( (char *)(uintptr_t)gCurrentTask->td_SourcePtr, TIB_SIZE,
             gCurrentTask->td_InputStream );
         if( Num == EOF )
         {
@@ -1196,7 +1196,7 @@ cell_t ffRefill( void )
 /* echo input if requested */
     if( gVarEcho && ( Num > 0))
     {
-        ioType( gCurrentTask->td_SourcePtr, gCurrentTask->td_SourceNum );
+        ioType( (const char *)(uintptr_t)gCurrentTask->td_SourcePtr, gCurrentTask->td_SourceNum );
         EMIT_CR;
     }
 

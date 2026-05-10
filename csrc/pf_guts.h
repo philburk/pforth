@@ -438,7 +438,7 @@ typedef struct pfTaskData_s
     char       td_TIB[TIB_SIZE];   /* Buffer for terminal input. */
     cell_t     td_IN;              /* Index into Source */
     cell_t     td_SourceNum;       /* #TIB after REFILL */
-    char      *td_SourcePtr;       /* Pointer to TIB or other source. */
+    vm_address_t td_SourcePtr;       /* Pointer to TIB or other source. */
     cell_t     td_LineNumber;      /* Incremented on every refill. */
     cell_t     td_OUT;             /* Current output column. */
 } pfTaskData_t;

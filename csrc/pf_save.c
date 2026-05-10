@@ -354,7 +354,7 @@ static int Write32ToFile( FileStream *fid, uint32_t Val )
 }
 
 /***************************************************************/
-static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t NumBytes )
+static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, vm_address_t Data, int32_t NumBytes )
 {
     cell_t numw;
     cell_t EvenNumW;
@@ -477,17 +477,17 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 
     convertDictionaryInfoWrite (&SD);
 
-    if( WriteChunkToFile( fid, ID_P4DI, (char *) &SD, sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
+    if( WriteChunkToFile( fid, ID_P4DI, PTR_TO_VMA(&SD), sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
 
 /* Write Name Fields if NameSize non-zero ------- */
     if( NameSize > 0 )
     {
-        if( WriteChunkToFile( fid, ID_P4NM, (char *) NAME_BASE,
+        if( WriteChunkToFile( fid, ID_P4NM, (vm_address_t) NAME_BASE,
             NameChunkSize ) < 0 ) goto error;
     }
 
 /* Write Code Fields ---------------------------- */
-    if( WriteChunkToFile( fid, ID_P4CD, (char *) CODE_BASE, CodeChunkSize ) < 0 ) goto error;
+    if( WriteChunkToFile( fid, ID_P4CD, (vm_address_t) CODE_BASE, CodeChunkSize ) < 0 ) goto error;
 
     FormSize = (uint32_t) sdTellFile( fid ) - 8;
     sdSeekFile( fid, 4, PF_SEEK_SET );
@@ -692,7 +692,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
                 goto error;
             }
             /* read using demand paging if needed */
-            numr = ffReadFile( (char *) NAME_BASE, 1, ChunkSize, fid );
+            numr = ffReadFile( (vm_address_t) NAME_BASE, 1, ChunkSize, fid );
             if( numr != ChunkSize ) goto read_error;
             BytesLeft -= ChunkSize;
 #endif /* PF_NO_SHELL */
@@ -710,7 +710,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
                 goto error;
             }
             /* read using demand paging if needed */
-            numr = ffReadFile( (uint8_t *) CODE_BASE, 1, ChunkSize, fid );
+            numr = ffReadFile( (vm_address_t) CODE_BASE, 1, ChunkSize, fid );
             if( numr != ChunkSize ) goto read_error;
             BytesLeft -= ChunkSize;
             break;

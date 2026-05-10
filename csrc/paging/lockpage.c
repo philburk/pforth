@@ -90,7 +90,7 @@ void pfResetLockedMemory(void) {
     }
 }
 
-uint8_t *pfLockMemoryInternal(vm_address_t vp, uint32_t numBytes, int writable) {
+static uint8_t *pfLockMemoryInternal(vm_address_t vp, uint32_t numBytes, int writable) {
     int i;
     struct RegionControlBlock *region = NULL;
     if (pfIsAddressInPagedMemory(vp) == 0) { /* not in paged memory so locking not needed */
@@ -133,11 +133,12 @@ uint8_t *pfLockMemoryReadWrite(vm_address_t vp, uint32_t numBytes) {
 }
 
 int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
-    if (vp == pp ) {
+    if (vp == PTR_TO_VMA(pp) ) {
         return 0; /* not paged memory */
     }
-    const size_t kPhysicalOffset = (((void *)&sLockedRegions[0].physical[0]) - ((void *)&sLockedRegions[0]));
-    struct RegionControlBlock *region = (struct RegionControlBlock *)(pp - kPhysicalOffset);
+    const size_t kPhysicalOffset = (((uint8_t *)&sLockedRegions[0].physical[0])
+                                    - ((uint8_t *)&sLockedRegions[0]));
+    struct RegionControlBlock *region = (struct RegionControlBlock *)(uintptr_t)(pp - kPhysicalOffset);
     if (region->magic != DP_MAGIC) {
         printf("ERROR: physical address was not in a region!\n");
         return -1;
@@ -147,8 +148,7 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
         return -1;
     }
     if (region->virtual != vp) {
-        printf("ERROR: virtual address did not match region, %p != %p!\n",
-               region->virtual, vp);
+        printf("ERROR: virtual address did not match region\n");
         return -1;
     }
     if (region->writable != 0) {
@@ -161,7 +161,7 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
             return -1;
         }
     }
-    region->virtual = NULL;
+    region->virtual = PF_VM_NULL;
     region->length = 0;
     region->locked = 0;
     region->writable = 0;
@@ -288,7 +288,7 @@ vm_address_t pfSetVirtualMemory(vm_address_t destination,
         }
         return destination;
     } else {
-        return pfSetMemory(destination, value, numBytes);
+        return PTR_TO_VMA(pfSetMemory((void *)destination, value, numBytes));
     }
 }
 
