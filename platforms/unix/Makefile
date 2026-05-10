@@ -69,6 +69,9 @@ ASAN ?= 0
 # Set ASANOPTS based on ASAN value
 ifeq ($(ASAN),1)
     ASANOPTS = -fsanitize=address
+    ifneq ($(UNAME),Darwin)
+        LDADD += -latomic
+    endif
 else
     ASANOPTS =
 endif
