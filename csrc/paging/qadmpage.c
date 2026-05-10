@@ -27,6 +27,7 @@
 
 PFQA_INSTANTIATE_GLOBALS;
 
+
 static int pfQaTestAllocate(void) {
     printf("pfQaDemandPaging : pfQaTestAllocate\n");
     pfResetPagedMemory();
@@ -38,8 +39,8 @@ static int pfQaTestAllocate(void) {
     ASSERT_EQ((vm2 - vm1), DP_ALIGNMENT_SIZE);
 
     int x = 0;
-    ASSERT_EQ(pfIsAddressInPagedMemory((vm_address_t)&x), 0);
-    ASSERT_EQ(pfIsAddressInPagedMemory((vm_address_t)(vm2 + 5)), 1);
+    ASSERT_EQ(pfIsAddressInPagedMemory(PTR_TO_VMA(&x)), 0);
+    ASSERT_EQ(pfIsAddressInPagedMemory((vm2 + 5)), 1);
     return 0;
 error:
     return 1;
@@ -128,7 +129,7 @@ static int pfQaTestRegionLock(void) {
     ASSERT_NE(0, vm1);
 
     uint8_t *pm1 = pfLockMemoryReadWrite(vm1, kBufferSize);
-    ASSERT_NE(pm1, NULL);
+    ASSERT_NE(PTR_TO_VMA(pm1), PF_VM_NULL);
     for (i = 0; i < kBufferSize; i++) {
         pm1[i] = i;
     }
@@ -136,7 +137,7 @@ static int pfQaTestRegionLock(void) {
     ASSERT_EQ(0, result);
 
     const uint8_t *pm2 = pfLockMemoryReadOnly(vm1, kBufferSize);
-    ASSERT_NE(pm2, NULL);
+    ASSERT_NE(PTR_TO_VMA(pm2), PF_VM_NULL);
     for (i = 0; i < kBufferSize; i++) {
         ASSERT_EQ(pm2[i], i);
     }
@@ -187,7 +188,7 @@ static int pfQaTestReadFileStandard(size_t numBytes) {
     int i;
     printf("pfQaDemandPaging : pfQaCheckReadFile\n");
     FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
-    ASSERT_NE(NULL, fid);
+    ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
     while (numBytes > 0) {
         size_t bytesToRead = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
         size_t result = sdReadFile(buffer, 1, (int32_t) bytesToRead, fid); /* use stdio */
@@ -211,9 +212,9 @@ static int pfQaTestReadFilePaging(void) {
     cell_t result = pfQaTestCreateFile(kBytesToRead);
     ASSERT_EQ(0, result);
     vm_address_t vm1 = pfAllocatePagedMemory(kBytesToRead);
-    ASSERT_NE(NULL, vm1);
+    ASSERT_NE(PF_VM_NULL, vm1);
     FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
-    ASSERT_NE(NULL, fid);
+    ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
     result = ffReadFile(vm1, 1, kBytesToRead, fid); /* use demand paging */
     ASSERT_EQ(kBytesToRead, result);
     for (i = 0; i < kBytesToRead; i++) {
@@ -233,12 +234,12 @@ static int pfQaTestWriteFilePaging(void) {
     cell_t result = pfQaTestCreateFile(kBytesToWrite);
     ASSERT_EQ(0, result);
     vm_address_t vm1 = pfAllocatePagedMemory(kBytesToWrite);
-    ASSERT_NE(NULL, vm1);
+    ASSERT_NE(PF_VM_NULL, vm1);
     for (i = 0; i < kBytesToWrite; i++) {
         DP_STORE_U8((vm1 + i), (i % 100));
     }
     FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
-    ASSERT_NE(NULL, fid);
+    ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
     result = ffWriteFile(vm1, 1, kBytesToWrite, fid); /* use demand paging */
     ASSERT_EQ(kBytesToWrite, result);
     sdCloseFile(fid);
@@ -259,7 +260,7 @@ static int pfQaTestSetVirtualMemory(void) {
     const int smallSize = 234;
     const int smallOffset = 571;
     vm_address_t vm1 = pfAllocatePagedMemory(largeSize);
-    ASSERT_NE(NULL, vm1);
+    ASSERT_NE(PF_VM_NULL, vm1);
     dest = pfSetVirtualMemory(vm1, 0x5A, largeSize);
     ASSERT_EQ(dest, vm1);
     dest = pfSetVirtualMemory(vm1 + smallOffset, 0x3C, smallSize);

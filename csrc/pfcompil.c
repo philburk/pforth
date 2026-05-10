@@ -1092,7 +1092,7 @@ FileStream * ffConvertSourceIDToStream( cell_t id )
     }
     else
     {
-        stream = (FileStream *) id;
+        stream = (FileStream *) (uintptr_t) id;
     }
     return stream;
 }

@@ -662,7 +662,7 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
             else
             {
                 gVarContext = 0;
-                gCurrentDictionary->dic_HeaderPtr = (ucell_t)NULL;
+                gCurrentDictionary->dic_HeaderPtr = PF_VM_NULL;
             }
             gCurrentDictionary->dic_CodePtr = (vm_address_t) CODEREL_TO_ABS(sd->sd_RelCodePtr);
             gNumPrimitives = sd->sd_NumPrimitives;  /* Must match compiled dictionary. */

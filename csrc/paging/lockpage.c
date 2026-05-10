@@ -55,7 +55,7 @@ vm_address_t pfCopyToVirtualMemory(vm_address_t destination,
 }
 
 void pfFreeVirtualMemory(vm_address_t address) {
-    pfFreeMem((void *)address);
+    pfFreeMem((void *) address);
 }
 
 vm_address_t pfSetVirtualMemory(vm_address_t destination,
@@ -94,7 +94,7 @@ static uint8_t *pfLockMemoryInternal(vm_address_t vp, uint32_t numBytes, int wri
     int i;
     struct RegionControlBlock *region = NULL;
     if (pfIsAddressInPagedMemory(vp) == 0) { /* not in paged memory so locking not needed */
-        return (uint8_t *) vp;
+        return (uint8_t *) (uintptr_t) vp;
     }
     PF_ASSERT(numBytes <= DP_MAX_REGION_SIZE);
 
@@ -168,76 +168,77 @@ int pfUnlockMemory(vm_address_t vp, const uint8_t *pp) {
     return 0;
 }
 
-uint8_t  pfFetchVirtualU8(const uint8_t *address) {
-    uint8_t value;
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint8_t));
+uint8_t  pfFetchVirtualU8(vm_address_t address) {
+    if (pfIsAddressInPagedMemory(address)) {
+        uint8_t value;
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(value));
         return value;
     } else {
-        return *address;
+        return *((uint8_t *) (uintptr_t) address);
     }
+}
 
-}
-uint16_t pfFetchVirtualU16(const uint16_t *address) {
-    uint16_t value;
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(uint16_t));
+uint16_t pfFetchVirtualU16(vm_address_t address) {
+    if (pfIsAddressInPagedMemory(address)) {
+        uint16_t value;
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(value));
         return value;
     } else {
-        return *address;
+        return *((uint16_t *) (uintptr_t)  address);
     }
 }
-cell_t   pfFetchVirtualCell(const cell_t *address) {
-    cell_t value;
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(cell_t));
+
+cell_t   pfFetchVirtualCell(vm_address_t address) {
+    if (pfIsAddressInPagedMemory(address)) {
+        cell_t value;
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(value));
         return value;
     } else {
-        return *address;
+        return *((cell_t *) (uintptr_t)  address);
     }
 }
 
 #ifdef PF_SUPPORT_FP
-PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address) {
-    PF_FLOAT value;
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(PF_FLOAT));
+PF_FLOAT pfFetchVirtualFloat(vm_address_t address) {
+    if (pfIsAddressInPagedMemory(address)) {
+        PF_FLOAT value;
+        pfReadPagedMemory(&value, (paging_address_t) address, sizeof(value));
         return value;
     } else {
-        return *address;
+        return *((PF_FLOAT *) (uintptr_t)  address);
     }
 }
 #endif /* PF_SUPPORT_FP */
 
-void pfStoreVirtualU8(uint8_t *address, uint8_t value) {
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfWritePagedMemory((paging_address_t) address, &value, sizeof(uint8_t));
+void pfStoreVirtualU8(vm_address_t address, uint8_t value) {
+    if (pfIsAddressInPagedMemory(address)) {
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(value));
     } else {
-        *address = value;
+        *((uint8_t *) (uintptr_t)  address) = value;
     }
 }
 
-void pfStoreVirtualU16(uint16_t *address, uint16_t value) {
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfWritePagedMemory((paging_address_t) address, &value, sizeof(uint16_t));
+void pfStoreVirtualU16(vm_address_t address, uint16_t value) {
+    if (pfIsAddressInPagedMemory(address)) {
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(value));
     } else {
-        *address = value;
+        *((uint16_t *) (uintptr_t)  address) = value;
     }
 }
-void pfStoreVirtualCell(cell_t *address, cell_t value) {
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfWritePagedMemory((paging_address_t) address, &value, sizeof(cell_t));
+void pfStoreVirtualCell(vm_address_t address, cell_t value) {
+    if (pfIsAddressInPagedMemory(address)) {
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(value));
     } else {
-        *address = value;
+        *((cell_t *) (uintptr_t) address) = value;
     }
 }
 
 #ifdef PF_SUPPORT_FP
-void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value) {
-    if (pfIsAddressInPagedMemory((vm_address_t)address)) {
-        pfWritePagedMemory((paging_address_t) address, &value, sizeof(PF_FLOAT));
+void pfStoreVirtualFloat(vm_address_t address, PF_FLOAT value) {
+    if (pfIsAddressInPagedMemory(address)) {
+        pfWritePagedMemory((paging_address_t) address, &value, sizeof(value));
     } else {
-        *address = value;
+        *((PF_FLOAT *) (uintptr_t) address) = value;
     }
 }
 #endif /* PF_SUPPORT_FP */
@@ -249,7 +250,7 @@ void *pfCopyFromVirtualMemory(void *destination,
         pfReadPagedMemory(destination, (paging_address_t) source, numBytes); /* TODO check result */
         return (void *) destination;
     } else {
-        return pfCopyMemory(destination, (void *) source, numBytes);
+        return pfCopyMemory(destination, (void *) (uintptr_t) source, numBytes);
     }
 }
 
@@ -260,7 +261,7 @@ vm_address_t pfCopyToVirtualMemory(vm_address_t destination,
         pfWritePagedMemory((paging_address_t) destination, source, numBytes); /* TODO check result */
         return destination;
     } else {
-        return (vm_address_t) pfCopyMemory((void *) destination, source, numBytes);
+        return PTR_TO_VMA(pfCopyMemory((void *) (uintptr_t) destination, source, numBytes));
     }
 }
 
@@ -268,7 +269,7 @@ void pfFreeVirtualMemory(vm_address_t address) {
     if (pfIsAddressInPagedMemory(address)) {
         pfFreePagedMemory((paging_address_t) address);
     } else {
-        pfFreeMem((void *) address);
+        pfFreeMem((void *) (uintptr_t) address);
     }
 }
 
@@ -288,7 +289,7 @@ vm_address_t pfSetVirtualMemory(vm_address_t destination,
         }
         return destination;
     } else {
-        return PTR_TO_VMA(pfSetMemory((void *)destination, value, numBytes));
+        return PTR_TO_VMA(pfSetMemory((void *) (uintptr_t) destination, value, numBytes));
     }
 }
 

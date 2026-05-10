@@ -69,7 +69,7 @@ vm_address_t pfAllocatePagedMemory(const ucell_t numBytes) {
                (int)numBytes, (int)(PF_DP_AVAILABLE_SPACE - sDpNextAvailable));
         return 0;
     }
-    vm_address_t virtualAddress = (vm_address_t) &sFakeSerialRAM[sDpNextAvailable];
+    vm_address_t virtualAddress = PTR_TO_VMA(&sFakeSerialRAM[sDpNextAvailable]);
     sDpNextAvailable = finalAvailable;
     return PF_DP_MUNGE(virtualAddress);
 }

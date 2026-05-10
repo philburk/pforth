@@ -47,28 +47,28 @@ typedef ucell_t paging_address_t; /** an address in paged memory */
 #else /* PF_DEMAND_PAGING */
 
 /* Use either physical or paged memory. */
-#define DP_FETCH_U8(address)    pfFetchVirtualU8((const uint8_t *)(address))
-#define DP_FETCH_U16(address)   pfFetchVirtualU16((const uint16_t *)(address))
-#define DP_FETCH_CELL(address)  pfFetchVirtualCell((const cell_t *)(address))
-#define DP_FETCH_FLOAT(address) pfFetchVirtualFloat((const PF_FLOAT *)(address))
+#define DP_FETCH_U8(address)    pfFetchVirtualU8(PTR_TO_VMA(address))
+#define DP_FETCH_U16(address)   pfFetchVirtualU16(PTR_TO_VMA(address))
+#define DP_FETCH_CELL(address)  pfFetchVirtualCell(PTR_TO_VMA(address))
+#define DP_FETCH_FLOAT(address) pfFetchVirtualFloat(PTR_TO_VMA(address))
 
-#define DP_STORE_U8(address, value)    pfStoreVirtualU8(((uint8_t *)(address)), (uint8_t)(value))
-#define DP_STORE_U16(address, value)   pfStoreVirtualU16(((uint16_t *)(address)), (uint16_t)(value))
-#define DP_STORE_CELL(address, value)  pfStoreVirtualCell(((cell_t *)(address)), (cell_t)(value))
-#define DP_STORE_FLOAT(address, value) pfStoreVirtualFloat(((PF_FLOAT *)(address)), (PF_FLOAT)(value))
+#define DP_STORE_U8(address, value)    pfStoreVirtualU8(PTR_TO_VMA(address), (uint8_t)(value))
+#define DP_STORE_U16(address, value)   pfStoreVirtualU16(PTR_TO_VMA(address), (uint16_t)(value))
+#define DP_STORE_CELL(address, value)  pfStoreVirtualCell(PTR_TO_VMA(address), (cell_t)(value))
+#define DP_STORE_FLOAT(address, value) pfStoreVirtualFloat(PTR_TO_VMA(address), (PF_FLOAT)(value))
 #endif /* PF_DEMAND_PAGING */
 
-uint8_t  pfFetchVirtualU8(const uint8_t *address);
-uint16_t pfFetchVirtualU16(const uint16_t *address);
-cell_t   pfFetchVirtualCell(const cell_t *address);
+uint8_t  pfFetchVirtualU8(vm_address_t address);
+uint16_t pfFetchVirtualU16(vm_address_t address);
+cell_t   pfFetchVirtualCell(vm_address_t address);
 
-void pfStoreVirtualU8(uint8_t *address, uint8_t value);
-void pfStoreVirtualU16(uint16_t *address, uint16_t value);
-void pfStoreVirtualCell(cell_t *address, cell_t value);
+void pfStoreVirtualU8(vm_address_t address, uint8_t value);
+void pfStoreVirtualU16(vm_address_t address, uint16_t value);
+void pfStoreVirtualCell(vm_address_t address, cell_t value);
 
 #ifdef PF_SUPPORT_FP
-PF_FLOAT pfFetchVirtualFloat(const PF_FLOAT *address);
-void pfStoreVirtualFloat(PF_FLOAT *address, PF_FLOAT value);
+PF_FLOAT pfFetchVirtualFloat(vm_address_t address);
+void pfStoreVirtualFloat(vm_address_t address, PF_FLOAT value);
 #endif /* PF_SUPPORT_FP */
 
 /* Memory region locking and unlocking

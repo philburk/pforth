@@ -128,7 +128,7 @@
     ffDotS( ); \
     LOAD_REGISTERS;
 
-#define DO_VAR(varname) { PUSH_TOS; TOS = (cell_t) &varname; }
+#define DO_VAR(varname) { PUSH_TOS; TOS = PTR_TO_VMA(&varname); }
 
 #ifdef PF_SUPPORT_FP
 #define M_THROW(err) \
@@ -482,14 +482,14 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
             {
 /* This was broken into two steps because different compilers incremented
 ** CellPtr before or after the XOR step. */
-                Temp = (cell_t)CellPtr ^ PF_MEMORY_VALIDATOR;
+                Temp = (cell_t) (uintptr_t) CellPtr ^ PF_MEMORY_VALIDATOR;
                 *CellPtr++ = Temp;
-                M_PUSH( (cell_t) CellPtr );
+                M_PUSH(PTR_TO_VMA(CellPtr));
                 TOS = 0;
             }
             else
             {
-                M_PUSH( 0 );
+                M_PUSH(0);
                 TOS = -1;  /* FIXME Fix error code. */
             }
             endcase;
@@ -1631,10 +1631,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                     {
                         /* Copy memory including validation. */
                         pfCopyMemory( (char *) CellPtr, (char *) FreePtr, TOS + sizeof(cell_t) );
-                        *CellPtr = (cell_t)(((ucell_t)CellPtr) ^ (ucell_t)PF_MEMORY_VALIDATOR);
+                        *CellPtr = (cell_t)(((uintptr_t)CellPtr) ^ (ucell_t)PF_MEMORY_VALIDATOR);
                         /* 090218 - Fixed bug that was incrementing the address twice. Thanks Reinhold Straub. */
                         /* Increment past validator to user address. */
-                        M_PUSH( (cell_t) (CellPtr + 1) );
+                        M_PUSH(PTR_TO_VMA(CellPtr + 1));
                         TOS = 0; /* Result code. */
                         /* Mark old cell as dead so we can't free it twice. */
                         FreePtr[0] = 0xDeadBeef;
@@ -1643,7 +1643,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                     else
                     {
                         /* 090218 - Fixed bug, was returning zero. */
-                        M_PUSH( Addr1 );
+                        M_PUSH(PTR_TO_VMA(Addr1));
                         TOS = -4;  /* FIXME Fix error code. */
                     }
                 }
@@ -1656,11 +1656,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 */
         case ID_RP_FETCH:    /* ( -- rp , address of top of return stack ) */
             PUSH_TOS;
-            TOS = (cell_t)TORPTR;  /* value before calling RP@ */
+            TOS = PTR_TO_VMA(TORPTR);  /* value before calling RP@ */
             endcase;
 
         case ID_RP_STORE:    /* ( rp -- , address of top of return stack ) */
-            TORPTR = (cell_t *) TOS;
+            TORPTR = (cell_t *) (uintptr_t) TOS;
             M_DROP;
             endcase;
 
@@ -1720,11 +1720,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_SP_FETCH:    /* ( -- sp , address of top of stack, sorta ) */
             PUSH_TOS;
-            TOS = (cell_t)STKPTR;
+            TOS = PTR_TO_VMA(STKPTR);
             endcase;
 
         case ID_SP_STORE:    /* ( sp -- , address of top of stack, sorta ) */
-            STKPTR = (cell_t *) TOS;
+            STKPTR = (cell_t *) (uintptr_t) TOS;
             M_DROP;
             endcase;
 
@@ -1971,7 +1971,7 @@ DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
             ERR("pfCatch: Unrecognised token = 0x");
             ffDotHex(Token);
             ERR(" at 0x");
-            ffDotHex((cell_t) InsPtr);
+            ffDotHex(PTR_TO_VMA(InsPtr));
             EMIT_CR;
             InsPtr = 0;
             endcase;
