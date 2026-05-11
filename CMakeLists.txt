@@ -70,7 +70,7 @@ add_custom_command(OUTPUT ${PFORTH_DIC}
   COMMAND ./${PFORTH_EXE} -i ${PFORTH_FTH_DIR}/system.fth
   WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
   DEPENDS pforth
-  COMMENT Building pforth.dic
+  COMMENT "Building pforth.dic"
   VERBATIM
   )
 add_custom_target(pforth_dic DEPENDS ${PFORTH_DIC})
@@ -83,7 +83,7 @@ add_custom_command(OUTPUT ${PFORTH_DIC_HEADER}
   COMMAND ${CMAKE_COMMAND} -E rename pfdicdat.h ../csrc/pfdicdat.h
   WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
   DEPENDS pforth_dic
-  COMMENT Building pfdicdat.h
+  COMMENT "Building pfdicdat.h"
   VERBATIM
   )
 add_custom_target(pforth_dic_header DEPENDS ${PFORTH_DIC_HEADER})
