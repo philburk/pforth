@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    name: Build 32-bit (PAGING=${{ matrix.demand_paging }}, FLOAT=${{ matrix.support_fp }})
+    name: Build 32-bit (PAGING=${{ matrix.demand_paging }}, FLOAT=${{ matrix.support_fp }}, CELL=${{ matrix.cell_size }})
     # This uses a Unix Makefile and should run on Linux and Mac
     runs-on: ubuntu-latest
 
@@ -21,6 +21,7 @@ jobs:
       matrix:
         demand_paging: [0, 1]
         support_fp: [0, 1]
+        cell_size: [4, 8]
 
     steps:
     - uses: actions/checkout@v2
@@ -30,5 +31,5 @@ jobs:
 
     - name: Build and Test
       working-directory: ${{github.workspace}}/platforms/unix
-      run: make test WIDTHOPT=-m32 ASAN=1 XCPPFLAGS="-DPF_SUPPORT_FP=${{ matrix.support_fp }} -DPF_DEMAND_PAGING=${{ matrix.demand_paging }} -D_DEFAULT_SOURCE -D_GNU_SOURCE"
+      run: make test WIDTHOPT=-m32 ASAN=1 XCPPFLAGS="-DPF_SUPPORT_FP=${{ matrix.support_fp }} -DPF_DEMAND_PAGING=${{ matrix.demand_paging }} -DPF_CELL_SIZE=${{ matrix.cell_size }} -D_DEFAULT_SOURCE -D_GNU_SOURCE"
 
