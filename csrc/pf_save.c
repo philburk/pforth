@@ -819,13 +819,13 @@ PForthDictionary pfLoadStaticDictionary( void )
 #if PF_DEMAND_PAGING
     pfWritePagedMemory((paging_address_t) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames));
 #else
-    pfCopyMemory( (uint8_t *) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
+    pfCopyMemory((uint8_t *) (uintptr_t) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames));
 #endif
 
 #if PF_DEMAND_PAGING
     pfWritePagedMemory((paging_address_t) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));
 #else
-    pfCopyMemory((uint8_t *) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));
+    pfCopyMemory((uint8_t *) (uintptr_t) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));
 #endif
 
     DBUG(("Static data copied to newly allocated dictionaries.\n"));

@@ -1056,11 +1056,11 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_FILE_CLOSE: /* ( fid -- ior ) */
-            TOS = sdCloseFile( (FileStream *) TOS );
+            TOS = sdCloseFile( (FileStream *) (uintptr_t) TOS );
             endcase;
 
         case ID_FILE_READ: /* ( addr len fid -- u2 ior ) */
-            FileID = (FileStream *) TOS;
+            FileID = (FileStream *) (uintptr_t) TOS;
             Scratch = M_POP;
             {
                 vm_address_t vAddr = (vm_address_t) M_POP;
@@ -1075,7 +1075,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         /* TODO Why does this crash when passed an illegal FID? */
         case ID_FILE_SIZE: /* ( fid -- ud ior ) */
             /* Determine file size by seeking to the end and returning position. */
-            FileID = (FileStream *) TOS;
+            FileID = (FileStream *) (uintptr_t) TOS;
             {
                 file_offset_t endposition = -1;
                 file_offset_t original = sdTellFile( FileID );
@@ -1103,7 +1103,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             endcase;
 
         case ID_FILE_WRITE: /* ( addr len fid -- ior ) */
-            FileID = (FileStream *) TOS;
+            FileID = (FileStream *) (uintptr_t) TOS;
             Scratch = M_POP;
             {
                 vm_address_t vAddr = (vm_address_t) M_POP;
@@ -1117,7 +1117,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 file_offset_t offset;
                 cell_t offsetHigh;
                 cell_t offsetLow;
-                FileID = (FileStream *) TOS;
+                FileID = (FileStream *) (uintptr_t) TOS;
                 offsetHigh = M_POP;
                 offsetLow = M_POP;
                 /* We do not support double precision file offsets in pForth.
@@ -1136,7 +1136,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
         case ID_FILE_POSITION: /* ( fid -- ud ior ) */
             {
                 file_offset_t position;
-                FileID = (FileStream *) TOS;
+                FileID = (FileStream *) (uintptr_t) TOS;
                 position = sdTellFile( FileID );
                 if (position < 0)
                 {
@@ -1175,7 +1175,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 	case ID_FILE_FLUSH: /* ( fileid -- ior ) */
 	    {
-		FileStream *Stream = (FileStream *) TOS;
+		FileStream *Stream = (FileStream *) (uintptr_t) TOS;
 		TOS = (sdFlushFile( Stream ) == 0) ? 0 : THROW_FLUSH_FILE;
 	    }
 	    endcase;
@@ -1198,7 +1198,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 	case ID_FILE_RESIZE: /* ( ud fileid -- ior ) */
 	    {
-		FileStream *File = (FileStream *) TOS;
+		FileStream *File = (FileStream *) (uintptr_t) TOS;
 		ucell_t SizeHi = (ucell_t) M_POP;
 		ucell_t SizeLo = (ucell_t) M_POP;
 		TOS = ( UdIsUint64( SizeHi )
@@ -1239,7 +1239,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_FINDNFA: /* ( $name -- $addr 0 | nfa -1 | nfa 1 , find NFA in dictionary ) */
             {
-                vm_address_t nfa = (vm_address_t) NULL;
+                vm_address_t nfa = PF_VM_NULL;
                 vm_address_t vName = (vm_address_t) TOS;
                 cell_t totalLength = DP_FETCH_U8(vName) + 1; /* length including count */
                 const char *pAddr = (const char *) pfLockMemoryReadOnly(vName, totalLength);
@@ -1267,9 +1267,10 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             }
             else
             {
-                CellPtr = (cell_t *) TOS;
+                CellPtr = (cell_t *) (uintptr_t) TOS;
                 CellPtr--;
-                if( ((ucell_t)*CellPtr) != ((ucell_t)CellPtr ^ PF_MEMORY_VALIDATOR))
+                if( ((ucell_t)*CellPtr) !=
+                    (((ucell_t) (uintptr_t) CellPtr) ^ PF_MEMORY_VALIDATOR))
                 {
                     TOS = -2; /* FIXME error code */
                 }
@@ -1312,7 +1313,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
 #ifndef PF_NO_SHELL
         case ID_INCLUDE_FILE:
-            FileID = (FileStream *) TOS;
+            FileID = (FileStream *) (uintptr_t) TOS;
             M_DROP;    /* Drop now so that INCLUDE has a clean stack. */
             SAVE_REGISTERS;
             Scratch = ffIncludeFile( FileID );
@@ -1668,7 +1669,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 
         case ID_R_ZERO:    /* ( -- rbase , base of return stack ) */
             PUSH_TOS;
-            TOS = (cell_t)gCurrentTask->td_ReturnBase;
+            TOS = PTR_TO_VMA(gCurrentTask->td_ReturnBase);
             endcase;
 
         case ID_ROLL: /* ( xu xu-1 xu-1 ... x0 u -- xu-1 xu-1 ... x0 xu ) */

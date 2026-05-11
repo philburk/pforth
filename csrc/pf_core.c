@@ -100,7 +100,7 @@ static void pfInit( void )
     gCurrentDictionary = NULL;
     gNumPrimitives = 0;
     gLocalCompiler_XT = 0;
-    gVarContext = (cell_t)NULL;   /* Points to last name field. */
+    gVarContext = PF_VM_NULL;   /* Points to last name field. */
     gVarState = 0;        /* 1 if compiling. */
     gVarByeCode = 0;      /* BYE-CODE */
     gVarEcho = 0;         /* Echo input. */
@@ -193,7 +193,7 @@ nomem:
 ThrowCode pfExecIfDefined( const char *CString )
 {
     ThrowCode result = 0;
-    if( NAME_BASE != (cell_t)NULL)
+    if( NAME_BASE != PF_VM_NULL)
     {
         ExecToken  XT;
         if( ffFindC( CString, &XT ) )
@@ -214,8 +214,8 @@ void pfDeleteDictionary( PForthDictionary dictionary )
 
     if( dic->dic_Flags & PF_DICF_ALLOCATED_SEGMENTS )
     {
-        FREE_VAR( dic->dic_HeaderBaseUnaligned );
-        FREE_VAR( dic->dic_CodeBaseUnaligned );
+        FREE_VM_VAR( dic->dic_HeaderBaseUnaligned );
+        FREE_VM_VAR( dic->dic_CodeBaseUnaligned );
     }
     pfFreeMem( dic );
 }
