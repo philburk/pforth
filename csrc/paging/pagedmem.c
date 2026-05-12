@@ -31,7 +31,6 @@
 #define PF_DP_AVAILABLE_SPACE   (512*1024)
 #endif
 
-static uint8_t sFakeSerialRAM[PF_DP_AVAILABLE_SPACE];
 static cell_t sDpNextAvailable = 0;
 #define DP_ALIGNMENT_MASK (DP_ALIGNMENT_SIZE - 1)
 
@@ -39,22 +38,56 @@ static cell_t sDpNextAvailable = 0;
  * This will help us catch areas where we need to use functions like pfLockMemoryReadWrite().
  * You may need to use a different mask on your system depending on the memory layout.
  */
-#if 0
-#define PF_DP_MUNGE_KEY  (0)
-#elif (PF_POINTER_SIZE == 8)
-#define PF_DP_MUNGE_KEY  (0x005A000000000000)
-#elif (PF_POINTER_SIZE == 4)
-#define PF_DP_MUNGE_KEY  (0x50000000)
-#endif
+#define MUNGE_BY_OFFSET 0
+#if (MUNGE_BY_OFFSET)
+    /* Allocate twice the needed space. Munged addresses point to the high half. */
+    static uint8_t sFakeSerialRAM[2 * PF_DP_AVAILABLE_SPACE];
+    /* Munge by offsetting the address. This might be helpful if high address bits are ignored,
+     * causing the XOR bits to be ignored. */
+    #define PF_DP_MUNGE(addr) ((vm_address_t)((PTR_TO_VMA(addr)) + PF_DP_AVAILABLE_SPACE))
+    #define PF_DP_UNMUNGE(paging_addr) ((uintptr_t)((paging_addr) - PF_DP_AVAILABLE_SPACE))
+    #define DEAD_MARKER  ((uint8_t)0x00)
+#else
+    static uint8_t sFakeSerialRAM[PF_DP_AVAILABLE_SPACE];
+    #if (PF_POINTER_SIZE == 8)
+    #define PF_DP_MUNGE_KEY  (0x005A000000000000)
+    #elif (PF_POINTER_SIZE == 4)
+    #define PF_DP_MUNGE_KEY  (0x50000000)
+    #endif
 
-#define PF_DP_MUNGE(addr) ((vm_address_t)((PTR_TO_VMA(addr)) ^ PF_DP_MUNGE_KEY))
-#define PF_DP_UNMUNGE(paging_addr) ((uintptr_t)((paging_addr) ^ PF_DP_MUNGE_KEY))
+    #define PF_DP_MUNGE(addr) ((vm_address_t)((PTR_TO_VMA(addr)) ^ PF_DP_MUNGE_KEY))
+    #define PF_DP_UNMUNGE(paging_addr) ((uintptr_t)((paging_addr) ^ PF_DP_MUNGE_KEY))
+#endif
 
 void pfResetPagedMemory(void) {
     printf("pfResetPagedMemory: cell = %d\n", (int)sizeof(cell_t));
     sDpNextAvailable = 0;
+
+#if (MUNGE_BY_OFFSET)
+    /* Fill memory that should not be touched with a marker. */
+    memset(&sFakeSerialRAM[PF_DP_AVAILABLE_SPACE], DEAD_MARKER, PF_DP_AVAILABLE_SPACE);
+#endif
 }
 
+int pfCheckPagedMemory(void) {
+    /* Check to see if anything wrote to the high memory. */
+#if (MUNGE_BY_OFFSET)
+    uint32_t i;
+    int numErrors = 0;
+    uint8_t *ram = &sFakeSerialRAM[PF_DP_AVAILABLE_SPACE]; /* point to high unused half */
+    for (i = 0; i < PF_DP_AVAILABLE_SPACE; i++) {
+        uint8_t value = *ram++;
+        if (value != DEAD_MARKER) {
+            printf("pfCheckPagedMemory: bad byte 0x%02X at offset %u\n", value, i);
+            numErrors++;
+        }
+    }
+    printf("pfCheckPagedMemory: found %d errors\n", numErrors);
+    return numErrors;
+#else
+    return 0;
+#endif
+}
 int pfIsAddressInPagedMemory(vm_address_t p) {
     uintptr_t addr = PF_DP_UNMUNGE(p);
     cell_t offset = (uint8_t *)addr - sFakeSerialRAM;

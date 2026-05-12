@@ -592,6 +592,10 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
 
     pfTerm();
 
+#if PF_DEMAND_PAGING
+    pfCheckPagedMemory();
+#endif
+    
 #ifdef PF_USER_TERM
     PF_USER_TERM;
 #endif

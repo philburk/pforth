@@ -47,6 +47,14 @@ int pfIsAddressInPagedMemory(vm_address_t p);
  */
 void pfResetPagedMemory(void);
 
+/**
+ * Check the paged memory for corruption.
+ * This is only implemented for the memory simulator.
+ * This can be a NOOP in a real implementation.
+ * @return zero if memory untouched else number of bad bytes
+ */
+int pfCheckPagedMemory(void);
+
 /** Allocate demand paged memory from SPI or other storage.
  * Memory blocks will be aligned on DP_ALIGNMENT_SIZE byte boundaries.
  */

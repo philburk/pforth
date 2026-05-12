@@ -157,7 +157,6 @@ error:
 
 #define PF_DP_TEST_PATHNAME "/tmp/pf_scratch_file"
 
-
 static cell_t pfQaTestCreateFile(size_t numBytes) {
     uint8_t buffer[100];
     int i;
@@ -281,10 +280,8 @@ error:
 }
 
 int pfQaDemandPaging(void) {
-    printf("pfQaDemandPaging\n");
-
+    printf("pfQaDemandPaging called\n");
     ASSERT_EQ(sizeof(vm_address_t), sizeof(cell_t));
-
     ASSERT_EQ(pfQaTestAllocate(), 0);
     ASSERT_EQ(pfQaTestReadWrite(), 0);
     ASSERT_EQ(pfQaTestRegionLock(), 0);
@@ -295,10 +292,10 @@ int pfQaDemandPaging(void) {
     ASSERT_EQ(pfQaTestReadFilePaging(), 0);
     ASSERT_EQ(pfQaTestWriteFilePaging(), 0);
     ASSERT_EQ(pfQaTestSetVirtualMemory(), 0);
-
     printf("pfQaDemandPaging ended\n");
 
 error:
+    pfResetPagedMemory();
     PFQA_PRINT_RESULT;
     return PFQA_EXIT_RESULT;
 }

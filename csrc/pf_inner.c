@@ -1318,7 +1318,8 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
             SAVE_REGISTERS;
             Scratch = ffIncludeFile( FileID );
             LOAD_REGISTERS;
-            if( Scratch ) M_THROW(Scratch)
+            if( Scratch ) M_THROW(Scratch);
+            pfCheckPagedMemory();
             endcase;
 #endif  /* !PF_NO_SHELL */
 
