@@ -26,16 +26,15 @@
 extern "C" {
 #endif
 
-void   pfInitGlobals( void );
+void pfInitGlobals(void);
 
-void   pfDebugMessage( const char *CString );
-void   pfDebugPrintDecimalNumber( cell_t n );
+void pfDebugMessage(const char *CString);
+void pfDebugPrintDecimalNumber(cell_t n);
 
-cell_t pfUnitTestText( void );
+cell_t pfUnitTestText(void);
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* _pf_core_h */

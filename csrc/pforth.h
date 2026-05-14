@@ -82,7 +82,7 @@ typedef ucell_t vm_address_t; /** an address that may be in physical or paged me
 #define PF_VM_NULL    PTR_TO_VMA(0)
 
 #ifndef PF_ASSERT_ENABLED
-#define PF_ASSERT_ENABLED 0
+#define PF_ASSERT_ENABLED 1
 #endif /* PF_ASSERT_ENABLED */
 
 #ifdef __cplusplus

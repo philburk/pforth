@@ -302,25 +302,26 @@ char *ConvertNumberToText( cell_t Num, cell_t Base, int32_t IfSigned, int32_t Mi
 */
 void DumpMemory(vm_address_t vAddr, cell_t cnt)
 {
+    const cell_t kLineSize = 16;
     cell_t lineIndex, byteIndex;
-    cell_t numLines = (cnt + 15) / 16;
+    cell_t numLines = (cnt + (kLineSize - 1)) / kLineSize; /* print whole last line */
     vm_address_t vPtr = vAddr;
 
     EMIT_CR;
 
     for (lineIndex=0; lineIndex<numLines; lineIndex++)
     {
-        const uint8_t *pAddr = (const uint8_t *) pfLockMemoryReadOnly(vPtr, cnt);
+        const uint8_t *pAddr = (const uint8_t *) pfLockMemoryReadOnly(vPtr, kLineSize);
 
         MSG( ConvertNumberToText( (cell_t) vPtr, 16, FALSE, 8 ) );
         MSG(": ");
-        for (byteIndex=0; byteIndex<16; byteIndex++)
+        for (byteIndex = 0; byteIndex < kLineSize; byteIndex++)
         {
             MSG( ConvertNumberToText( (cell_t) pAddr[byteIndex], 16, FALSE, 2 ) );
             EMIT(' ');
         }
         EMIT(' ');
-        for (byteIndex=0; byteIndex<16; byteIndex++)
+        for (byteIndex = 0; byteIndex < kLineSize; byteIndex++)
         {
             unsigned char c = (unsigned char) pAddr[byteIndex];
             if ((c < ' ') || (c > '}')) c = '.';
@@ -331,7 +332,7 @@ void DumpMemory(vm_address_t vAddr, cell_t cnt)
         pfUnlockMemory(vPtr, pAddr);
 
         EMIT_CR;
-        vPtr += 16;
+        vPtr += kLineSize;
     }
 }
 
