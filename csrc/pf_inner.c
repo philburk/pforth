@@ -1212,11 +1212,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
                 vm_address_t dstVAddr;
                 Temp = M_POP;    /* num */
                 dstVAddr = (vm_address_t) M_POP; /* dst */
-                for( Scratch=0; (ucell_t) Scratch < (ucell_t) Temp ; Scratch++ )
-                {
-                    DP_STORE_U8(dstVAddr, TOS);
-                    dstVAddr++;
-                }
+                pfSetVirtualMemory(dstVAddr, TOS, (uint32_t) Temp);
                 M_DROP;
             }
             endcase;

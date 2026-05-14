@@ -277,7 +277,7 @@ vm_address_t pfSetVirtualMemory(vm_address_t destination,
                          uint8_t value,
                          uint32_t numBytes) {
     if (pfIsAddressInPagedMemory(destination)) {
-        /* Set memory in blocks that will fit in locked regions. */
+        /* Set memory in blocks for faster writes. */
         vm_address_t vp = destination;
         uint8_t buffer[16];
         pfSetMemory(buffer, value, sizeof(buffer));
