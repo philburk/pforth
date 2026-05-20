@@ -25,9 +25,6 @@
 
 #if PF_DEMAND_PAGING
 
-PFQA_INSTANTIATE_GLOBALS;
-
-
 static int pfQaTestAllocate(void) {
     printf("pfQaDemandPaging : pfQaTestAllocate\n");
     pfResetPagedMemory();
@@ -281,6 +278,7 @@ error:
 
 int pfQaDemandPaging(void) {
     printf("pfQaDemandPaging called\n");
+    int savedNumFailed = pfQaNumFailed;
     ASSERT_EQ(sizeof(vm_address_t), sizeof(cell_t));
     ASSERT_EQ(pfQaTestAllocate(), 0);
     ASSERT_EQ(pfQaTestReadWrite(), 0);
@@ -297,7 +295,7 @@ int pfQaDemandPaging(void) {
 error:
     pfResetPagedMemory();
     PFQA_PRINT_RESULT;
-    return PFQA_EXIT_RESULT;
+    return pfQaNumFailed - savedNumFailed;
 }
 
 #endif /* PF_DEMAND_PAGING */

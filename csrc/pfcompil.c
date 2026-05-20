@@ -1149,9 +1149,12 @@ DBUGX(("readLineFromStream(0x%x, 0x%x, 0x%x)\n", buffer, len, stream ));
 }
 
 /**************************************************************
-** ( -- , fill Source from current stream )
-** Return 1 if successful, 0 for EOF, or a negative error.
-*/
+ * ( -- , fill Source from current stream )
+ * Sets CurrentTask->td_IN to zero.
+ * Sets gCurrentTask->td_SourceNum to length of line.
+ * Puts text at gCurrentTask->td_SourcePtr
+ * Return 1 if successful, 0 for EOF, or a negative error.
+ */
 cell_t ffRefill( void )
 {
     cell_t Num;
@@ -1181,8 +1184,10 @@ cell_t ffRefill( void )
     }
     else
     {
-        Num = readLineFromStream( (char *)(uintptr_t)gCurrentTask->td_SourcePtr, TIB_SIZE,
-            gCurrentTask->td_InputStream );
+        Num = readLineFromStream(
+                (char *)(uintptr_t)gCurrentTask->td_SourcePtr,
+                TIB_SIZE,
+                gCurrentTask->td_InputStream );
         if( Num == EOF )
         {
             Result = 0;

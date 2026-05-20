@@ -37,6 +37,7 @@
 ***************************************************************/
 
 #include "pf_all.h"
+#include "paging/unittest.h"
 #include "paging/qadmpage.h"
 
 /***************************************************************
@@ -75,9 +76,11 @@ cell_t          gVarReturnCode;   /* Returned to caller of Forth, eg. UNIX shell
 IncludeFrame    gIncludeStack[MAX_INCLUDE_DEPTH];
 cell_t          gIncludeIndex;
 
+PFQA_INSTANTIATE_GLOBALS;
+
 static void pfResetForthTask( void );
-static void pfInit( void );
-static void pfTerm( void );
+static void pfInitSystem( void );
+static void pfTermSystem( void );
 
 #define DEFAULT_RETURN_DEPTH (512)
 #define DEFAULT_USER_DEPTH (512)
@@ -93,7 +96,7 @@ static void pfTerm( void );
 /* Initialize globals in a function to simplify loading on
  * embedded systems which may not support initialization of data section.
  */
-static void pfInit( void )
+static void pfInitSystem( void )
 {
 /* all zero */
     gCurrentTask = NULL;
@@ -119,7 +122,8 @@ static void pfInit( void )
     ioInit();
 
 }
-static void pfTerm( void )
+
+static void pfTermSystem( void )
 {
     ioTerm();
 }
@@ -316,6 +320,11 @@ void pfSetCurrentTask( PForthTask task )
     gCurrentTask = (pfTaskData_t *) task;
 }
 
+PForthTask pfGetCurrentTask(void)
+{
+    return (PForthTask) gCurrentTask;
+}
+
 /***************************************************************
 ** Set Quiet Flag.
 ***************************************************************/
@@ -453,40 +462,97 @@ void pfMessage( const char *CString )
     ioType( CString, (cell_t) pfCStringLength(CString) );
 }
 
-/**************************************************************************
-** Main entry point for pForth.
-*/
-ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit )
-{
+
+/**
+ * Interprets the Forth in the text.
+ * The text length cannot exceed TIB_SIZE.
+ * @param text the Forth code to be executed
+ * @return 0 if successful or throw code.
+ */
+ThrowCode pfInterpretText(char *text) {
+    ThrowCode Result = 0;
+    cell_t length = strlen(text);
+    if (length > TIB_SIZE) {
+        MSG("pfInterpretText: text bigger than TIB\n");
+        Result = THROW_ABORT;
+        goto error;
+    }
+    gCurrentTask->td_IN = 0;
+    gCurrentTask->td_SourceNum = length;
+    vm_address_t savedSource = gCurrentTask->td_SourcePtr;
+    pfCopyMemory(gCurrentTask->td_TIB, text, length);
+    gCurrentTask->td_SourcePtr = savedSource;
+    Result = ffInterpret();
+error:
+    return Result;
+}
+
+void pfPushToStack(cell_t value) {
+    PUSH_DATA_STACK(value);
+}
+
+cell_t pfPopFromStack(void) {
+    return POP_DATA_STACK;
+}
+
+cell_t pfGetStackDepth(void) {
+    return DATA_STACK_DEPTH;
+}
+
+#ifdef PF_UNIT_TEST
+static int pfQaInterpret(void) {
+    printf("pfQaInterpret() called\n");
+    int savedNumFailed = pfQaNumFailed;
+
+    ASSERT_EQ(0, pfInterpretText("0sp 123"));
+    ASSERT_EQ(1, pfGetStackDepth());
+    ASSERT_EQ(123, pfPopFromStack());
+    ASSERT_EQ(0, pfGetStackDepth());
+
+    pfPushToStack(5000);
+    ASSERT_EQ(0, pfInterpretText("678 +"));
+    ASSERT_EQ(5678, pfPopFromStack());
+
+    ASSERT_EQ(THROW_UNDEFINED_WORD, pfInterpretText("567 BADWORD 5432"));
+
+    ASSERT_EQ(0, pfInterpretText("0sp"));
+    ASSERT_EQ(0, pfGetStackDepth());
+
+    printf("pfQaInterpret() ended\n");
+
+error:
+    PFQA_PRINT_RESULT;
+    return pfQaNumFailed - savedNumFailed;
+}
+#endif
+
+ThrowCode pfInitialize(const char *DicFileName,
+                       cell_t IfInit,
+                       ExecToken  *EntryPointPtr) {
+    
     pfTaskData_t *cftd = NULL;
     pfDictionary_t *dic = NULL;
     ThrowCode Result = 0;
-    ExecToken  EntryPoint = 0;
-
+    
 #ifdef PF_USER_INIT
     Result = PF_USER_INIT;
     if( Result < 0 ) goto error1;
 #endif
-
-    pfInit();
-
-#if PF_DEMAND_PAGING
-    Result = pfQaDemandPaging(); /* TODO move to standalone qa test */
-    if (Result != 0) goto error2;
-#endif
-
-/* Allocate Task structure. */
+    
+    pfInitSystem();
+    
+    /* Allocate Task structure. */
     pfDebugMessage("pfDoForth: call pfCreateTask()\n");
     cftd = pfCreateTask( DEFAULT_USER_DEPTH, DEFAULT_RETURN_DEPTH );
-
+    
     if( cftd )
     {
         pfSetCurrentTask( cftd );
-
+        
         if( !gVarQuiet )
         {
             MSG( "PForth V"PFORTH_VERSION_NAME", " );
-
+            
             if( IsHostLittleEndian() ) MSG("LE");
             else MSG("BE");
 #if PF_BIG_ENDIAN_DIC
@@ -494,26 +560,20 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
 #elif PF_LITTLE_ENDIAN_DIC
             MSG("/LE");
 #endif
-
+            
 #if (PF_SIZEOF_CELL == 8)
-                MSG("/64");
+            MSG("/64");
 #elif (PF_SIZEOF_CELL  == 4)
-                MSG("/32");
+            MSG("/32");
 #endif
-
+            
             MSG( ", built "__DATE__" "__TIME__ );
-        }
-
-/* Don't use MSG before task set. */
-        if( SourceName )
-        {
-            pfDebugMessage("SourceName = "); pfDebugMessage(SourceName); pfDebugMessage("\n");
         }
 
 #ifdef PF_NO_GLOBAL_INIT
         if( LoadCustomFunctionTable() < 0 ) goto error2; /* Init custom 'C' call array. */
 #endif
-
+        
 #if (!defined(PF_NO_INIT)) && (!defined(PF_NO_SHELL))
         if( IfInit )
         {
@@ -522,7 +582,7 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
         }
         else
 #else
-        TOUCH(IfInit);
+            TOUCH(IfInit);
 #endif /* !PF_NO_INIT && !PF_NO_SHELL*/
         {
             if( DicFileName )
@@ -532,7 +592,7 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
                 {
                     EMIT_CR;
                 }
-                dic = pfLoadDictionary( DicFileName, &EntryPoint );
+                dic = pfLoadDictionary( DicFileName, EntryPointPtr );
             }
             else
             {
@@ -545,12 +605,12 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
             }
         }
         if( dic == NULL ) goto error2;
-
+        
         if( !gVarQuiet )
         {
             EMIT_CR;
         }
-
+        
         pfDebugMessage("pfDoForth: try AUTO.INIT\n");
         Result = pfExecIfDefined("AUTO.INIT");
         if( Result != 0 )
@@ -558,9 +618,64 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
             MSG("Error in AUTO.INIT");
             goto error2;
         }
+    }
+    return 0;
+    
+error2:
+    MSG("pfDoForth: Error occurred.\n");
+    pfDeleteTask( cftd );
+    /* Terminate so we restore normal shell tty mode. */
+    pfTermSystem();
+
+#ifdef PF_USER_INIT
+error1:
+#endif
+    return -1;
+}
+
+
+void pfTerminate(void) {
+    /* Clean up after running Forth. */
+    if (gCurrentDictionary != NULL) {
+        pfExecIfDefined("AUTO.TERM");
+        pfDeleteDictionary( gCurrentDictionary );
+        gCurrentDictionary = NULL;
+    }
+    if (pfGetCurrentTask() != NULL) {
+        pfDeleteTask( pfGetCurrentTask() );
+        pfSetCurrentTask(NULL);
+    }
+
+    pfTermSystem();
+
+#if PF_DEMAND_PAGING
+    pfCheckPagedMemory();
+#endif
+
+#ifdef PF_USER_TERM
+    PF_USER_TERM;
+#endif
+}
+
+/**************************************************************************
+** Main entry point for pForth.
+*/
+ThrowCode pfDoForth(const char *DicFileName,
+                    const char *SourceName,
+                    cell_t IfInit )
+{
+    ExecToken  EntryPoint = 0;
+    
+    ThrowCode Result = pfInitialize(DicFileName, IfInit, &EntryPoint);
+    
+    if (Result == 0) {
+#ifdef PF_UNIT_TEST
+        if ((Result = pfQaInterpret()) != 0) goto error;
+#endif
 
         if( EntryPoint != 0 )
         {
+            /* Run a TURNKEY application. */
             Result = pfCatch( EntryPoint );
         }
 #ifndef PF_NO_SHELL
@@ -583,36 +698,15 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
             }
         }
 #endif /* PF_NO_SHELL */
-
-    /* Clean up after running Forth. */
-        pfExecIfDefined("AUTO.TERM");
-        pfDeleteDictionary( dic );
-        pfDeleteTask( cftd );
     }
 
-    pfTerm();
-
-#if PF_DEMAND_PAGING
-    pfCheckPagedMemory();
+#ifdef PF_UNIT_TEST
+error:
 #endif
     
-#ifdef PF_USER_TERM
-    PF_USER_TERM;
-#endif
+    pfTerminate();
 
     return Result ? Result : gVarByeCode;
-
-error2:
-    MSG("pfDoForth: Error occurred.\n");
-    pfDeleteTask( cftd );
-    /* Terminate so we restore normal shell tty mode. */
-    pfTerm();
-
-#ifdef PF_USER_INIT
-error1:
-#endif
-
-    return -1;
 }
 
 #ifdef PF_UNIT_TEST
@@ -621,6 +715,10 @@ cell_t pfUnitTest( void )
     cell_t numErrors = 0;
     MSG("pfUnitTest() called\n");
     numErrors += pfUnitTestText();
+
+#if PF_DEMAND_PAGING
+    numErrors += pfQaDemandPaging();
+#endif
     return numErrors;
 }
 #endif
