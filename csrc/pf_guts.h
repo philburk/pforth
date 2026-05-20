@@ -26,8 +26,8 @@
 ** PFORTH_VERSION changes when PForth is modified.
 ** See README file for version info.
 */
-#define PFORTH_VERSION_CODE 33
-#define PFORTH_VERSION_NAME "2.1.1"
+#define PFORTH_VERSION_CODE 34
+#define PFORTH_VERSION_NAME "2.2.0"
 
 /* 
  * NOTES about PF_SUPPORT_LONG_NAMES
