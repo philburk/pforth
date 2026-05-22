@@ -306,11 +306,6 @@ ThrowCode pfCatch( ExecToken XT )
     vm_address_t   CodeBase = CODE_BASE;
     ThrowCode      ExceptionReturnCode = 0;
 
-/* FIXME
-    gExecutionDepth += 1;
-    PRT(("pfCatch( 0x%x ), depth = %d\n", XT, gExecutionDepth ));
-*/
-
 /*
 ** Initialize FakeSecondary this way to avoid having stuff in the data section,
 ** which is not supported for some embedded system loaders.

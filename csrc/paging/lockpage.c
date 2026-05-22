@@ -247,7 +247,7 @@ void *pfCopyFromVirtualMemory(void *destination,
                               vm_address_t source,
                               uint32_t numBytes) {
     if (pfIsAddressInPagedMemory(source)) {
-        pfReadPagedMemory(destination, (paging_address_t) source, numBytes); /* TODO check result */
+        pfReadPagedMemory(destination, (paging_address_t) source, numBytes);
         return (void *) destination;
     } else {
         return pfCopyMemory(destination, (void *) (uintptr_t) source, numBytes);
@@ -258,7 +258,7 @@ vm_address_t pfCopyToVirtualMemory(vm_address_t destination,
                             const void *source,
                             uint32_t numBytes) {
     if (pfIsAddressInPagedMemory(destination)) {
-        pfWritePagedMemory((paging_address_t) destination, source, numBytes); /* TODO check result */
+        pfWritePagedMemory((paging_address_t) destination, source, numBytes);
         return destination;
     } else {
         return PTR_TO_VMA(pfCopyMemory((void *) (uintptr_t) destination, source, numBytes));

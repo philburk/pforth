@@ -349,8 +349,6 @@ void TypeName( const char *Name )
     ioType( FirstChar, Len );
 }
 
-
-
 #ifdef PF_UNIT_TEST
 /* Unit test for string conversion routines. */
 #define ASSERT_PAD_IS( index, value, msg ) \

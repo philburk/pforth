@@ -113,7 +113,8 @@ size_t pfReadPagedMemory(void *destination,
                          paging_address_t source,
                          uint32_t numBytes) {
     PF_ASSERT(pfIsAddressInPagedMemory(source));
-    /* TODO check upper boundary */
+    if (numBytes == 0) return 0;
+    PF_ASSERT(pfIsAddressInPagedMemory(source + numBytes - 1));
     void *pAddr = (void *)(uintptr_t) PF_DP_UNMUNGE(source);
     pfCopyMemory(destination, pAddr, numBytes);
     return numBytes;
@@ -123,7 +124,8 @@ size_t pfWritePagedMemory(paging_address_t destination,
                           const void *source,
                           uint32_t numBytes) {
     PF_ASSERT(pfIsAddressInPagedMemory(destination));
-    /* TODO check upper boundary */
+    if (numBytes == 0) return 0;
+    PF_ASSERT(pfIsAddressInPagedMemory(destination + numBytes - 1));
     void *pAddr = (void *)(uintptr_t) PF_DP_UNMUNGE(destination);
     pfCopyMemory(pAddr, source, numBytes);
     return numBytes;

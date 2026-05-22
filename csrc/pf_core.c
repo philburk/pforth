@@ -471,7 +471,7 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
     pfInit();
 
 #if PF_DEMAND_PAGING
-    Result = pfQaDemandPaging(); /* FIXME move to standalone qa test */
+    Result = pfQaDemandPaging(); /* TODO move to standalone qa test */
     if (Result != 0) goto error2;
 #endif
 
@@ -615,11 +615,11 @@ error1:
     return -1;
 }
 
-
 #ifdef PF_UNIT_TEST
 cell_t pfUnitTest( void )
 {
     cell_t numErrors = 0;
+    MSG("pfUnitTest() called\n");
     numErrors += pfUnitTestText();
     return numErrors;
 }
