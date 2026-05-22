@@ -75,9 +75,9 @@ void ffDotS( void )
 }
 
 /* ( addr cnt char -- addr' cnt' , skip leading characters ) */
-cell_t ffSkip( char *AddrIn, cell_t Cnt, char c, char **AddrOut )
+cell_t ffSkip(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut)
 {
-    char *s;
+    const char *s;
 
     s = AddrIn;
 
@@ -105,9 +105,9 @@ DBUGX(("ffSkip: %c=0x%x, %d\n", *s, Cnt ));
 }
 
 /* ( addr cnt char -- addr' cnt' , scan for char ) */
-cell_t ffScan( char *AddrIn, cell_t Cnt, char c, char **AddrOut )
+cell_t ffScan(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut)
 {
-    char *s;
+    const char *s;
 
     s = AddrIn;
 
@@ -212,11 +212,11 @@ cell_t ffNumberQ( const char *FWord, cell_t *Num )
  */
 static char * Word ( char c, int Upcase )
 {
-    char *s1,*s2,*s3;
+    const char *s1,*s2,*s3;
     cell_t n1, n2, n3;
     cell_t i, nc;
 
-    s1 = gCurrentTask->td_SourcePtr + gCurrentTask->td_IN;
+    s1 = (const char *)(uintptr_t)gCurrentTask->td_SourcePtr + gCurrentTask->td_IN;
     n1 = gCurrentTask->td_SourceNum - gCurrentTask->td_IN;
     n2 = ffSkip( s1, n1, c, &s2 );
 DBUGX(("Word: s2=%c, %d\n", *s2, n2 ));
@@ -250,4 +250,60 @@ char * ffWord( char c )
 char * ffLWord( char c )
 {
   return Word( c, FALSE );
+}
+
+size_t ffReadFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  )
+{
+    uint32_t numBytes = (uint32_t)(Size * nItems);
+    if (numBytes == 0) {
+        return 0;
+    } else if (pfIsAddressInPagedMemory(vp)) {
+        /* Read file in blocks that will fit in locked regions. */
+        cell_t numBytes = Size * nItems;
+        cell_t bytesRead = 0;
+        while (numBytes > 0) {
+            uint32_t bytesToRead = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
+            uint8_t *buffer = pfLockMemoryReadWrite(vp, bytesToRead);
+            cell_t numRead = sdReadFile(buffer, 1, bytesToRead, Stream);
+            pfUnlockMemory(vp, buffer); /* writes to backing storage */
+            if (numRead < bytesToRead) {
+                numBytes = 0; /* no more data left */
+            } else {
+                numBytes -= bytesToRead;
+            }
+            bytesRead += numRead;
+            vp += numRead;
+        }
+        return bytesRead / Size;
+    } else {
+        return sdReadFile( (void *)(uintptr_t) vp, Size, nItems, Stream);
+    }
+}
+
+size_t ffWriteFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  )
+{
+    uint32_t numBytes = (uint32_t)(Size * nItems);
+    if (numBytes == 0) {
+        return 0;
+    } else if (pfIsAddressInPagedMemory(vp)) {
+        /* Write file in blocks that will fit in locked regions. */
+        cell_t bytesWritten = 0;
+        while (numBytes > 0) {
+            uint32_t bytesToWrite = (numBytes < DP_MAX_REGION_SIZE) ? numBytes : DP_MAX_REGION_SIZE;
+            const uint8_t *buffer = pfLockMemoryReadOnly(vp, bytesToWrite);
+            cell_t numWritten = sdWriteFile(buffer, 1, bytesToWrite, Stream);
+            pfUnlockMemory(vp, buffer); /* writes to backing storage */
+
+            if (numWritten < bytesToWrite) {
+                numBytes = 0; /* no more data left */
+            } else {
+                numBytes -= bytesToWrite;
+            }
+            bytesWritten += numWritten;
+            vp += numWritten;
+        }
+        return bytesWritten / Size;
+    } else {
+        return sdWriteFile( (void *)(uintptr_t) vp, Size, nItems, Stream);
+    }
 }

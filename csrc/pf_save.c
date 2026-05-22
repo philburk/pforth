@@ -354,7 +354,7 @@ static int Write32ToFile( FileStream *fid, uint32_t Val )
 }
 
 /***************************************************************/
-static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t NumBytes )
+static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, vm_address_t Data, int32_t NumBytes )
 {
     cell_t numw;
     cell_t EvenNumW;
@@ -366,7 +366,8 @@ static cell_t WriteChunkToFile( FileStream *fid, cell_t ID, char *Data, int32_t 
     assert(EvenNumW <= UINT32_MAX);
     if( Write32ToFile( fid, (uint32_t)EvenNumW ) < 0 ) goto error;
 
-    numw = sdWriteFile( Data, 1, EvenNumW, fid );
+    /* use demand paging just in case */
+    numw = ffWriteFile( Data, 1, (int32_t)EvenNumW, fid );
     if( numw != EvenNumW ) goto error;
     return 0;
 error:
@@ -406,7 +407,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
 /* Write P4DI Dictionary Info  ------------------ */
     SD.sd_Version = PF_FILE_VERSION;
 
-    relativeCodePtr = ABS_TO_CODEREL(gCurrentDictionary->dic_CodePtr.Byte); /* 940225 */
+    relativeCodePtr = (uint32_t) ABS_TO_CODEREL(gCurrentDictionary->dic_CodePtr); /* 940225 */
     SD.sd_RelCodePtr = relativeCodePtr;
     SD.sd_UserStackSize = sizeof(cell_t) * (gCurrentTask->td_StackBase - gCurrentTask->td_StackLimit);
     SD.sd_ReturnStackSize = sizeof(cell_t) * (gCurrentTask->td_ReturnBase - gCurrentTask->td_ReturnLimit);
@@ -474,21 +475,19 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
     CodeSize = MAX( (ucell_t)CodeSize, (CodeChunkSize + 2048) );
     SD.sd_CodeSize = CodeSize;
 
-
     convertDictionaryInfoWrite (&SD);
 
-    if( WriteChunkToFile( fid, ID_P4DI, (char *) &SD, sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
+    if( WriteChunkToFile( fid, ID_P4DI, PTR_TO_VMA(&SD), sizeof(DictionaryInfoChunk) ) < 0 ) goto error;
 
 /* Write Name Fields if NameSize non-zero ------- */
     if( NameSize > 0 )
     {
-        if( WriteChunkToFile( fid, ID_P4NM, (char *) NAME_BASE,
+        if( WriteChunkToFile( fid, ID_P4NM, (vm_address_t) NAME_BASE,
             NameChunkSize ) < 0 ) goto error;
     }
 
 /* Write Code Fields ---------------------------- */
-    if( WriteChunkToFile( fid, ID_P4CD, (char *) CODE_BASE,
-        CodeChunkSize ) < 0 ) goto error;
+    if( WriteChunkToFile( fid, ID_P4CD, (vm_address_t) CODE_BASE, CodeChunkSize ) < 0 ) goto error;
 
     FormSize = (uint32_t) sdTellFile( fid ) - 8;
     sdSeekFile( fid, 4, PF_SEEK_SET );
@@ -658,15 +657,14 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
             if( sd->sd_NameSize > 0 )
             {
                 gVarContext = NAMEREL_TO_ABS(sd->sd_RelContext); /* Restore context. */
-                gCurrentDictionary->dic_HeaderPtr = (ucell_t)(uint8_t *)
-                    NAMEREL_TO_ABS(sd->sd_RelHeaderPtr);
+                gCurrentDictionary->dic_HeaderPtr = NAMEREL_TO_ABS(sd->sd_RelHeaderPtr);
             }
             else
             {
                 gVarContext = 0;
-                gCurrentDictionary->dic_HeaderPtr = (ucell_t)NULL;
+                gCurrentDictionary->dic_HeaderPtr = PF_VM_NULL;
             }
-            gCurrentDictionary->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(sd->sd_RelCodePtr);
+            gCurrentDictionary->dic_CodePtr = (vm_address_t) CODEREL_TO_ABS(sd->sd_RelCodePtr);
             gNumPrimitives = sd->sd_NumPrimitives;  /* Must match compiled dictionary. */
 /* Pass EntryPoint back to caller. */
             if( EntryPointPtr != NULL ) *EntryPointPtr = sd->sd_EntryPoint;
@@ -693,7 +691,8 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
                 pfReportError("pfLoadDictionary", PF_ERR_TOO_BIG);
                 goto error;
             }
-            numr = sdReadFile( (char *) NAME_BASE, 1, ChunkSize, fid );
+            /* read using demand paging if needed */
+            numr = ffReadFile( (vm_address_t) NAME_BASE, 1, ChunkSize, fid );
             if( numr != ChunkSize ) goto read_error;
             BytesLeft -= ChunkSize;
 #endif /* PF_NO_SHELL */
@@ -710,7 +709,8 @@ DBUG(("pfLoadDictionary( %s )\n", FileName ));
                 pfReportError("pfLoadDictionary", PF_ERR_TOO_BIG);
                 goto error;
             }
-            numr = sdReadFile( (uint8_t *) CODE_BASE, 1, ChunkSize, fid );
+            /* read using demand paging if needed */
+            numr = ffReadFile( (vm_address_t) CODE_BASE, 1, ChunkSize, fid );
             if( numr != ChunkSize ) goto read_error;
             BytesLeft -= ChunkSize;
             break;
@@ -816,17 +816,27 @@ PForthDictionary pfLoadStaticDictionary( void )
     gCurrentDictionary = dic = pfCreateDictionary( NewNameSize, NewCodeSize );
     if( !dic ) goto nomem_error;
 
-    pfCopyMemory( (uint8_t *) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames) );
-    pfCopyMemory( (uint8_t *) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode) );
+#if PF_DEMAND_PAGING
+    pfWritePagedMemory((paging_address_t) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames));
+#else
+    pfCopyMemory((uint8_t *) (uintptr_t) dic->dic_HeaderBase, MinDicNames, sizeof(MinDicNames));
+#endif
+
+#if PF_DEMAND_PAGING
+    pfWritePagedMemory((paging_address_t) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));
+#else
+    pfCopyMemory((uint8_t *) (uintptr_t) dic->dic_CodeBase, MinDicCode, sizeof(MinDicCode));
+#endif
+
     DBUG(("Static data copied to newly allocated dictionaries.\n"));
 
-    dic->dic_CodePtr.Byte = (uint8_t *) CODEREL_TO_ABS(CODEPTR);
+    dic->dic_CodePtr = CODEREL_TO_ABS(CODEPTR);
     gNumPrimitives = NUM_PRIMITIVES;
 
     if( NAME_BASE != 0)
     {
 /* Setup name space. */
-        dic->dic_HeaderPtr = (ucell_t)(uint8_t *) NAMEREL_TO_ABS(HEADERPTR);
+        dic->dic_HeaderPtr = (vm_address_t) NAMEREL_TO_ABS(HEADERPTR);
         gVarContext = NAMEREL_TO_ABS(RELCONTEXT); /* Restore context. */
 
 /* Find special words in dictionary for global XTs. */

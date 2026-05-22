@@ -86,7 +86,7 @@ DBUG(("CallUserFunction: Index = %d, ReturnMode = %d, NumParams = %d\n",
 Err CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t NumParams )
 {
     ucell_t Packed;
-    char FName[LONGEST_WORD_NAME+9];    /* +1 for length, up to +9 should not be used, but is here for safety */
+    char FName[PF_NAME_SIZE_SAFE];
 
     CStringToForth( FName, CName, sizeof(FName) );
     Packed = (Index & 0xFFFF) | 0 | (NumParams << 24) |
@@ -94,7 +94,7 @@ Err CreateGlueToC( const char *CName, ucell_t Index, cell_t ReturnMode, int32_t 
     DBUG(("Packed = 0x%8x\n", Packed));
 
     ffCreateSecondaryHeader( FName );
-    CODE_COMMA( ID_CALL_C );
+    CODE_COMMA(ID_CALL_C);
     CODE_COMMA(Packed);
     ffFinishSecondary();
 

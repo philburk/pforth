@@ -50,6 +50,8 @@
 
 #include "pforth.h"
 #include "pf_types.h"
+#include "paging/dmpaging.h"
+#include "paging/pagedmem.h"
 #include "pf_io.h"
 #include "pf_guts.h"
 #include "pf_text.h"

@@ -26,8 +26,8 @@
 ** PFORTH_VERSION changes when PForth is modified.
 ** See README file for version info.
 */
-#define PFORTH_VERSION_CODE 33
-#define PFORTH_VERSION_NAME "2.1.1"
+#define PFORTH_VERSION_CODE 34
+#define PFORTH_VERSION_NAME "2.2.0"
 
 /* 
  * NOTES about PF_SUPPORT_LONG_NAMES
@@ -88,14 +88,15 @@
 
 #ifdef PF_SUPPORT_LONG_NAMES
 #define FLAG_SMUDGE     (0x80)
-#define MASK_NAME_SIZE  (0x3F)
+#define PF_NAME_SIZE    (0x40)
 #else
 #define FLAG_SMUDGE     (0x20)
-#define MASK_NAME_SIZE  (0x1F)
+#define PF_NAME_SIZE    (0x20)
 #endif
 
-/* these the same, but have different names for clarity */
-#define LONGEST_WORD_NAME MASK_NAME_SIZE
+/* These are the same, but have different names for clarity. */
+#define MASK_NAME_SIZE  (PF_NAME_SIZE - 1)
+#define PF_NAME_SIZE_SAFE    (PF_NAME_SIZE + 8)
 
 /* Debug TRACE flags */
 #define TRACE_INNER     (0x0002)
@@ -431,15 +432,15 @@ typedef struct pfTaskData_s
     PF_FLOAT  *td_FloatStackBase;
     PF_FLOAT  *td_FloatStackLimit;
 #endif
-    cell_t   *td_InsPtr;          /* Instruction pointer, "PC" */
+    cell_t    *td_InsPtr;          /* Instruction pointer, "PC" */
     FileStream   *td_InputStream;
 /* Terminal. */
-    char    td_TIB[TIB_SIZE];   /* Buffer for terminal input. */
-    cell_t    td_IN;              /* Index into Source */
-    cell_t    td_SourceNum;       /* #TIB after REFILL */
-    char   *td_SourcePtr;       /* Pointer to TIB or other source. */
-    cell_t   td_LineNumber;      /* Incremented on every refill. */
-    cell_t    td_OUT;             /* Current output column. */
+    char       td_TIB[TIB_SIZE];   /* Buffer for terminal input. */
+    cell_t     td_IN;              /* Index into Source */
+    cell_t     td_SourceNum;       /* #TIB after REFILL */
+    vm_address_t td_SourcePtr;       /* Pointer to TIB or other source. */
+    cell_t     td_LineNumber;      /* Incremented on every refill. */
+    cell_t     td_OUT;             /* Current output column. */
 } pfTaskData_t;
 
 typedef struct pfNode
@@ -448,44 +449,46 @@ typedef struct pfNode
     struct pfNode *n_Prev;
 } pfNode;
 
+/* Define offsets to fields in an header entry. */
+#define PF_HEADER_OFFSET_PREVIOUS_NAME (0)
+#define PF_HEADER_OFFSET_EXEC_TOKEN    (PF_CELL_SIZE)
+#define PF_HEADER_OFFSET_NFA           (PF_HEADER_OFFSET_EXEC_TOKEN + PF_CELL_SIZE)
+
+#if 0
 /* Structure of header entry in dictionary. These will be stored in dictionary specific endian format*/
 typedef struct cfNameLinks
 {
-    cell_t       cfnl_PreviousName;   /* name relative address of previous */
+    cell_t     cfnl_PreviousName;   /* name relative address of previous */
     ExecToken  cfnl_ExecToken;      /* Execution token for word. */
 /* Followed by variable length name field. */
 } cfNameLinks;
+#endif
 
 #define PF_DICF_ALLOCATED_SEGMENTS  ( 0x0001)
 typedef struct pfDictionary_s
 {
     pfNode  dic_Node;
-    ucell_t  dic_Flags;
+    ucell_t dic_Flags;
 /* Headers contain pointers to names and dictionary. */
+    vm_address_t dic_HeaderBaseUnaligned;
 
-    ucell_t dic_HeaderBaseUnaligned;
-
-    ucell_t dic_HeaderBase;
-    ucell_t dic_HeaderPtr;
-    ucell_t dic_HeaderLimit;
+    vm_address_t dic_HeaderBase;
+    vm_address_t dic_HeaderPtr;
+    vm_address_t dic_HeaderLimit;
 /* Code segment contains tokenized code and data. */
-    ucell_t dic_CodeBaseUnaligned;
-    ucell_t dic_CodeBase;
-    union
-    {
-        cell_t  *Cell;
-        uint8_t *Byte;
-    } dic_CodePtr;
-    ucell_t dic_CodeLimit;
+    vm_address_t dic_CodeBaseUnaligned;
+    vm_address_t dic_CodeBase;
+    vm_address_t dic_CodePtr;
+    vm_address_t dic_CodeLimit;
 } pfDictionary_t;
 
 /* Save state of include when nesting files. */
 typedef struct IncludeFrame
 {
     FileStream   *inf_FileID;
-    cell_t         inf_LineNumber;
-    cell_t         inf_SourceNum;
-    cell_t         inf_IN;
+    cell_t        inf_LineNumber;
+    cell_t        inf_SourceNum;
+    cell_t        inf_IN;
     char          inf_SaveTIB[TIB_SIZE];
 } IncludeFrame;
 
@@ -567,19 +570,16 @@ extern cell_t         gIncludeIndex;
 
 #else
 
-#define WRITE_FLOAT_DIC(addr,data)  { *((PF_FLOAT *)(addr)) = (PF_FLOAT)(data); }
-#define WRITE_CELL_DIC(addr,data)   { *((cell_t *)(addr)) = (cell_t)(data); }
-#define WRITE_SHORT_DIC(addr,data)  { *((int16_t *)(addr)) = (int16_t)(data); }
-#define READ_FLOAT_DIC(addr)        ( *((PF_FLOAT *)(addr)) )
-#define READ_CELL_DIC(addr)         ( *((const ucell_t *)(addr)) )
-#define READ_SHORT_DIC(addr)        ( *((const uint16_t *)(addr)) )
-
+#define WRITE_FLOAT_DIC(addr,data)  DP_STORE_FLOAT(addr,data)
+#define WRITE_CELL_DIC(addr,data)   DP_STORE_CELL(addr,data)
+#define WRITE_SHORT_DIC(addr,data)  DP_STORE_U16(addr,data)
+#define READ_FLOAT_DIC(addr)        DP_FETCH_FLOAT(addr)
+#define READ_CELL_DIC(addr)         DP_FETCH_CELL(addr)
+#define READ_SHORT_DIC(addr)        DP_FETCH_U16(addr)
 #endif
 
-
-#define HEADER_HERE (gCurrentDictionary->dic_HeaderPtr.Cell)
-#define CODE_HERE (gCurrentDictionary->dic_CodePtr.Cell)
-#define CODE_COMMA( N ) WRITE_CELL_DIC(CODE_HERE++,(N))
+#define CODE_HERE (gCurrentDictionary->dic_CodePtr)
+#define CODE_COMMA(N) { WRITE_CELL_DIC(CODE_HERE,(N)); CODE_HERE += PF_CELL_SIZE; }
 #define NAME_BASE (gCurrentDictionary->dic_HeaderBase)
 #define CODE_BASE (gCurrentDictionary->dic_CodeBase)
 #define NAME_SIZE (gCurrentDictionary->dic_HeaderLimit - gCurrentDictionary->dic_HeaderBase)
@@ -599,12 +599,15 @@ extern cell_t         gIncludeIndex;
 /* The check for >0 is only needed for CLONE testing. !!! */
 #define IsTokenPrimitive(xt) ((xt<gNumPrimitives) && (xt>=0))
 
-#define FREE_VAR(v) { if (v) { pfFreeMem((void *)(v)); v = 0; } }
+#define FREE_VAR(pm_var) { pfFreeMem(pm_var); pm_var = 0; }
+/* For virtual memory addresses we have to avoid narrowing of the address. */
+#define FREE_VM_VAR(vm_var) { pfFreeVirtualMemory(vm_var); vm_var = 0; }
 
 #define DATA_STACK_DEPTH (gCurrentTask->td_StackBase - gCurrentTask->td_StackPtr)
 #define DROP_DATA_STACK (gCurrentTask->td_StackPtr++)
 #define POP_DATA_STACK (*gCurrentTask->td_StackPtr++)
 #define PUSH_DATA_STACK(x) {*(--(gCurrentTask->td_StackPtr)) = (cell_t) x; }
+#define PUSH_PTR_DATA_STACK(x) {*(--(gCurrentTask->td_StackPtr)) = PTR_TO_VMA(x); }
 
 /* Force Quad alignment. */
 #define QUADUP(x) (((x)+3)&~3)

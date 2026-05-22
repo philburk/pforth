@@ -210,20 +210,26 @@ VARIABLE SPAN
     CODELIMIT HERE -
 ;
 
+: U.HEX ( n -- , print a as hex unsigned )
+    base @
+    swap hex u.
+    base !
+;
+
 : MAP  ( -- , dump interesting dictionary info )
     ." Code Segment" cr
-    ."    CODEBASE           = " codebase .hex cr
-    ."    HERE               = " here .hex cr
-    ."    CODELIMIT          = " codelimit .hex cr
+    ."    CODEBASE           = 0x" codebase u.hex cr
+    ."    HERE               = 0x" here u.hex cr
+    ."    CODELIMIT          = 0x" codelimit u.hex cr
     ."    Compiled Code Size = " here codebase - . cr
     ."    CODE-SIZE          = " code-size @ . cr
     ."    Code Room UNUSED   = " UNUSED . cr
     ." Name Segment" cr
-    ."    NAMEBASE           = " namebase .hex cr
-    ."    HEADERS-PTR @      = " headers-ptr @ .hex cr
-    ."    NAMELIMIT          = " namelimit .hex cr
-    ."    CONTEXT @          = " context @ .hex cr
-    ."    LATEST             = " latest .hex  ."  = " latest id. cr
+    ."    NAMEBASE           = 0x" namebase u.hex cr
+    ."    HEADERS-PTR @      = 0x" headers-ptr @ u.hex cr
+    ."    NAMELIMIT          = 0x" namelimit u.hex cr
+    ."    CONTEXT @          = 0x" context @ u.hex cr
+    ."    LATEST             = 0x" latest u.hex  ."  = " latest id. cr
     ."    Compiled Name size = " headers-ptr @ namebase - . cr
     ."    HEADERS-SIZE       = " headers-size @ . cr
     ."    Name Room Left     = " namelimit headers-ptr @ - . cr

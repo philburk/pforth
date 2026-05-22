@@ -28,25 +28,25 @@ extern "C" {
 #endif
 
 Err   ffPushInputStream( FileStream *InputFile );
-ExecToken NameToToken( const ForthString *NFA );
+ExecToken NameToToken(vm_address_t NFA);
 FileStream * ffConvertSourceIDToStream( cell_t id );
 FileStream *ffPopInputStream( void );
 cell_t  ffConvertStreamToSourceID( FileStream *Stream );
 cell_t  ffFind( const ForthString *WordName, ExecToken *pXT );
 cell_t  ffFindC( const char *WordName, ExecToken *pXT );
-cell_t  ffFindNFA( const ForthString *WordName, const ForthString **NFAPtr );
+cell_t  ffFindNFA( const ForthString *WordName, vm_address_t *NFAPtr );
 cell_t  ffNumberQ( const char *FWord, cell_t *Num );
 cell_t  ffRefill( void );
-cell_t  ffTokenToName( ExecToken XT, const ForthString **NFAPtr );
+cell_t  ffTokenToName( ExecToken XT, vm_address_t *NFAPtr );
 cell_t *NameToCode( ForthString *NFA );
 PForthDictionary pfBuildDictionary( cell_t HeaderSize, cell_t CodeSize );
 char *ffWord( char c );
 char *ffLWord( char c );
-const ForthString *NameToPrevious( const ForthString *NFA );
+vm_address_t NameToPrevious(vm_address_t NFA);
 cell_t FindSpecialCFAs( void );
 cell_t FindSpecialXTs( void );
 cell_t NotCompiled( const char *FunctionName );
-void  CreateDicEntry( ExecToken XT, const ForthStringPtr FName, ucell_t Flags );
+void  CreateDicEntry(ExecToken XT, const char *FName, ucell_t Flags);
 void  CreateDicEntryC( ExecToken XT, const char *CName, ucell_t Flags );
 void  ff2Literal( cell_t dHi, cell_t dLo );
 void  ffALiteral( cell_t Num );

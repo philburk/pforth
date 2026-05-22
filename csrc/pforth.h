@@ -25,18 +25,65 @@
 **
 ***************************************************************/
 
-/* Define stubs for data types so we can pass pointers but not touch inside. */
+/* Opaque pointer types used to hide internal structures. */
 typedef void *PForthTask;
 typedef void *PForthDictionary;
 
 #include <stdint.h>
-/* Integer types for Forth cells, signed and unsigned: */
-typedef intptr_t cell_t;
-#define PF_SIZEOF_CELL __SIZEOF_INTPTR__
-typedef uintptr_t ucell_t;
 
-typedef ucell_t ExecToken;              /* Execution Token */
+#if   INTPTR_MAX == INT64_MAX
+    #define PF_POINTER_SIZE 8
+#elif INTPTR_MAX == INT32_MAX
+    #define PF_POINTER_SIZE 4
+#elif INTPTR_MAX == INT16_MAX
+    #define PF_POINTER_SIZE 2
+#else
+    #error "Unsupported pointer size"
+#endif
+
+/* Set CELL size to match pointer size if not defined. */
+#ifndef PF_CELL_SIZE
+    #if   PF_POINTER_SIZE >= 4
+        #define PF_CELL_SIZE PF_POINTER_SIZE
+    #else
+        #define PF_CELL_SIZE 4
+    #endif
+#endif /* PF_CELL_SIZE */
+
+#if (PF_CELL_SIZE < PF_POINTER_SIZE)
+    #error "PF_CELL_SIZE must be at least as big as a pointer."
+#endif
+
+/* Integer types for Forth cells, signed and unsigned: */
+#if (PF_CELL_SIZE == 8)
+    typedef int64_t cell_t;
+    typedef uint64_t ucell_t;
+#elif (PF_CELL_SIZE == 4)
+    typedef int32_t cell_t;
+    typedef uint32_t ucell_t;
+#else
+    #error "Unsupported PF_CELL_SIZE"
+#endif
+
+typedef cell_t ExecToken;              /* Execution Token */
 typedef cell_t ThrowCode;
+
+#ifndef PF_DEMAND_PAGING
+    #if INTPTR_MAX == INT16_MAX
+        /* The only way to address enough RAM for the dictionary is through demand paging. */
+        #define PF_DEMAND_PAGING 1
+    #else /* INTPTR_MAX */
+        #define PF_DEMAND_PAGING 0
+    #endif /* INTPTR_MAX */
+#endif /* PF_DEMAND_PAGING */
+
+typedef ucell_t vm_address_t; /** an address that may be in physical or paged memory */
+#define PTR_TO_VMA(p) ((vm_address_t)(uintptr_t)(p))
+#define PF_VM_NULL    PTR_TO_VMA(0)
+
+#ifndef PF_ASSERT_ENABLED
+#define PF_ASSERT_ENABLED 1
+#endif /* PF_ASSERT_ENABLED */
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,8 +137,20 @@ ThrowCode pfIncludeFile( const char *FileName );
 /* Execute a Forth word by name. */
 ThrowCode  pfExecIfDefined( const char *CString );
 
+/* Assertion macro for pForth. */
+extern cell_t gPfAssertEnabled;
+#define PF_ASSERT(_expr) do { \
+    if (!(_expr)) { \
+        if (gPfAssertEnabled) { \
+            pfMessage("PF_ASSERT failed: " #_expr "\n"); \
+            (void)(*(volatile int *)0); \
+        } \
+    } \
+} while(0)
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif  /* _pforth_h */
+

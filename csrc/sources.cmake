@@ -18,6 +18,7 @@ pfcompfp.h
 pfcompil.h
 pfinnrfp.h
 pforth.h
+paging/dmpaging.h
 pf_cglue.c
 pf_clib.c
 pf_core.c
@@ -30,4 +31,7 @@ pf_text.c
 pf_words.c
 pfcompil.c
 pfcustom.c
+paging/pagedmem.c
+paging/lockpage.c
+paging/qadmpage.c
 

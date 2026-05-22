@@ -13,12 +13,18 @@ env:
 
 jobs:
   build:
+    name: Build (PAGING=${{ matrix.demand_paging }}, FLOAT=${{ matrix.support_fp }})
     # This uses a Unix Makefile and should run on Linux and Mac
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        demand_paging: [0, 1]
+        support_fp: [0, 1]
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Build and Test
       working-directory: ${{github.workspace}}/platforms/unix
-      run: make test ASAN=1
+      run: make test ASAN=1 XCPPFLAGS="-DPF_SUPPORT_FP=${{ matrix.support_fp }} -DPF_DEMAND_PAGING=${{ matrix.demand_paging }} -D_DEFAULT_SOURCE -D_GNU_SOURCE"

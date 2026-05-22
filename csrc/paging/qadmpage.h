@@ -1,9 +1,8 @@
-/* @(#) pf_words.h 96/12/18 1.7 */
-#ifndef _pforth_words_h
-#define _pforth_words_h
+#ifndef _pf_qadmpage_h
+#define _pf_qadmpage_h
 
 /***************************************************************
-** Include file for PForth Words
+** Include file for PForth Paged Memory Unit Tests
 **
 ** Author: Phil Burk
 ** Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
@@ -26,17 +25,13 @@
 extern "C" {
 #endif
 
-void ffDot( cell_t n );
-void ffDotHex( cell_t n );
-void ffDotS( void );
-cell_t ffSkip(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut);
-cell_t ffScan(const char *AddrIn, cell_t Cnt, char c, const char **AddrOut);
-
-size_t ffReadFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  );
-size_t ffWriteFile( vm_address_t vp, size_t Size, size_t nItems, FileStream * Stream  );
+#if PF_DEMAND_PAGING
+/* Run C unit tests for demand paging. */
+int pfQaDemandPaging(void);
+#endif /* PF_DEMAND_PAGING */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _pforth_words_h */
+#endif /* _pf_qadmpage_h */

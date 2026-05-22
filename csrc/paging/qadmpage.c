@@ -1,0 +1,303 @@
+
+/***************************************************************
+** Unit Tests file for pForth Demand Paging
+**
+** Author: Phil Burk
+** Copyright 1994 3DO, Phil Burk, Larry Polansky, David Rosenboom
+**
+** Permission to use, copy, modify, and/or distribute this
+** software for any purpose with or without fee is hereby granted.
+**
+** THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+** WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+** WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+** THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR
+** CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
+** FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+** CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+** OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+**
+***************************************************************/
+
+#include "../pf_all.h"
+#include "unittest.h"
+#include "qadmpage.h"
+
+#if PF_DEMAND_PAGING
+
+PFQA_INSTANTIATE_GLOBALS;
+
+
+static int pfQaTestAllocate(void) {
+    printf("pfQaDemandPaging : pfQaTestAllocate\n");
+    pfResetPagedMemory();
+    vm_address_t vm1 = pfAllocatePagedMemory(1);
+    ASSERT_NE(vm1, 0);
+    vm_address_t vm2 = pfAllocatePagedMemory(128);
+    ASSERT_NE(vm2, 0);
+    /* Check alignment. */
+    ASSERT_EQ((vm2 - vm1), DP_ALIGNMENT_SIZE);
+
+    int x = 0;
+    ASSERT_EQ(pfIsAddressInPagedMemory(PTR_TO_VMA(&x)), 0);
+    ASSERT_EQ(pfIsAddressInPagedMemory((vm2 + 5)), 1);
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestFetchStore(void) {
+    printf("pfQaDemandPaging : pfQaTestFetchStore\n");
+    cell_t c1 = 123456;
+    cell_t c2;
+    uint16_t w1 = 1234;
+    uint16_t w2;
+    uint8_t b1 = 91;
+    uint8_t b2;
+
+    pfResetPagedMemory();
+    vm_address_t vm1 = pfAllocatePagedMemory(1024);
+    ASSERT_NE(vm1, 0);
+
+    DP_STORE_U8(vm1 + 16, b1);
+    DP_STORE_U16(vm1 + 32, w1);
+    DP_STORE_CELL(vm1 + 48, c1);
+
+    b2 = DP_FETCH_U8(vm1 + 16);
+    ASSERT_EQ(b1, b2);
+    w2 = DP_FETCH_U16(vm1 + 32);
+    ASSERT_EQ(w1, w2);
+    c2 = DP_FETCH_CELL(vm1 + 48);
+    ASSERT_EQ(c1, c2);
+    return 0;
+error:
+    return 1;
+}
+
+#ifdef PF_SUPPORT_FP
+static int pfQaTestFetchStoreFloat(void) {
+    printf("pfQaDemandPaging : pfQaTestFetchStoreFloat\n");
+    PF_FLOAT f1 = 3.14159;
+    PF_FLOAT f2;
+
+    pfResetPagedMemory();
+    vm_address_t vm1 = pfAllocatePagedMemory(1024);
+    ASSERT_NE(vm1, 0);
+
+    DP_STORE_FLOAT(vm1 + 64, f1);
+    f2 = DP_FETCH_FLOAT(vm1 + 64);
+    ASSERT_EQ(f1, f2);
+    return 0;
+error:
+    return 1;
+}
+#endif /* PF_SUPPORT_FP */
+
+static int pfQaTestReadWrite(void) {
+    printf("pfQaDemandPaging : pfQaTestReadWrite\n");
+    uint8_t buffer1[73];
+    uint8_t buffer2[sizeof(buffer1)];
+    const int kBufferSize = sizeof(buffer1);
+    int i;
+    for (i = 0; i < kBufferSize; i++) {
+        buffer1[i] = i;
+    }
+    pfResetPagedMemory();
+    vm_address_t vm1 = pfAllocatePagedMemory(kBufferSize);
+    ASSERT_NE(vm1, 0);
+    cell_t written = pfWritePagedMemory(vm1, buffer1, kBufferSize);
+    ASSERT_EQ(written, kBufferSize);
+    cell_t numRead = pfReadPagedMemory(buffer2, vm1, kBufferSize);
+    ASSERT_EQ(numRead, kBufferSize);
+    for (i = 0; i < kBufferSize; i++) {
+        ASSERT_EQ(buffer2[i], buffer1[i]);
+    }
+
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestRegionLock(void) {
+    printf("pfQaDemandPaging : pfQaTestRegionLock\n");
+    pfResetLockedMemory();
+    const int kBufferSize = 123;
+    int result = 0;
+    int i;
+    pfResetPagedMemory();
+    vm_address_t vm1 = pfAllocatePagedMemory(kBufferSize);
+    ASSERT_NE(0, vm1);
+
+    uint8_t *pm1 = pfLockMemoryReadWrite(vm1, kBufferSize);
+    ASSERT_NE(PTR_TO_VMA(pm1), PF_VM_NULL);
+    for (i = 0; i < kBufferSize; i++) {
+        pm1[i] = i;
+    }
+    result = pfUnlockMemory(vm1, pm1);
+    ASSERT_EQ(0, result);
+
+    const uint8_t *pm2 = pfLockMemoryReadOnly(vm1, kBufferSize);
+    ASSERT_NE(PTR_TO_VMA(pm2), PF_VM_NULL);
+    for (i = 0; i < kBufferSize; i++) {
+        ASSERT_EQ(pm2[i], i);
+    }
+    result = pfUnlockMemory(vm1 + 8, pm2); /* Pass bad virtual address! */
+    ASSERT_GE(0, result);
+    result = pfUnlockMemory(vm1, pm2 + 8); /* Pass bad physical address! */
+    ASSERT_GE(0, result);
+    result = pfUnlockMemory(vm1, pm2); /* GOOD */
+    ASSERT_EQ(0, result);
+    result = pfUnlockMemory(vm1, pm2); /* Unlock twice! */
+    ASSERT_GE(0, result);
+
+    return 0;
+error:
+    return 1;
+}
+
+#define PF_DP_TEST_PATHNAME "/tmp/pf_scratch_file"
+
+static cell_t pfQaTestCreateFile(size_t numBytes) {
+    uint8_t buffer[100];
+    int i;
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
+    if (fid == NULL) {
+        printf("ERROR: Could not open file %s\n",PF_DP_TEST_PATHNAME);
+        return -1;
+    }
+    for (i = 0; i < sizeof(buffer); i++) {
+        buffer[i] = i;
+    }
+    while (numBytes > 0) {
+        size_t bytesToWrite = (numBytes < sizeof(buffer))
+                ? numBytes : sizeof(buffer);
+        size_t itemsWritten = sdWriteFile(buffer, 1, bytesToWrite, fid);
+        if (itemsWritten != bytesToWrite) {
+            printf("ERROR: writing file failed %d\n", (int)itemsWritten);
+            return -1;
+        }
+        numBytes -= bytesToWrite;
+    }
+    sdCloseFile(fid);
+    return 0;
+}
+
+static int pfQaTestReadFileStandard(size_t numBytes) {
+    uint8_t buffer[100];
+    int i;
+    printf("pfQaDemandPaging : pfQaCheckReadFile\n");
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
+    ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
+    while (numBytes > 0) {
+        size_t bytesToRead = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
+        size_t result = sdReadFile(buffer, 1, (int32_t) bytesToRead, fid); /* use stdio */
+        ASSERT_EQ(bytesToRead, result);
+        for (i = 0; i < bytesToRead; i++) {
+            ASSERT_EQ((i % 100), buffer[i]);
+        }
+        numBytes -= bytesToRead;
+    }
+    sdCloseFile(fid);
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestReadFilePaging(void) {
+    int i;
+    printf("pfQaDemandPaging : pfQaTestReadFile\n");
+    pfResetLockedMemory();
+    const int kBytesToRead = 1175;
+    cell_t result = pfQaTestCreateFile(kBytesToRead);
+    ASSERT_EQ(0, result);
+    vm_address_t vm1 = pfAllocatePagedMemory(kBytesToRead);
+    ASSERT_NE(PF_VM_NULL, vm1);
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
+    ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
+    result = ffReadFile(vm1, 1, kBytesToRead, fid); /* use demand paging */
+    ASSERT_EQ(kBytesToRead, result);
+    for (i = 0; i < kBytesToRead; i++) {
+        ASSERT_EQ((i % 100), DP_FETCH_U8(vm1 + i));
+    }
+    sdCloseFile(fid);
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestWriteFilePaging(void) {
+    int i;
+    printf("pfQaDemandPaging : pfQaTestWriteFilePaging\n");
+    pfResetLockedMemory();
+    const int kBytesToWrite = 1175;
+    cell_t result = pfQaTestCreateFile(kBytesToWrite);
+    ASSERT_EQ(0, result);
+    vm_address_t vm1 = pfAllocatePagedMemory(kBytesToWrite);
+    ASSERT_NE(PF_VM_NULL, vm1);
+    for (i = 0; i < kBytesToWrite; i++) {
+        DP_STORE_U8((vm1 + i), (i % 100));
+    }
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
+    ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
+    result = ffWriteFile(vm1, 1, kBytesToWrite, fid); /* use demand paging */
+    ASSERT_EQ(kBytesToWrite, result);
+    sdCloseFile(fid);
+    result = pfQaTestReadFileStandard(kBytesToWrite);
+    ASSERT_EQ(0, result);
+    return 0;
+error:
+    return 1;
+}
+
+static int pfQaTestSetVirtualMemory(void) {
+    int i;
+    printf("pfQaDemandPaging : pfQaTestSetVirtualMemory\n");
+    pfResetLockedMemory();
+    vm_address_t dest;
+    /* Paint a large region then paint a small region in the middle. */
+    const int largeSize = 1175;
+    const int smallSize = 234;
+    const int smallOffset = 571;
+    vm_address_t vm1 = pfAllocatePagedMemory(largeSize);
+    ASSERT_NE(PF_VM_NULL, vm1);
+    dest = pfSetVirtualMemory(vm1, 0x5A, largeSize);
+    ASSERT_EQ(dest, vm1);
+    dest = pfSetVirtualMemory(vm1 + smallOffset, 0x3C, smallSize);
+    ASSERT_EQ(dest, vm1 + smallOffset);
+    i = 0;
+    for (; i < smallOffset; i++) {
+        ASSERT_EQ(0x5A, DP_FETCH_U8(vm1 + i));
+    }
+    for (; i < smallOffset + smallSize; i++) {
+        ASSERT_EQ(0x3C, DP_FETCH_U8(vm1 + i));
+    }
+    for (; i < largeSize; i++) {
+        ASSERT_EQ(0x5A, DP_FETCH_U8(vm1 + i));
+    }
+    return 0;
+error:
+    return 1;
+}
+
+int pfQaDemandPaging(void) {
+    printf("pfQaDemandPaging called\n");
+    ASSERT_EQ(sizeof(vm_address_t), sizeof(cell_t));
+    ASSERT_EQ(pfQaTestAllocate(), 0);
+    ASSERT_EQ(pfQaTestReadWrite(), 0);
+    ASSERT_EQ(pfQaTestRegionLock(), 0);
+    ASSERT_EQ(pfQaTestFetchStore(), 0);
+#ifdef PF_SUPPORT_FP
+    ASSERT_EQ(pfQaTestFetchStoreFloat(), 0);
+#endif /* PF_SUPPORT_FP */
+    ASSERT_EQ(pfQaTestReadFilePaging(), 0);
+    ASSERT_EQ(pfQaTestWriteFilePaging(), 0);
+    ASSERT_EQ(pfQaTestSetVirtualMemory(), 0);
+    printf("pfQaDemandPaging ended\n");
+
+error:
+    pfResetPagedMemory();
+    PFQA_PRINT_RESULT;
+    return PFQA_EXIT_RESULT;
+}
+
+#endif /* PF_DEMAND_PAGING */

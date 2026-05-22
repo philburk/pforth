@@ -59,7 +59,6 @@
 include? }T{  t_tools.fth
 
 true fp-require-e !
-
 false value verbose
 
 : testing
@@ -180,6 +179,7 @@ T{ 0. FID2 @ REPOSITION-FILE -> 0 }T
 T{ CBUF BUF 29 FID2 @ READ-FILE -> 29 0 }T
 T{ PAD 29 BUF 29 S= -> TRUE }T
 T{ PAD 30 BUF 30 S= -> FALSE }T
+TEST2
 T{ CBUF BUF 29 FID2 @ READ-FILE -> 21 0 }T
 T{ PAD 29 + 21 BUF 21 S= -> TRUE }T
 T{ FID2 @ FILE-SIZE DROP FID2 @ FILE-POSITION DROP D= -> TRUE }T

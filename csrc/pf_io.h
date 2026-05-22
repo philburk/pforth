@@ -119,9 +119,9 @@ void ioTerm( void );
 #else
 
     #ifdef PF_USER_FILEIO
-/* Get user prototypes or macros from include file.
-** API must match that defined above for the stubs.
-*/
+        /* Get user prototypes or macros from include file.
+        ** API must match that defined above for the stubs.
+        */
         #include PF_USER_FILEIO
 
     #else

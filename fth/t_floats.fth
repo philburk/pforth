@@ -163,5 +163,9 @@ T{  my-abcs abc.f1 f@ 23.45 0.0 F~ }T{ true }T
 T{  my-abcs abc.w2  @ }T{ 98765 }T
 
 \  ----------------------------------------------------- \
+\ Compile FLOAT into the dictionary.
+: TF.123 123.456 ;
+T{ TF.123 123.456 0.0 F~ }T{ true }T
+
 }TEST
 

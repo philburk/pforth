@@ -37,6 +37,7 @@
 ***************************************************************/
 
 #include "pf_all.h"
+#include "paging/qadmpage.h"
 
 /***************************************************************
 ** Global Data
@@ -51,6 +52,7 @@ ExecToken       gLocalCompiler_XT;   /* custom compiler for local variables */
 ExecToken       gNumberQ_XT;         /* XT of NUMBER? */
 ExecToken       gQuitP_XT;           /* XT of (QUIT) */
 ExecToken       gAcceptP_XT;         /* XT of ACCEPT */
+cell_t          gPfAssertEnabled = PF_ASSERT_ENABLED;
 
 /* Depth of data stack when colon called. */
 cell_t          gDepthAtColon;
@@ -98,7 +100,7 @@ static void pfInit( void )
     gCurrentDictionary = NULL;
     gNumPrimitives = 0;
     gLocalCompiler_XT = 0;
-    gVarContext = (cell_t)NULL;   /* Points to last name field. */
+    gVarContext = PF_VM_NULL;   /* Points to last name field. */
     gVarState = 0;        /* 1 if compiling. */
     gVarByeCode = 0;      /* BYE-CODE */
     gVarEcho = 0;         /* Echo input. */
@@ -113,7 +115,9 @@ static void pfInit( void )
     gVarTraceStack = 1;
 
     pfInitMemoryAllocator();
+    pfResetLockedMemory();
     ioInit();
+
 }
 static void pfTerm( void )
 {
@@ -127,6 +131,7 @@ static void pfTerm( void )
 void pfDeleteTask( PForthTask task )
 {
     pfTaskData_t *cftd = (pfTaskData_t *)task;
+    if (cftd == NULL) return;
 #ifdef PF_SUPPORT_FP
     FREE_VAR( cftd->td_FloatStackLimit );
 #endif
@@ -170,7 +175,7 @@ PForthTask pfCreateTask( cell_t UserStackDepth, cell_t ReturnStackDepth )
 
     cftd->td_InputStream = PF_STDIN;
 
-    cftd->td_SourcePtr = &cftd->td_TIB[0];
+    cftd->td_SourcePtr = PTR_TO_VMA(&cftd->td_TIB[0]);
     cftd->td_SourceNum = 0;
 
     return (PForthTask) cftd;
@@ -188,7 +193,7 @@ nomem:
 ThrowCode pfExecIfDefined( const char *CString )
 {
     ThrowCode result = 0;
-    if( NAME_BASE != (cell_t)NULL)
+    if( NAME_BASE != PF_VM_NULL)
     {
         ExecToken  XT;
         if( ffFindC( CString, &XT ) )
@@ -209,8 +214,8 @@ void pfDeleteDictionary( PForthDictionary dictionary )
 
     if( dic->dic_Flags & PF_DICF_ALLOCATED_SEGMENTS )
     {
-        FREE_VAR( dic->dic_HeaderBaseUnaligned );
-        FREE_VAR( dic->dic_CodeBaseUnaligned );
+        FREE_VM_VAR( dic->dic_HeaderBaseUnaligned );
+        FREE_VM_VAR( dic->dic_CodeBaseUnaligned );
     }
     pfFreeMem( dic );
 }
@@ -243,11 +248,17 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
 /* Allocate memory for header. */
     if( HeaderSize > 0 )
     {
-        dic->dic_HeaderBaseUnaligned = (ucell_t) pfAllocMem( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE );
+
+#if PF_DEMAND_PAGING
+        dic->dic_HeaderBaseUnaligned = pfAllocatePagedMemory( (ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE);
+#else
+
+        dic->dic_HeaderBaseUnaligned = PTR_TO_VMA(pfAllocMem((ucell_t) HeaderSize + DIC_ALIGNMENT_SIZE ));
+#endif
         if( !dic->dic_HeaderBaseUnaligned ) goto nomem;
 /* Align header base. */
         dic->dic_HeaderBase = DIC_ALIGN(dic->dic_HeaderBaseUnaligned);
-        pfSetMemory( (char *) dic->dic_HeaderBase, 0xA5, (ucell_t) HeaderSize);
+        pfSetVirtualMemory((vm_address_t) dic->dic_HeaderBase, 0xA5, (uint32_t) HeaderSize);
         dic->dic_HeaderLimit = dic->dic_HeaderBase + HeaderSize;
         dic->dic_HeaderPtr = dic->dic_HeaderBase;
     }
@@ -257,13 +268,17 @@ PForthDictionary pfCreateDictionary( cell_t HeaderSize, cell_t CodeSize )
     }
 
 /* Allocate memory for code. */
-    dic->dic_CodeBaseUnaligned = (ucell_t) pfAllocMem( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
+#if PF_DEMAND_PAGING
+    dic->dic_CodeBaseUnaligned = pfAllocatePagedMemory( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE );
+#else
+    dic->dic_CodeBaseUnaligned = PTR_TO_VMA(pfAllocMem( (ucell_t) CodeSize + DIC_ALIGNMENT_SIZE ));
+#endif
     if( !dic->dic_CodeBaseUnaligned ) goto nomem;
     dic->dic_CodeBase = DIC_ALIGN(dic->dic_CodeBaseUnaligned);
-    pfSetMemory( (char *) dic->dic_CodeBase, 0x5A, (ucell_t) CodeSize);
+    pfSetVirtualMemory((vm_address_t) dic->dic_CodeBase, 0x5A, (uint32_t) CodeSize);
 
     dic->dic_CodeLimit = dic->dic_CodeBase + CodeSize;
-    dic->dic_CodePtr.Byte = ((uint8_t *) (dic->dic_CodeBase + QUADUP(NUM_PRIMITIVES)));
+    dic->dic_CodePtr = (vm_address_t) (dic->dic_CodeBase + (QUADUP(NUM_PRIMITIVES) * PF_CELL_SIZE));
 
     return (PForthDictionary) dic;
 nomem:
@@ -422,11 +437,10 @@ void pfDebugMessage( const char *CString )
 /***************************************************************
 ** Print a decimal number to debug output.
 */
-void pfDebugPrintDecimalNumber( int n )
+void pfDebugPrintDecimalNumber( cell_t n )
 {
     pfDebugMessage( ConvertNumberToText( n, 10, TRUE, 1 ) );
 }
-
 
 /***************************************************************
 ** Output 'C' string message.
@@ -444,7 +458,7 @@ void pfMessage( const char *CString )
 */
 ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfInit )
 {
-    pfTaskData_t *cftd;
+    pfTaskData_t *cftd = NULL;
     pfDictionary_t *dic = NULL;
     ThrowCode Result = 0;
     ExecToken  EntryPoint = 0;
@@ -455,6 +469,11 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
 #endif
 
     pfInit();
+
+#if PF_DEMAND_PAGING
+    Result = pfQaDemandPaging(); /* TODO move to standalone qa test */
+    if (Result != 0) goto error2;
+#endif
 
 /* Allocate Task structure. */
     pfDebugMessage("pfDoForth: call pfCreateTask()\n");
@@ -573,6 +592,10 @@ ThrowCode pfDoForth( const char *DicFileName, const char *SourceName, cell_t IfI
 
     pfTerm();
 
+#if PF_DEMAND_PAGING
+    pfCheckPagedMemory();
+#endif
+    
 #ifdef PF_USER_TERM
     PF_USER_TERM;
 #endif
@@ -592,11 +615,11 @@ error1:
     return -1;
 }
 
-
 #ifdef PF_UNIT_TEST
 cell_t pfUnitTest( void )
 {
     cell_t numErrors = 0;
+    MSG("pfUnitTest() called\n");
     numErrors += pfUnitTestText();
     return numErrors;
 }

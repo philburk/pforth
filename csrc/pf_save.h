@@ -27,7 +27,8 @@
 
 typedef struct DictionaryInfoChunk
 {
-/* All fields are stored in BIG ENDIAN format for consistency in data files.
+/* Do NOT change this structure because it is stored in files.
+ * All fields are stored in BIG ENDIAN format for consistency in data files.
  * All fields must be the same size for easy endian conversion.
  * All fields must be 32 bit for file compatibility with older versions.
  */
