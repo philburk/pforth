@@ -11,6 +11,7 @@ fth/fatest1.txt
 fth/pforth.dic
 **/.DS_Store
 build/
+Testing/
 
 CMakeCache.txt
 CMakeFiles/
