@@ -22,7 +22,9 @@
 ***************************************************************/
 
 #include "pf_all.h"
-
+#ifdef PF_UNIT_TEST
+#include "paging/unittest.h"
+#endif
 
 /***************************************************************
 ** Initialize I/O system.
@@ -239,5 +241,77 @@ ThrowCode sdResizeFile( FileStream * File, uint64_t NewSize )
     return THROW_RESIZE_FILE;
 }
 
+#endif
+
+#ifdef PF_UNIT_TEST
+int pfQaFileIO(void) {
+    int savedNumFailed = pfQaNumFailed;
+    cell_t numWritten, numRead, c, result;
+    char buffer[128];
+    const char kTestFileName[] = "pf_qa_fileio_test.txt";
+    const char kTextNumbers[] = "0123456789";
+    const int kTextNumbersSize = sizeof(kTextNumbers) - 1; /* skip NUL */
+    const char kTextLines[] = "pumpkin\npie";
+    const int kTextLinesSize = sizeof(kTextLines) - 1; /* skip NUL */
+
+    printf("pfQaFileIO() called\n");
+
+    /* Create a test file. */
+    FileStream *fid = sdOpenFile(kTestFileName, PF_FAM_CREATE_WO);
+    ASSERT_NE(NULL, fid);
+    numWritten = sdWriteFile(kTextNumbers, 1, kTextNumbersSize, fid);
+    ASSERT_EQ(kTextNumbersSize, numWritten);
+    sdCloseFile(fid);
+
+    /* Test repositioning within a file. */
+    fid = sdOpenFile(kTestFileName, PF_FAM_OPEN_RO);
+    ASSERT_NE(NULL, fid);
+    ASSERT_EQ(0, sdTellFile(fid));
+    ASSERT_EQ(0, sdSeekFile(fid, 5, PF_SEEK_SET));
+    ASSERT_EQ(5, sdTellFile(fid));
+    c = sdInputChar(fid);
+    ASSERT_EQ(kTextNumbers[5], c);
+    ASSERT_EQ(6, sdTellFile(fid));
+    ASSERT_EQ(0, sdSeekFile(fid, 0, PF_SEEK_END));
+    ASSERT_EQ(kTextNumbersSize, sdTellFile(fid));
+    ASSERT_EQ(0, sdSeekFile(fid, -6, PF_SEEK_END));
+    ASSERT_EQ(kTextNumbersSize - 6, sdTellFile(fid));
+    c = sdInputChar(fid);
+    ASSERT_EQ(kTextNumbers[4], c);
+    ASSERT_EQ(5, sdTellFile(fid));
+    ASSERT_EQ(0, sdSeekFile(fid, 2, PF_SEEK_CUR));
+    ASSERT_EQ(7, sdTellFile(fid));
+    ASSERT_EQ(0, sdSeekFile(fid, -4, PF_SEEK_CUR));
+    ASSERT_EQ(3, sdTellFile(fid));
+
+    /* Test repositioning past the end of the file.
+     * fseek() behaves this way! */
+    ASSERT_EQ(0, sdSeekFile(fid, 5, PF_SEEK_END));
+    ASSERT_EQ(kTextNumbersSize + 5, sdTellFile(fid));
+
+
+    /* Test repositioning past the beginning of the file.
+     * fseek() behaves this way! */
+    ASSERT_EQ(0, sdSeekFile(fid, 3, PF_SEEK_SET));
+    ASSERT_EQ(3, sdTellFile(fid));
+    ASSERT_EQ(-1, sdSeekFile(fid, -5, PF_SEEK_SET));
+    ASSERT_EQ(3, sdTellFile(fid));
+
+    sdCloseFile(fid);
+
+    /* Cleanup */
+    result = sdDeleteFile(kTestFileName);
+    ASSERT_EQ(0, result);
+    result = sdDeleteFile(kTestFileName); /* should fail */
+    ASSERT_NE(0, result);
+    fid = sdOpenFile(kTestFileName, PF_FAM_OPEN_RO); /* should fail */
+    ASSERT_EQ(NULL, fid);
+
+    printf("pfQaFileIO() finished\n");
+
+error:
+    PFQA_PRINT_RESULT;
+    return pfQaNumFailed - savedNumFailed;
+}
 #endif
 

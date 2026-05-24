@@ -70,6 +70,8 @@ ThrowCode ffIncludeFile( FileStream *InputFile );
 void ffFPLiteral( PF_FLOAT fnum );
 #endif
 
+int pfQaCompile(void);
+
 #ifdef __cplusplus
 }
 #endif

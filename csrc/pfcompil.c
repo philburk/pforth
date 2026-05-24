@@ -27,6 +27,10 @@
 #include "pf_all.h"
 #include "pfcompil.h"
 
+#ifdef PF_UNIT_TEST
+#include "paging/unittest.h"
+#endif
+
 #define ABORT_RETURN_CODE   (10)
 #define UCELL_MASK  (((ucell_t)PF_CELL_SIZE) - 1)
 
@@ -566,11 +570,9 @@ static cell_t ffCheckDicRoom( void )
 */
 void ffCreateSecondaryHeader( const ForthStringPtr FName)
 {
-    pfDebugMessage("ffCreateSecondaryHeader()\n");
     /* Check for dictionary overflow. */
     if( ffCheckDicRoom() ) return;
 
-    pfDebugMessage("ffCreateSecondaryHeader: CheckRedefinition()\n");
     CheckRedefinition( FName );
     /* Align CODE_HERE */
     CODE_HERE = (CODE_HERE + UCELL_MASK) & ~UCELL_MASK;
@@ -842,7 +844,6 @@ ThrowCode ffInterpret( void )
 /* Is there any text left in Source ? */
     while( gCurrentTask->td_IN < (gCurrentTask->td_SourceNum) )
     {
-        pfDebugMessage("ffInterpret: calling ffWord(()\n");
         theWord = ffLWord( BLANK );
         DBUG(("ffInterpret: theWord = 0x%x, Len = %d\n", theWord, *theWord ));
 
@@ -1104,7 +1105,6 @@ FileStream * ffConvertSourceIDToStream( cell_t id )
 ** Receive line from input stream.
 ** Return length, or -1 for EOF.
 */
-#define BACKSPACE  (8)
 static cell_t readLineFromStream( char *buffer, cell_t maxChars, FileStream *stream )
 {
     int   c;
@@ -1146,7 +1146,11 @@ DBUGX(("readLineFromStream(0x%x, 0x%x, 0x%x)\n", buffer, len, stream ));
     }
 
 /* NUL terminate line to simplify printing when debugging. */
-    if( (len >= 0) && (len < maxChars) ) *p = '\0';
+    if( (len >= 0) && (len < maxChars) ) {
+        *p = '\0';
+        pfDebugMessage(buffer);
+        pfDebugMessage("\n");
+    }
 
     return len;
 }
@@ -1211,3 +1215,41 @@ cell_t ffRefill( void )
 error:
     return Result;
 }
+
+
+#ifdef PF_UNIT_TEST
+int pfQaCompile(void) {
+    int savedNumFailed = pfQaNumFailed;
+    cell_t numWritten, numRead, result;
+    char buffer[128];
+    const char kTestFileName[] = "pf_qa_fileio_test.txt";
+    const char kTextLines[] = "pumpkin\r\npie";
+    const int kTextLinesSize = sizeof(kTextLines) - 1; /* skip NUL */
+
+    printf("pfQaCompile() called\n");
+
+    /* Create a test file with lines. */
+    FileStream *fid = sdOpenFile(kTestFileName, PF_FAM_CREATE_WO);
+    ASSERT_NE(NULL, fid);
+    numWritten = sdWriteFile(kTextLines, 1, kTextLinesSize, fid);
+    ASSERT_EQ(kTextLinesSize, numWritten);
+    sdCloseFile(fid);
+
+    fid = sdOpenFile(kTestFileName, PF_FAM_OPEN_RO);
+    numRead = readLineFromStream(buffer, sizeof(buffer), fid);
+    ASSERT_EQ(7, numRead); /* pumpkin */
+    numRead = readLineFromStream(buffer, sizeof(buffer), fid);
+    ASSERT_EQ(3, numRead); /* pie */
+    sdCloseFile(fid);
+
+    /* Cleanup */
+    result = sdDeleteFile(kTestFileName);
+    ASSERT_EQ(0, result);
+
+    printf("pfQaCompile() finished\n");
+
+error:
+    PFQA_PRINT_RESULT;
+    return pfQaNumFailed - savedNumFailed;
+}
+#endif
