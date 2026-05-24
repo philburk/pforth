@@ -66,18 +66,14 @@ paging_address_t pfAllocatePagedMemory(ucell_t numBytes);
  */
 void pfFreePagedMemory(vm_address_t p);
 
-/** Read from virtual to physical memory.
- * Only one async read or write can be pending at a time.
- * @param micros if zero then issue an async transfer, else timeout in micros
+/** Read from Paged to physical memory.
  * @return number of bytes read or 0 if timed out
  */
 size_t pfReadPagedMemory(void *destination,
                          paging_address_t source,
                          uint32_t numBytes);
 
-/** Read from virtual to physical memory.
- * Only one async read or write can be pending at a time.
- * @param micros if zero then issue an async transfer, else timeout in micros
+/** Write to Paged memory from Physical memory.
  * @return number of bytes written or 0 if timed out
  */
 size_t pfWritePagedMemory(paging_address_t destination,

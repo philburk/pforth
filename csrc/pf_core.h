@@ -26,8 +26,6 @@
 extern "C" {
 #endif
 
-void pfInitGlobals(void);
-
 void pfDebugMessage(const char *CString);
 void pfDebugPrintDecimalNumber(cell_t n);
 

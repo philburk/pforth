@@ -92,6 +92,12 @@ extern "C" {
 /* Main entry point to pForth. */
 ThrowCode pfDoForth( const char *DicName, const char *SourceName, cell_t IfInit );
 
+ThrowCode pfInitialize(const char *DicFileName,
+                       cell_t IfInit,
+                       ExecToken  *EntryPointPtr);
+
+void pfTerminate(void);
+
 /* Turn off messages. */
 void  pfSetQuiet( cell_t IfQuiet );
 
@@ -106,6 +112,7 @@ PForthTask pfCreateTask( cell_t UserStackDepth, cell_t ReturnStackDepth );
 
 /* Establish this task as the current task. */
 void  pfSetCurrentTask( PForthTask task );
+PForthTask  pfGetCurrentTask(void);
 
 /* Delete task created by pfCreateTask */
 void  pfDeleteTask( PForthTask task );
@@ -128,6 +135,30 @@ void  pfDeleteDictionary( PForthDictionary dict );
 /* Execute the pForth interpreter. Yes, QUIT is an odd name but it has historical meaning. */
 ThrowCode pfQuit( void );
 
+/**
+ * Interprets the Forth in the text.
+ * The text length cannot exceed TIB_SIZE.
+ * @param text the Forth code to be executed
+ * @return 0 if successful or throw code.
+ */
+ThrowCode pfInterpretText(char *text);
+
+/**
+ * Push a value to the data stack.
+ */
+void pfPushToStack(cell_t value);
+
+/**
+ * Pop a value from the data stack.
+ * @return value from top of stack
+ */
+cell_t pfPopFromStack(void);
+
+/**
+ * @return the number of items on the data stack
+ */
+cell_t pfGetStackDepth(void);
+
 /* Execute a single execution token in the current task and return 0 or an error code. */
 ThrowCode pfCatch( ExecToken XT );
 
@@ -136,6 +167,12 @@ ThrowCode pfIncludeFile( const char *FileName );
 
 /* Execute a Forth word by name. */
 ThrowCode  pfExecIfDefined( const char *CString );
+
+/**
+  * Run unit tests.
+  * This will get called automatically if PF_UNIT_TEST preprocessor symbol is defined.
+*/
+cell_t pfUnitTest( void );
 
 /* Assertion macro for pForth. */
 extern cell_t gPfAssertEnabled;

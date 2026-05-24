@@ -438,7 +438,7 @@ typedef struct pfTaskData_s
     char       td_TIB[TIB_SIZE];   /* Buffer for terminal input. */
     cell_t     td_IN;              /* Index into Source */
     cell_t     td_SourceNum;       /* #TIB after REFILL */
-    vm_address_t td_SourcePtr;       /* Pointer to TIB or other source. */
+    vm_address_t td_SourcePtr;     /* Pointer to TIB or other source. */
     cell_t     td_LineNumber;      /* Incremented on every refill. */
     cell_t     td_OUT;             /* Current output column. */
 } pfTaskData_t;
@@ -480,6 +480,7 @@ typedef struct pfDictionary_s
     vm_address_t dic_CodeBase;
     vm_address_t dic_CodePtr;
     vm_address_t dic_CodeLimit;
+    ExecToken    dic_EntryPoint;
 } pfDictionary_t;
 
 /* Save state of include when nesting files. */

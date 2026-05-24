@@ -445,7 +445,7 @@ DBUG(("pfCatch: Token = 0x%x\n", Token ));
 
         case ID_ACCEPT_P: /* ( c-addr +n1 -- +n2 ) */
             Temp = M_POP;
-            CharPtr = (char *) pfLockMemoryReadWrite((vm_address_t) Temp, TOS);
+            CharPtr = (char *) pfLockMemoryReadWrite((vm_address_t) Temp, (uint32_t) TOS);
             TOS = ioAccept( CharPtr, TOS );
             pfUnlockMemory((vm_address_t) Temp, (const uint8_t *)CharPtr);
             endcase;
@@ -586,7 +586,7 @@ DBUGX(("After Branch: IP = 0x%x\n", InsPtr ));
         case ID_COLON_P:  /* ( $name xt -- ) */
             {
                 vm_address_t vp = (vm_address_t) M_POP;
-                cell_t length = DP_FETCH_U8(vp);
+                uint32_t length = DP_FETCH_U8(vp);
                 const char *pName = (const char *) pfLockMemoryReadOnly(vp, length + 1);
                 CreateDicEntry( TOS, pName, 0 );
                 pfUnlockMemory(vp, (const uint8_t *) pName);
