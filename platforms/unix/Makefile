@@ -189,6 +189,7 @@ test: $(PFORTHAPP)
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_floats.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_file.fth
 	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_include.fth
+	cd $(FTHDIR) && $(BUILDDIR)/$(PFORTHAPP) -q t_double.fth
 	@echo "PForth Tests PASSED"
 
 clean:
