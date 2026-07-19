@@ -14,7 +14,7 @@ DECIMAL
 { DVAR 2@ -> 5 6 }
 
 \ 2CONSTANT
-2CONSTANT DCON 7 8
+7 8 2CONSTANT DCON
 { DCON -> 7 8 }
 
 \ D+ (double-precision addition)
