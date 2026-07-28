@@ -37,7 +37,7 @@
 static void  ffStringColon( const ForthStringPtr FName );
 static cell_t CheckRedefinition( const ForthStringPtr FName );
 static void  ffUnSmudge( void );
-static cell_t FindAndCompile( const char *theWord );
+static cell_t FindAndCompileOrExecute( const char *theWord );
 static cell_t ffCheckDicRoom( void );
 
 #ifndef PF_NO_INIT
@@ -746,7 +746,7 @@ void ffFPLiteral( PF_FLOAT fnum )
 #endif /* PF_SUPPORT_FP */
 
 /**************************************************************/
-static ThrowCode FindAndCompile( const char *theWord )
+static ThrowCode FindAndCompileOrExecute( const char *theWord )
 {
     cell_t Flag;
     ExecToken XT;
@@ -754,7 +754,7 @@ static ThrowCode FindAndCompile( const char *theWord )
     ThrowCode exception = 0;
 
     Flag = ffFind( theWord, &XT);
-DBUG(("FindAndCompile: theWord = %8s, XT = 0x%x, Flag = %d\n", theWord, XT, Flag ));
+DBUG(("FindAndCompileOrExecute: theWord = %8s, XT = 0x%x, Flag = %d\n", theWord, XT, Flag ));
 
 /* Is it a normal word ? */
     if( Flag == -1 )
@@ -770,7 +770,7 @@ DBUG(("FindAndCompile: theWord = %8s, XT = 0x%x, Flag = %d\n", theWord, XT, Flag
     }
     else if ( Flag == 1 ) /* or is it IMMEDIATE ? */
     {
-DBUG(("FindAndCompile: IMMEDIATE, theWord = 0x%x\n", theWord ));
+DBUG(("FindAndCompileOrExecute: IMMEDIATE, theWord = 0x%x\n", theWord ));
         exception = pfCatch( XT );
     }
     else /* try to interpret it as a number. */
@@ -778,12 +778,12 @@ DBUG(("FindAndCompile: IMMEDIATE, theWord = 0x%x\n", theWord ));
 /* Call deferred NUMBER? */
         cell_t NumResult;
 
-DBUG(("FindAndCompile: not found, try number?\n" ));
+DBUG(("FindAndCompileOrExecute: not found, try number?\n" ));
         PUSH_PTR_DATA_STACK( theWord );   /* Push text of number */
         exception = pfCatch( gNumberQ_XT );
         if( exception ) goto error;
 
-DBUG(("FindAndCompile: after number?\n" ));
+DBUG(("FindAndCompileOrExecute: after number?\n" ));
         NumResult = POP_DATA_STACK;  /* Success? */
         switch( NumResult )
         {
@@ -853,20 +853,23 @@ ThrowCode ffInterpret( void )
             {
                 PUSH_PTR_DATA_STACK( theWord );   /* Push word. */
                 exception = pfCatch( gLocalCompiler_XT );
-                if( exception ) goto error;
+                if( exception ) goto finally;
                 flag = POP_DATA_STACK;  /* Compiled local? */
             }
             if( flag == 0 )
             {
-                exception = FindAndCompile( theWord );
-                if( exception ) goto error;
+                exception = FindAndCompileOrExecute( theWord );
+                if( exception ) goto finally;
             }
         }
 
         DBUG(("ffInterpret: IN=%d, SourceNum=%d\n", gCurrentTask->td_IN,
             gCurrentTask->td_SourceNum ) );
     }
-error:
+finally:
+    if (exception) {
+        gVarState = 0; /* Stop compiling. */
+    }
     pfUnlockMemory(saveSource, (const uint8_t *)(uintptr_t) gCurrentTask->td_SourcePtr);
     return exception;
 }
