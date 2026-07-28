@@ -47,6 +47,11 @@ PFQA_INSTANTIATE_GLOBALS;
 ** the second to tick over while we are calling it. */
 #define MAX_READ_SECONDS   (1)
 
+/* How many characters must be buffered while the program is asleep. */
+#define NUM_BUFFERED_CHARS (5)
+/* How long the user has to type them. */
+#define TYPING_TIME_MSEC   (5000)
+
 /***************************************************************
 ** Print a message using the terminal API under test.
 */
@@ -137,11 +142,61 @@ error:
     return;
 }
 
+/***************************************************************
+** Test that characters typed while the program is not looking
+** are buffered by the terminal instead of being dropped.
+*/
+static void pfQaTerminalBuffering( void )
+{
+    int i;
+    int c;
+    char typed[NUM_BUFFERED_CHARS + 1];
+    time_t startTime;
+    time_t stopTime;
+
+    DrainTerminal();
+
+/* Nothing has been typed yet so the terminal should be quiet. */
+    ASSERT_EQ( FFALSE, sdQueryTerminal() );
+
+    TermPrint( "Please type 5 letters within the next 5 seconds.\n" );
+
+/* Ignore the terminal completely while the user types. */
+    ASSERT_EQ( 0, sdSleepMillis( TYPING_TIME_MSEC ) );
+
+/* All 5 characters should have been buffered while we were asleep. */
+    startTime = time( NULL );
+    for( i = 0; i < NUM_BUFFERED_CHARS; i++ )
+    {
+        ASSERT_NE( FFALSE, sdQueryTerminal() );
+        c = sdTerminalIn();
+        ASSERT_NE( EOF, c );
+        EXPECT_TRUE( isalpha( c ) );
+        typed[i] = (char) c;
+    }
+    typed[NUM_BUFFERED_CHARS] = '\0';
+
+/* The characters were already waiting so none of the reads should block. */
+    stopTime = time( NULL );
+    ASSERT_LE( stopTime - startTime, MAX_READ_SECONDS );
+
+    TermPrint( "You typed '" );
+    TermPrint( typed );
+    TermPrint( "'\n" );
+
+/* We read every character so the terminal should be quiet again. */
+    ASSERT_EQ( FFALSE, sdQueryTerminal() );
+
+error:
+    return;
+}
+
 /***************************************************************/
 int main( void )
 {
     sdTerminalInit();
     pfQaTerminalIO();
+    pfQaTerminalBuffering();
     sdTerminalTerm();
 
     PFQA_PRINT_RESULT;
