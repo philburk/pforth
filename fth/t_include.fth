@@ -25,6 +25,8 @@ T{
 
 ." Intentional error! Test whether INCLUDE can catch an unrecognized word error." cr
 : F_UNDEF " t_load_undef.fth" ;
-T{ F_UNDEF ' $include catch }T{ F_UNDEF -13 }T
+\ $INCLUDE consumes the string address, so the cell at the restored
+\ CATCH depth is unspecified per the standard. NIP discards it.
+T{ 111 F_UNDEF ' $include catch nip }T{ 111 -13 }T
 
 }test

@@ -95,6 +95,7 @@ T{ 511 S>F  -294 S>F  F/  -0.0001 T_F.  }T{  true  }T
         fover f*
     LOOP
     matchCFA >name id. ."  T.SERIES final = " fs. cr
+    fdrop
     flag
 ;
 
@@ -166,6 +167,15 @@ T{  my-abcs abc.w2  @ }T{ 98765 }T
 \ Compile FLOAT into the dictionary.
 : TF.123 123.456 ;
 T{ TF.123 123.456 0.0 F~ }T{ true }T
+
+\  ----------------------------------------------------- CATCH THROW
+
+: tf99 12.34 99 THROW ;
+: cf99 67.89 ['] tf99 CATCH ;
+T{ cf99  99 =    67.89 0.0 F~   AND }T{ true }T    \ Restores float stack FPTOS
+
+\ Check FDEPTH at end of tests
+T{ FDEPTH }T{ 0 }T
 
 }TEST
 
