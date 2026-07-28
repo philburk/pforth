@@ -90,7 +90,7 @@ cell_t ioKey( void )
 
 /**************************************************************
 ** Receive line from keyboard.
-** Return number of characters enterred.
+** Return number of characters entered.
 */
 #define SPACE      (0x20)
 #define BACKSPACE  (0x08)
