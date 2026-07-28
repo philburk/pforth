@@ -22,15 +22,14 @@ variable TEST-FAILED
     0 test-failed !
 ;
 
-
 : }TEST
+    STATE @ abort" STATE is non-zero in }TEST - compiling mode on!"
     test-passed @ 4 .r ."  passed, "
     test-failed @ 4 .r ."  failed." cr
     test-failed @ 0> IF
         TEST_EXIT_FAILURE bye-code !
     THEN
-;
-
+; immediate
 
 VARIABLE actual-depth       \ stack record
 CREATE actual-results 20 CELLS ALLOT
@@ -63,7 +62,6 @@ CREATE the-test 128 CHARS ALLOT
     LOOP \ save them
 ;
 
-
 : }T    \ ( ... -- ) Compare stack (expected) contents with saved
         \ (actual) contents.
     DEPTH
@@ -91,3 +89,4 @@ CREATE the-test 128 CHARS ALLOT
         S" WRONG NUMBER OF RESULTS: " error
     THEN
 ;
+
