@@ -135,15 +135,22 @@
     { \
         ExceptionReturnCode = (ThrowCode)(err); \
         TORPTR = InitialReturnStack; /* Will cause return to 'C' */ \
-        STKPTR = InitialDataStack; \
-        FP_STKPTR = InitialFloatStack; \
+        /* Restore stack depth. TOS is cached in a register so it must be \
+        ** reloaded from the restored stack, not just left dangling. */ \
+        STKPTR = InitialDataStack - 1; \
+        TOS = M_POP; \
+        FP_STKPTR = InitialFloatStack - 1; \
+        FP_TOS = M_FP_POP; \
     }
 #else
 #define M_THROW(err) \
     { \
         ExceptionReturnCode = (err); \
         TORPTR = InitialReturnStack; /* Will cause return to 'C' */ \
-        STKPTR = InitialDataStack; \
+        /* Restore stack depth. TOS is cached in a register so it must be \
+        ** reloaded from the restored stack, not just left dangling. */ \
+        STKPTR = InitialDataStack - 1; \
+        TOS = M_POP; \
     }
 #endif
 
