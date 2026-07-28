@@ -389,7 +389,7 @@ cell_t ffSaveForth( const char *FileName, ExecToken EntryPoint, cell_t NameSize,
     uint32_t CodeChunkSize;
     uint32_t relativeCodePtr;
 
-    fid = sdOpenFile( FileName, "wb" );
+    fid = sdOpenFile( FileName, PF_FAM_BIN_CREATE_WO );
     if( fid == NULL )
     {
         pfReportError("pfSaveDictionary", PF_ERR_OPEN_FILE);
@@ -542,7 +542,7 @@ PForthDictionary pfLoadDictionary( const char *FileName, ExecToken *EntryPointPt
 DBUG(("pfLoadDictionary( %s )\n", FileName ));
 
 /* Open file. */
-    fid = sdOpenFile( FileName, "rb" );
+    fid = sdOpenFile( FileName, PF_FAM_BIN_OPEN_RO );
     if( fid == NULL )
     {
         pfReportError("pfLoadDictionary", PF_ERR_OPEN_FILE);

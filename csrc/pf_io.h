@@ -177,6 +177,11 @@ cell_t ioKey( void);
 void ioEmit( char c );
 void ioType( const char *s, cell_t n);
 
+
+#ifdef PF_UNIT_TEST
+int pfQaFileIO(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

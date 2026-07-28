@@ -157,7 +157,7 @@ error:
 static cell_t pfQaTestCreateFile(size_t numBytes) {
     uint8_t buffer[100];
     int i;
-    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, PF_FAM_BIN_CREATE_WO);
     if (fid == NULL) {
         printf("ERROR: Could not open file %s\n",PF_DP_TEST_PATHNAME);
         return -1;
@@ -183,7 +183,7 @@ static int pfQaTestReadFileStandard(size_t numBytes) {
     uint8_t buffer[100];
     int i;
     printf("pfQaDemandPaging : pfQaCheckReadFile\n");
-    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, PF_FAM_BIN_OPEN_RO);
     ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
     while (numBytes > 0) {
         size_t bytesToRead = (numBytes < sizeof(buffer)) ? numBytes : sizeof(buffer);
@@ -209,7 +209,7 @@ static int pfQaTestReadFilePaging(void) {
     ASSERT_EQ(0, result);
     vm_address_t vm1 = pfAllocatePagedMemory(kBytesToRead);
     ASSERT_NE(PF_VM_NULL, vm1);
-    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "rb");
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, PF_FAM_BIN_OPEN_RO);
     ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
     result = ffReadFile(vm1, 1, kBytesToRead, fid); /* use demand paging */
     ASSERT_EQ(kBytesToRead, result);
@@ -234,7 +234,7 @@ static int pfQaTestWriteFilePaging(void) {
     for (i = 0; i < kBytesToWrite; i++) {
         DP_STORE_U8((vm1 + i), (i % 100));
     }
-    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, "wb");
+    FileStream *fid = sdOpenFile(PF_DP_TEST_PATHNAME, PF_FAM_BIN_CREATE_WO);
     ASSERT_NE(PF_VM_NULL, PTR_TO_VMA(fid));
     result = ffWriteFile(vm1, 1, kBytesToWrite, fid); /* use demand paging */
     ASSERT_EQ(kBytesToWrite, result);

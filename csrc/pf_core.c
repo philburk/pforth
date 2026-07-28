@@ -393,7 +393,7 @@ cell_t pfIncludeFile( const char *FileName )
     cell_t numChars, len;
 
 /* Open file. */
-    fid = sdOpenFile( FileName, "r" );
+    fid = sdOpenFile( FileName, PF_FAM_OPEN_RO );
     if( fid == NULL )
     {
         ERR("pfIncludeFile could not open ");
@@ -423,7 +423,7 @@ cell_t pfIncludeFile( const char *FileName )
 ***************************************************************/
 void pfDebugMessage( const char *CString )
 {
-#if 0
+#ifdef PF_DEBUG
     while( *CString )
     {
         char c = *CString++;
@@ -438,9 +438,9 @@ void pfDebugMessage( const char *CString )
             sdTerminalOut( c );
         }
     }
-#else
+#else /* PF_DEBUG */
     (void)CString;
-#endif
+#endif /* PF_DEBUG */
 }
 
 /***************************************************************
@@ -461,7 +461,6 @@ void pfMessage( const char *CString )
 {
     ioType( CString, (cell_t) pfCStringLength(CString) );
 }
-
 
 /**
  * Interprets the Forth in the text.
@@ -703,7 +702,7 @@ ThrowCode pfDoForth(const char *DicFileName,
 #ifdef PF_UNIT_TEST
 error:
 #endif
-    
+
     pfTerminate();
 
     return Result ? Result : gVarByeCode;
@@ -719,6 +718,10 @@ cell_t pfUnitTest( void )
 #if PF_DEMAND_PAGING
     numErrors += pfQaDemandPaging();
 #endif
+
+    numErrors += pfQaFileIO();
+    numErrors += pfQaCompile();
+
     return numErrors;
 }
 #endif

@@ -1441,7 +1441,7 @@ DBUG(("XX ah,m,l = 0x%8x,%8x,%8x - qh,l = 0x%8x,%8x\n", ah,am,al, qh,ql ));
 #ifndef PF_NO_SHELL
         case ID_LOADSYS:
             MSG("Load "); MSG(SYSTEM_LOAD_FILE); EMIT_CR;
-            FileID = sdOpenFile(SYSTEM_LOAD_FILE, "r");
+            FileID = sdOpenFile(SYSTEM_LOAD_FILE, PF_FAM_OPEN_RO);
             if( FileID )
             {
                 SAVE_REGISTERS;
@@ -1985,10 +1985,6 @@ DBUGX(("After 0Branch: IP = 0x%x\n", InsPtr ));
             Token = READ_CELL_DIC(InsPtr);   /* Traverse to next token in secondary. */
             InsPtr += PF_CELL_SIZE;
         }
-
-#ifdef PF_DEBUG
-        M_DOTS;
-#endif
 
 #if 0
         if( _CrtCheckMemory() == 0 )
