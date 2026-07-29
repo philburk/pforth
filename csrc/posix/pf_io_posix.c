@@ -135,6 +135,15 @@ void sdTerminalInit(void)
         {
             perror("sdTerminalInit: setvbuf");
         }
+/* Do not let stdio buffer input. sdTerminalIn() uses getchar(), which would
+ * read a whole block of characters into the stdio buffer, but sdQueryTerminal()
+ * asks the file descriptor. Characters sitting in the stdio buffer would then
+ * be invisible to sdQueryTerminal().
+ */
+        if (setvbuf(stdin, NULL, _IONBF, (size_t) 0) != 0)
+        {
+            perror("sdTerminalInit: setvbuf");
+        }
     }
 }
 

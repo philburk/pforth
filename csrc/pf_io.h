@@ -30,13 +30,54 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** Send a character to an output device so it can be
+ * seen by the user.
+ *
+ * On posix systems, this could be implemented using putchar(c).
+ */
 int  sdTerminalOut( char c );
+
+/** Echo a character to an output device if sdTerminalIn does NOT
+ * already automatically echo characters.
+ * If sdTerminalIn() echos characters then this could be a NOOP.
+ */
 int  sdTerminalEcho( char c );
+
+/**
+ * Flush any characters that may be sitting in an output buffer.
+ * If sdTerminalFlush() is not called then output characters may be held
+ * indefinitely.
+ */
 int  sdTerminalFlush( void );
+
+/** Return immediately with a character from the terminal if is is available.
+ * If not available then wait for the user to press a key.
+ *
+ * On posix systems, this could be implemented using getchar().
+ */
 int  sdTerminalIn( void );
+
+/**
+ * Return 1 if a character is available to be read using sdTerminalIn().
+ */
 int  sdQueryTerminal( void );
+
+/**
+ * Initialize the terminal IO system.
+ */
 void sdTerminalInit( void );
+
+/**
+ * Cleanup the terminal IO system.
+ * If you call sdTerminalInit() twice and sdTerminalTerm() once then
+ * the input system will be terminated.
+ */
 void sdTerminalTerm( void );
+
+/**
+ * Sleep for msec milliseconds.
+ */
 cell_t sdSleepMillis( cell_t msec );
 #ifdef __cplusplus
 }
