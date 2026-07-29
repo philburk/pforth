@@ -52,6 +52,8 @@ PFQA_INSTANTIATE_GLOBALS;
 /* How long the user has to type them. */
 #define TYPING_TIME_MSEC   (5000)
 
+#define MYEOL   "\r\n"
+
 /***************************************************************
 ** Print a message using the terminal API under test.
 */
@@ -62,6 +64,15 @@ static void TermPrint( const char *msg )
     {
         sdTerminalOut( *s++ );
     }
+    sdTerminalFlush();
+}
+
+/** Print a message and a line terminator.
+ */
+static void TermPrintLine( const char *msg )
+{
+    TermPrint(msg);
+    TermPrint(MYEOL);
     sdTerminalFlush();
 }
 
@@ -85,7 +96,7 @@ static void DrainTerminal( void )
 /***************************************************************
 ** Test sdQueryTerminal(), sdTerminalIn() and sdSleepMillis().
 */
-static void pfQaTerminalIO( void )
+static void pfQaQueryTerminal( void )
 {
     int numPolls;
     int query;
@@ -95,14 +106,13 @@ static void pfQaTerminalIO( void )
 
     DrainTerminal();
 
-    TermPrint( "Terminal QA for pForth\n" );
-
 /* Nothing has been typed yet so the terminal should be quiet. */
     ASSERT_EQ( FFALSE, sdQueryTerminal() );
 
     ASSERT_EQ( 0, sdSleepMillis( POLL_PERIOD_MSEC ) );
 
-    TermPrint( "Please press a letter key.\n" );
+    TermPrintLine(MYEOL "----- pfQaQueryTerminal");
+    TermPrintLine( "Please press a letter key." );
 
 /* Poll until a character arrives or we run out of patience. */
     for( numPolls = 0; numPolls < MAX_POLLS; numPolls++ )
@@ -114,7 +124,7 @@ static void pfQaTerminalIO( void )
 
     if( numPolls >= MAX_POLLS )
     {
-        TermPrint( "TIMED OUT! No key was pressed.\n" );
+        TermPrintLine( "TIMED OUT! No key was pressed." );
         ASSERT_LT( numPolls, MAX_POLLS );
     }
 
@@ -132,8 +142,8 @@ static void pfQaTerminalIO( void )
     ASSERT_NE( EOF, c );
     EXPECT_TRUE( isalpha( c ) );
     TermPrint( "You pressed '" );
-    sdTerminalEcho( (char) c );
-    TermPrint( "'\n" );
+    sdTerminalOut( (char) c );
+    TermPrintLine( "'" );
 
 /* The character was consumed so the terminal should be quiet again. */
     ASSERT_EQ( FFALSE, sdQueryTerminal() );
@@ -159,7 +169,9 @@ static void pfQaTerminalBuffering( void )
 /* Nothing has been typed yet so the terminal should be quiet. */
     ASSERT_EQ( FFALSE, sdQueryTerminal() );
 
-    TermPrint( "Please type 5 letters within the next 5 seconds.\n" );
+    TermPrintLine(MYEOL "----- pfQaTerminalBuffering");
+    TermPrintLine( "Please type any 5 letters within the next 5 seconds." );
+    TermPrintLine( "They may not be echoed." );
 
 /* Ignore the terminal completely while the user types. */
     ASSERT_EQ( 0, sdSleepMillis( TYPING_TIME_MSEC ) );
@@ -182,10 +194,101 @@ static void pfQaTerminalBuffering( void )
 
     TermPrint( "You typed '" );
     TermPrint( typed );
-    TermPrint( "'\n" );
+    TermPrintLine( "'" );
 
 /* We read every character so the terminal should be quiet again. */
     ASSERT_EQ( FFALSE, sdQueryTerminal() );
+
+error:
+    return;
+}
+
+/***************************************************************
+** Test that characters echoed while the user is typing.
+*/
+static void pfQaTerminalEcho( void )
+{
+    int i;
+    int c;
+
+    DrainTerminal();
+
+/* Nothing has been typed yet so the terminal should be quiet. */
+    ASSERT_EQ( FFALSE, sdQueryTerminal() );
+
+    TermPrintLine(MYEOL "----- pfQaTerminalEcho");
+    TermPrintLine( "Please type 5 letters or numbers at any speed:" );
+
+/* All 5 characters should have been buffered while we were asleep. */
+    for( i = 0; i < NUM_BUFFERED_CHARS; i++ )
+    {
+        c = sdTerminalIn();
+        sdTerminalEcho(c);
+    }
+    TermPrintLine("");
+    TermPrintLine("You should have seen each key echo once and only once.\n");
+
+error:
+    return;
+}
+
+/***************************************************************
+** Test for overflow when blasting characters.
+*/
+static void pfQaTerminalOverflow( void )
+{
+    int i;
+    int c;
+    const char text[] = "abcdefghijklmnopqrstuvwxyz1234567890";
+    char typed[sizeof(text)];
+    int enabled = 1;
+
+    DrainTerminal();
+
+/* Nothing has been typed yet so the terminal should be quiet. */
+    ASSERT_EQ( FFALSE, sdQueryTerminal() );
+
+    TermPrintLine(MYEOL "----- pfQaTerminalOverflow");
+    TermPrintLine("Testing for terminal input buffer overflow.");
+    TermPrintLine("Copy the string below, with no spaces, to your Paste buffer.");
+    TermPrint(MYEOL "    ");
+    TermPrintLine(text);
+
+    TermPrintLine(MYEOL "Now Paste the String into the terminal and hit ENTER or RETURN");
+    TermPrintLine("as many times as you like.");
+    TermPrintLine("When you are done, hit '.' and ENTER or RETURN to stop.");
+
+    while (enabled) {
+        for( i = 0; i < sizeof(typed); i++ ) typed[i] = 0; /* Clear typed buffer. */
+        for( i = 0; i < (int)(sizeof(text) - 1); i++ )
+        {
+            c = sdTerminalIn();
+            sdTerminalEcho(c);
+            if (c == '.') {
+                TermPrintLine(MYEOL "Stop requested.");
+                enabled = 0;
+                break;
+            }
+            typed[i] = c;
+            /* TermPrint(" - got "); TermPrintLine(typed); */
+            if (c != text[i]) {
+                TermPrintLine(MYEOL "Dropped character");
+                TermPrintLine(typed);
+                DrainTerminal();
+                enabled = 0;
+                ASSERT_EQ(text[i], c);
+                break;
+            }
+        }
+        TermPrintLine(MYEOL "Waiting for ENTER or RETURN.");
+        c = sdTerminalIn(); /* Discard EOL */
+        ASSERT_TRUE(!isalpha(c));
+        if (enabled) {
+            TermPrintLine(MYEOL "SUCCESS - Paste again and hit ENTER or RETURN.");
+        }
+    }
+
+    TermPrintLine("pfQaTerminalOverflow test complete.");
 
 error:
     return;
@@ -195,8 +298,11 @@ error:
 int main( void )
 {
     sdTerminalInit();
-    pfQaTerminalIO();
+    TermPrintLine( "Terminal QA for pForth" );
+    pfQaQueryTerminal();
     pfQaTerminalBuffering();
+    pfQaTerminalEcho();
+    pfQaTerminalOverflow();
     sdTerminalTerm();
 
     PFQA_PRINT_RESULT;
