@@ -4,6 +4,8 @@
 **/pforth
 **/pforth.dic
 **/pforth_standalone
+**/pfqaterm
+
 platform/win32/**/.vs
 platform/win32/**/Debug
 platform/win32/**/Release
